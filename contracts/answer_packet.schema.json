@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/answer_packet.schema.json",
+  "title": "AnswerPacket",
+  "type": "object",
+  "required": ["answer_id", "query_id", "answer_text", "confidence", "citations", "uncertainties"],
+  "properties": {
+    "answer_id": {"type": "string"},
+    "query_id": {"type": "string"},
+    "answer_text": {"type": "string"},
+    "confidence": {"type": "number"},
+    "citations": {"type": "array", "items": {"type": "string"}},
+    "used_documents": {"type": "array", "items": {"type": "string"}},
+    "uncertainties": {"type": "array", "items": {"type": "string"}},
+    "correlation_id": {"type": "string"}
+  },
+  "additionalProperties": false
+}
