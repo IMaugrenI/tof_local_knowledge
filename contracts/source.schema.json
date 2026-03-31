@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/source.schema.json",
+  "title": "Source",
+  "type": "object",
+  "required": ["source_id", "display_name", "mount_key", "enabled"],
+  "properties": {
+    "source_id": {"type": "string"},
+    "display_name": {"type": "string"},
+    "mount_key": {"type": "string"},
+    "mount_path": {"type": "string"},
+    "enabled": {"type": "boolean"},
+    "scan_policy": {"type": "string"},
+    "allowed_roles": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}
