@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/document.schema.json",
+  "title": "Document",
+  "type": "object",
+  "required": ["document_id", "source_id", "relative_path", "file_name", "read_status", "extraction_status"],
+  "properties": {
+    "document_id": {"type": "string"},
+    "source_id": {"type": "string"},
+    "relative_path": {"type": "string"},
+    "file_name": {"type": "string"},
+    "mime_type": {"type": "string"},
+    "size_bytes": {"type": "integer"},
+    "content_fingerprint": {"type": "string"},
+    "read_status": {"type": "string", "enum": ["seen", "fully_read", "partially_read", "unreadable"]},
+    "extraction_status": {"type": "string", "enum": ["pending", "done", "failed"]},
+    "current_revision_id": {"type": "string"}
+  },
+  "additionalProperties": false
+}
