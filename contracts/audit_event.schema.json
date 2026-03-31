@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/audit_event.schema.json",
+  "title": "AuditEvent",
+  "type": "object",
+  "required": ["event_id", "timestamp", "actor_id", "action", "target_type", "outcome"],
+  "properties": {
+    "event_id": {"type": "string"},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "actor_id": {"type": "string"},
+    "action": {"type": "string"},
+    "target_type": {"type": "string"},
+    "target_id": {"type": "string"},
+    "scope_ref": {"type": "string"},
+    "outcome": {"type": "string"},
+    "correlation_id": {"type": "string"}
+  },
+  "additionalProperties": false
+}
