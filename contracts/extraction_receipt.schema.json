@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/extraction_receipt.schema.json",
+  "title": "ExtractionReceipt",
+  "type": "object",
+  "required": ["extraction_id", "document_id", "extractor_name", "outcome"],
+  "properties": {
+    "extraction_id": {"type": "string"},
+    "document_id": {"type": "string"},
+    "extractor_name": {"type": "string"},
+    "started_at": {"type": "string", "format": "date-time"},
+    "finished_at": {"type": "string", "format": "date-time"},
+    "outcome": {"type": "string", "enum": ["done", "partial", "failed"]},
+    "coverage": {"type": "number"},
+    "warnings": {"type": "array", "items": {"type": "string"}},
+    "segment_count": {"type": "integer"}
+  },
+  "additionalProperties": false
+}
