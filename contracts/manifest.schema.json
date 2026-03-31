@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/manifest.schema.json",
+  "title": "Manifest",
+  "type": "object",
+  "required": ["manifest_id", "source_id", "generated_at", "file_count"],
+  "properties": {
+    "manifest_id": {"type": "string"},
+    "source_id": {"type": "string"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "scanner_version": {"type": "string"},
+    "root_path": {"type": "string"},
+    "file_count": {"type": "integer"},
+    "unreadable_count": {"type": "integer"}
+  },
+  "additionalProperties": false
+}
