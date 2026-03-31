@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/document_segment.schema.json",
+  "title": "DocumentSegment",
+  "type": "object",
+  "required": ["segment_id", "document_id", "segment_kind", "ordinal", "text", "citation_label"],
+  "properties": {
+    "segment_id": {"type": "string"},
+    "document_id": {"type": "string"},
+    "segment_kind": {"type": "string"},
+    "page_no": {"type": ["integer", "null"]},
+    "ordinal": {"type": "integer"},
+    "text": {"type": "string"},
+    "citation_label": {"type": "string"}
+  },
+  "additionalProperties": false
+}
