@@ -18,8 +18,8 @@ Der aktive Runtime-Pfad in diesem Repository ist:
 
 - `compose.full.yml`
 - `services/*/app/runtime.py`
-- `docs/11_runtime_stack.md`
-- `docs/12_first_run.md`
+- `docs/11_runtime_stack_DE.md`
+- `docs/12_first_run_DE.md`
 
 ## Was im Repository bereits funktioniert
 
@@ -83,18 +83,17 @@ bash scripts/down.sh
 
 Mehr Details:
 
-- [`docs/commands.md`](docs/commands.md)
 - [`docs/commands_DE.md`](docs/commands_DE.md)
 
 ## Wichtige Dokumente
 
-- [`docs/00_product_scope.md`](docs/00_product_scope.md) — Produktgrenze
-- [`docs/01_architecture.md`](docs/01_architecture.md) — Architekturüberblick
-- [`docs/04_ingest_flow.md`](docs/04_ingest_flow.md) — Datei- und Ingestfluss
-- [`docs/05_search_qa.md`](docs/05_search_qa.md) — Such- und QA-Konzept
-- [`docs/11_runtime_stack.md`](docs/11_runtime_stack.md) — aktiver Runtime-Stack
-- [`docs/12_first_run.md`](docs/12_first_run.md) — erster echter Lauf
-- [`docs/commands.md`](docs/commands.md) — öffentliche Kommandos
+- [`docs/00_product_scope_DE.md`](docs/00_product_scope_DE.md) — Produktgrenze
+- [`docs/01_architecture_DE.md`](docs/01_architecture_DE.md) — Architekturüberblick
+- [`docs/04_ingest_flow_DE.md`](docs/04_ingest_flow_DE.md) — Datei- und Ingestfluss
+- [`docs/05_search_qa_DE.md`](docs/05_search_qa_DE.md) — Such- und QA-Konzept
+- [`docs/11_runtime_stack_DE.md`](docs/11_runtime_stack_DE.md) — aktiver Runtime-Stack
+- [`docs/12_first_run_DE.md`](docs/12_first_run_DE.md) — erster echter Lauf
+- [`docs/commands_DE.md`](docs/commands_DE.md) — öffentliche Kommandos
 
 ## Verwandte öffentliche Repositories
 
