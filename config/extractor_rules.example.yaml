@@ -1,0 +1,14 @@
+extractor_rules:
+  default_max_chars_per_segment: 1200
+  supported_extensions:
+    - .txt
+    - .md
+    - .pdf
+    - .docx
+    - .xlsx
+    - .csv
+    - .json
+    - .html
+    - .eml
+  unreadable_policy: mark_and_keep
+  empty_block_policy: warn_and_skip
