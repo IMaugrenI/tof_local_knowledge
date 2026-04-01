@@ -1,0 +1,1 @@
+-r services/_shared_requirements.txt
