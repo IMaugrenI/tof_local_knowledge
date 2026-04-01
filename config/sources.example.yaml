@@ -1,0 +1,11 @@
+sources:
+  - source_id: source_local_1
+    display_name: Local Source 1
+    mount_key: source_1
+    mount_path: /sources/source_1
+    enabled: true
+    scan_policy: manual
+    allowed_roles:
+      - system_admin
+      - source_admin
+      - knowledge_user
