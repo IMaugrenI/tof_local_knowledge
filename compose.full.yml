@@ -1,0 +1,133 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: tof_local_knowledge_postgres_full
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-tof_local_knowledge}
+      POSTGRES_USER: ${POSTGRES_USER:-tof_local_knowledge}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-local_dev_password}
+      TZ: ${TZ:-Europe/Berlin}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+      - ./data/postgres:/var/lib/postgresql/data
+
+  auth_api:
+    build:
+      context: .
+      dockerfile: services/_runtime_fastapi.Dockerfile
+    container_name: tof_local_knowledge_auth_api_full
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    command: ["uvicorn", "runtime:app", "--host", "0.0.0.0", "--port", "8101", "--app-dir", "/app/services/auth_api/app"]
+    ports:
+      - "${AUTH_API_PORT:-8101}:8101"
+
+  catalog_api:
+    build:
+      context: .
+      dockerfile: services/_runtime_fastapi.Dockerfile
+    container_name: tof_local_knowledge_catalog_api_full
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    command: ["uvicorn", "runtime:app", "--host", "0.0.0.0", "--port", "8102", "--app-dir", "/app/services/catalog_api/app"]
+    ports:
+      - "${CATALOG_API_PORT:-8102}:8102"
+
+  ingest_api:
+    build:
+      context: .
+      dockerfile: services/_runtime_fastapi.Dockerfile
+    container_name: tof_local_knowledge_ingest_api_full
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - catalog_api
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    command: ["uvicorn", "runtime:app", "--host", "0.0.0.0", "--port", "8103", "--app-dir", "/app/services/ingest_api/app"]
+    ports:
+      - "${INGEST_API_PORT:-8103}:8103"
+    volumes:
+      - ${LOCAL_SOURCE_ROOT_1}:/sources/source_1:ro
+
+  extractor_api:
+    build:
+      context: .
+      dockerfile: services/_runtime_fastapi.Dockerfile
+    container_name: tof_local_knowledge_extractor_api_full
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - catalog_api
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    command: ["uvicorn", "runtime:app", "--host", "0.0.0.0", "--port", "8104", "--app-dir", "/app/services/extractor_api/app"]
+    ports:
+      - "${EXTRACTOR_API_PORT:-8104}:8104"
+    volumes:
+      - ${LOCAL_SOURCE_ROOT_1}:/sources/source_1:ro
+      - ./storage/derived:/storage/derived
+
+  search_api:
+    build:
+      context: .
+      dockerfile: services/_runtime_fastapi.Dockerfile
+    container_name: tof_local_knowledge_search_api_full
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - catalog_api
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    command: ["uvicorn", "runtime:app", "--host", "0.0.0.0", "--port", "8105", "--app-dir", "/app/services/search_api/app"]
+    ports:
+      - "${SEARCH_API_PORT:-8105}:8105"
+
+  qa_api:
+    build:
+      context: .
+      dockerfile: services/_runtime_fastapi.Dockerfile
+    container_name: tof_local_knowledge_qa_api_full
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - search_api
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      SEARCH_API_URL: http://search_api:8105/search
+    command: ["uvicorn", "runtime:app", "--host", "0.0.0.0", "--port", "8106", "--app-dir", "/app/services/qa_api/app"]
+    ports:
+      - "${QA_API_PORT:-8106}:8106"
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: tof_local_knowledge_ollama_full
+    restart: unless-stopped
+    profiles: ["llm"]
+    ports:
+      - "${OLLAMA_PORT:-11434}:11434"
+    volumes:
+      - ./data/ollama:/root/.ollama
+
+  open_webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: tof_local_knowledge_open_webui_full
+    restart: unless-stopped
+    profiles: ["ui"]
+    depends_on:
+      - ollama
+      - qa_api
+    environment:
+      OLLAMA_BASE_URL: http://ollama:11434
+      WEBUI_NAME: tof_local_knowledge
+    ports:
+      - "${OPENWEBUI_PORT:-3000}:8080"
