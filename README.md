@@ -49,30 +49,42 @@ This repository is meant to become a clean local knowledge product for private/i
 - not a hidden remote sync system
 - not a claim that everything is finished
 
-## First run
+## Quick start
 
-1. copy `.env.example` to `.env`
-2. set at least:
-   - `POSTGRES_PASSWORD`
-   - `DATABASE_URL`
-   - `LOCAL_SOURCE_ROOT_1`
-3. prepare directories:
+1. prepare local setup:
 
 ```bash
-bash scripts/bootstrap_dev.sh
+bash scripts/setup.sh
 ```
 
-4. start the runtime stack:
+2. start the runtime stack:
 
 ```bash
-bash scripts/start_full.sh
+bash scripts/up.sh
 ```
 
-5. check health:
+3. check health:
 
 ```bash
-bash scripts/check_full.sh
+bash scripts/check.sh
 ```
+
+## Operator commands
+
+Use the small public command surface for normal operation:
+
+```bash
+bash scripts/setup.sh
+bash scripts/up.sh
+bash scripts/check.sh
+bash scripts/logs.sh
+bash scripts/down.sh
+```
+
+More details:
+
+- [`docs/commands.md`](docs/commands.md)
+- [`docs/commands_DE.md`](docs/commands_DE.md)
 
 ## Key docs
 
@@ -82,6 +94,7 @@ bash scripts/check_full.sh
 - [`docs/05_search_qa.md`](docs/05_search_qa.md) — search and QA concept
 - [`docs/11_runtime_stack.md`](docs/11_runtime_stack.md) — active runtime stack
 - [`docs/12_first_run.md`](docs/12_first_run.md) — first real run
+- [`docs/commands.md`](docs/commands.md) — public command surface
 
 ## Related public repos
 

@@ -49,30 +49,42 @@ Dieses Repository soll ein sauberes lokales Wissensprodukt für private / intern
 - kein verstecktes Remote-Sync-System
 - keine Behauptung, dass schon alles fertig ist
 
-## Erster echter Lauf
+## Schnellstart
 
-1. `.env.example` nach `.env` kopieren
-2. mindestens setzen:
-   - `POSTGRES_PASSWORD`
-   - `DATABASE_URL`
-   - `LOCAL_SOURCE_ROOT_1`
-3. Verzeichnisse vorbereiten:
+1. lokale Vorbereitung ausführen:
 
 ```bash
-bash scripts/bootstrap_dev.sh
+bash scripts/setup.sh
 ```
 
-4. Runtime-Stack starten:
+2. den Runtime-Stack starten:
 
 ```bash
-bash scripts/start_full.sh
+bash scripts/up.sh
 ```
 
-5. Health prüfen:
+3. Health prüfen:
 
 ```bash
-bash scripts/check_full.sh
+bash scripts/check.sh
 ```
+
+## Befehle für den Betrieb
+
+Nutze für den normalen Betrieb diese kleinen Befehle:
+
+```bash
+bash scripts/setup.sh
+bash scripts/up.sh
+bash scripts/check.sh
+bash scripts/logs.sh
+bash scripts/down.sh
+```
+
+Mehr Details:
+
+- [`docs/commands.md`](docs/commands.md)
+- [`docs/commands_DE.md`](docs/commands_DE.md)
 
 ## Wichtige Dokumente
 
@@ -82,6 +94,7 @@ bash scripts/check_full.sh
 - [`docs/05_search_qa.md`](docs/05_search_qa.md) — Such- und QA-Konzept
 - [`docs/11_runtime_stack.md`](docs/11_runtime_stack.md) — aktiver Runtime-Stack
 - [`docs/12_first_run.md`](docs/12_first_run.md) — erster echter Lauf
+- [`docs/commands.md`](docs/commands.md) — öffentliche Kommandos
 
 ## Verwandte öffentliche Repositories
 
