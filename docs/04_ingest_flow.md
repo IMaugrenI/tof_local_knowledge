@@ -1,17 +1,17 @@
-# Datei- und Inhaltsfluss
+# File and Content Flow
 
-1. Quelle anlegen
-2. Quelle read-only mounten
-3. Scan starten
-4. Dateiobjekte und Manifesteinträge erzeugen
-5. Extraktion ausführen
-6. Extraktion in kanonische Segmente übersetzen
-7. Katalog aktualisieren
-8. Suche bereitstellen
-9. evidenzbasierte Antwort erzeugen
-10. Audit-Ereignis schreiben
+1. create source
+2. mount source as read-only
+3. start scan
+4. create file objects and manifest entries
+5. run extraction
+6. translate extraction into canonical segments
+7. update catalog
+8. expose search
+9. produce grounded answer
+10. write audit event
 
-## Statusfelder
+## Status fields
 - seen
 - registered
 - fully_read
@@ -20,5 +20,5 @@
 - indexed
 - answerable
 
-## Pflichtregel
-Die Übersetzung von Roh-Extraktion zu kanonischen Segmenten ist ein eigener, prüfbarer Schritt.
+## Required rule
+The translation from raw extraction to canonical segments is its own explicit and testable step.

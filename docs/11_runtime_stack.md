@@ -1,9 +1,9 @@
 # Runtime Stack
 
-## Aktiver Runtime-Stack
-Für den echten Kernbetrieb ist `compose.full.yml` die maßgebliche Compose-Datei.
+## Active runtime stack
+For the real core runtime, `compose.full.yml` is the authoritative compose file.
 
-## Enthaltene Dienste
+## Included services
 - postgres
 - auth_api
 - catalog_api
@@ -14,11 +14,11 @@ Für den echten Kernbetrieb ist `compose.full.yml` die maßgebliche Compose-Date
 - optional ollama
 - optional open_webui
 
-## Wichtige Pfade
-- Runtime-Dockerfile: `services/_runtime_fastapi.Dockerfile`
-- Runtime-Requirements: `services/_runtime_requirements.txt`
-- Startscript: `scripts/start_full.sh`
-- Checkscript: `scripts/check_full.sh`
+## Important paths
+- runtime Dockerfile: `services/_runtime_fastapi.Dockerfile`
+- runtime requirements: `services/_runtime_requirements.txt`
+- start script: `scripts/start_full.sh`
+- check script: `scripts/check_full.sh`
 
-## Kernidee
-Der Runtime-Stack verwendet echte Datenbankzugriffe, echte Dateiscans, echte Extraktion, FTS-Suche und belegbasierte QA ohne freie Antwortgenerierung.
+## Core idea
+The runtime stack uses real database access, real file scans, real extraction, FTS search, and evidence-based QA without free-form answer generation.

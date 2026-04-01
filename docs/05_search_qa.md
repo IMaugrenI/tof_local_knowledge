@@ -1,17 +1,17 @@
-# Suche und QA
+# Search and QA
 
-## MVP-Suche
-- Postgres Full Text Search
-- strukturierte Filter
-- Segmenttreffer statt nur Dokumenttreffer
+## MVP search
+- Postgres full-text search
+- structured filters
+- segment hits instead of document hits only
 
-## QA-Regeln
-- QA arbeitet nur auf Trefferpool
-- Antwort nur mit Zitationen
-- bei schwacher Evidenz: Unsicherheit explizit
-- keine freie Antwort ohne Quellenbezug
+## QA rules
+- QA works only on the hit pool
+- answer only with citations
+- when evidence is weak: uncertainty must be explicit
+- no free-form answer without source grounding
 
-## Antwortpaket
+## Answer package
 - answer_text
 - confidence
 - citations[]
@@ -20,7 +20,7 @@
 - query_id
 - correlation_id
 
-## Später optional
+## Later optional
 - pgvector
-- lokales Reranking
-- Ollama für Formulierung
+- local reranking
+- Ollama for wording

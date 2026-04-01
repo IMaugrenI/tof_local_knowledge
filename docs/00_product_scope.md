@@ -1,36 +1,36 @@
 # Product Scope
 
-## Produktkern
-`tof_local_knowledge` ist ein lokales, mehrnutzerfähiges, evidenzbasiertes Wissenssystem für private und interne Dokumenträume.
+## Product core
+`tof_local_knowledge` is a local, multi-user, evidence-based knowledge system for private and internal document spaces.
 
-## Ziel
-Das System soll lokale Quellen lesen, katalogisieren, durchsuchen und für fundierte Frage-Antwort nutzbar machen.
+## Goal
+The system should read, catalog, search, and support grounded question answering over local sources.
 
-## Harte Produktgrenzen
+## Hard product boundaries
 - on-prem / local-first
-- Rohdaten bleiben lokal
-- kein Cloud-Zwang
-- keine stillen Remote-Syncs
-- keine direkten Schreibzugriffe in Quellräume
-- keine Antwort ohne Beleg oder ehrliche Unsicherheit
-- keine zweite Wahrheit neben Katalog und Fundstellen
+- raw data stays local
+- no cloud requirement
+- no silent remote sync
+- no direct writes into source spaces
+- no answer without evidence or honest uncertainty
+- no second truth beside catalog and source references
 
-## Kernfähigkeiten
-1. Quellen registrieren
-2. Ordnerstruktur sichtbar machen
-3. Metadaten erfassen
-4. Inhalte extrahieren
-5. Lesestatus ehrlich markieren
-6. Manifest/Katalog aufbauen
-7. Volltext und strukturierte Suche
-8. evidenzbasierte QA
-9. Mehrnutzerrechte
-10. Auditierbarkeit
+## Core capabilities
+1. register sources
+2. make folder structure visible
+3. capture metadata
+4. extract contents
+5. mark readability status honestly
+6. build manifest and catalog
+7. full-text and structured search
+8. evidence-based QA
+9. multi-user permissions
+10. auditability
 
-## Nichtziele
-- kein ToF V7 Import
-- kein Builder 2.0
-- kein Mini-V7
-- keine Symbolik-/Kanon-Ebene
-- kein selbstverbesserndes System
-- keine versteckte Telemetrie
+## Non-goals
+- not a ToF V7 import
+- not Builder 2.0
+- not a mini-V7
+- not a symbolic or canon layer
+- not a self-improving system
+- no hidden telemetry

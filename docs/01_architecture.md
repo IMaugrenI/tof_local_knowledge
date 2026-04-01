@@ -1,16 +1,16 @@
-# Architektur
+# Architecture
 
-## Fachliche Kette
-1. Quelle sehen
-2. Quelle scannen
-3. Dateiobjekt registrieren
-4. Inhalt extrahieren
-5. Extraktion übersetzen/normalisieren
-6. Dokumentsegmente katalogisieren
-7. suchen
-8. evidenzbasiert antworten
+## Functional chain
+1. see source
+2. scan source
+3. register file object
+4. extract content
+5. translate and normalize extraction
+6. catalog document segments
+7. search
+8. answer with evidence
 
-## Technische Dienste
+## Technical services
 - postgres
 - auth_api
 - catalog_api
@@ -21,16 +21,16 @@
 - optional ollama
 - optional open_webui
 
-## Architekturprinzipien
+## Architecture principles
 - Docker-first
 - Postgres-only
-- klare Servicegrenzen
-- API-/Vertragsdenken
+- clear service boundaries
+- API and contract thinking
 - fail-closed
-- append-only Auditdenken
-- gelesen ist nicht nur gesehen
-- Antwort nur mit Beleg oder Unsicherheit
-- Open WebUI nur als UI, nicht als Wahrheitsschicht
+- append-only audit thinking
+- read is not the same as merely seen
+- answer only with evidence or uncertainty
+- Open WebUI as UI only, not a truth layer
 
-## Wichtige Kante
-Die QA-Schicht darf nie direkt gegen Rohdateien antworten. Sie muss gegen Katalog, Segmente und Fundstellen arbeiten.
+## Important edge
+The QA layer must never answer directly from raw files. It must work through catalog, segments, and source references.
