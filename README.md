@@ -1,7 +1,8 @@
 # tof_local_knowledge
 
 > English is the primary text in this repository. A German clone is available in `README_DE.md`.
-> Design reasoning: see `WHY.md`. A German clone is available in `WHY_DE.md`.
+> Design reasoning: see `docs/product/WHY.md`. A German clone is available in `docs/product/WHY_DE.md`.
+> Product entry notes: see `docs/product/START_HERE.md` and `docs/product/REPO_NOTE.md`.
 
 On-prem local knowledge system for document indexing, search, and grounded question answering.
 
@@ -86,6 +87,10 @@ More details:
 
 - [`docs/commands.md`](docs/commands.md)
 - [`docs/commands_DE.md`](docs/commands_DE.md)
+- [`docs/product/START_HERE.md`](docs/product/START_HERE.md)
+- [`docs/product/WHY.md`](docs/product/WHY.md)
+- [`docs/product/WHY_DE.md`](docs/product/WHY_DE.md)
+- [`docs/product/REPO_NOTE.md`](docs/product/REPO_NOTE.md)
 
 ## Key docs
 
