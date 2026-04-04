@@ -1,6 +1,8 @@
 # tof_local_knowledge
 
 > Deutsch ist die Spiegelversion dieses Repositories. Der englische Primärtext liegt in `README.md`.
+> Die Design-Begründung liegt in `docs/product/WHY_DE.md`. Der englische Primärtext dazu liegt in `docs/product/WHY.md`.
+> Produkt-Einstieg und Repo-Notizen liegen in `docs/product/START_HERE.md` und `docs/product/REPO_NOTE.md`.
 
 On-prem lokales Wissenssystem für Dokumenten-Indexierung, Suche und belegte Frage-Antwort.
 
@@ -84,6 +86,11 @@ bash scripts/down.sh
 Mehr Details:
 
 - [`docs/commands_DE.md`](docs/commands_DE.md)
+- [`docs/commands.md`](docs/commands.md)
+- [`docs/product/START_HERE.md`](docs/product/START_HERE.md)
+- [`docs/product/WHY_DE.md`](docs/product/WHY_DE.md)
+- [`docs/product/WHY.md`](docs/product/WHY.md)
+- [`docs/product/REPO_NOTE.md`](docs/product/REPO_NOTE.md)
 
 ## Wichtige Dokumente
 
