@@ -1,17 +1,17 @@
 # Warum dieses Repository existiert
 
-> Englisch ist der Primärtext dieses Repositories. Ein deutscher Klon liegt in `WHY_DE.md`.
+> Englisch ist der Primärtext dieses Repositories. Der englische Primärtext liegt in `WHY.md`.
 
 ## Problem
 
-Viele "Knowledge"-Systeme antworten zu frei.
+Viele „Knowledge“-Systeme antworten zu frei.
 Sie wirken nützlich, verwischen aber oft die Grenze zwischen Quellmaterial, extrahiertem Inhalt, indexierten Datensätzen und generierten Antworten.
 
-Für lokale und interne Dokumenträume ist das der falsche Trade-off.
+Für lokale und interne Dokumenträume ist das die falsche Abwägung.
 
 ## Gewählter Ansatz
 
-Dieses Repository behandelt lokales Wissen als grounded system und nicht als freie Assistant-Hülle.
+Dieses Repository behandelt lokales Wissen als evidenzgebundenes System und nicht als freie Assistenten-Hülle.
 
 Die Hauptentscheidungen sind:
 
@@ -44,14 +44,14 @@ Diese Ansätze mögen einfacher wirken, schwächen aber das Vertrauen in das Sys
 
 ## Trade-off
 
-Dieses Design ist expliziter und strukturierter als ein leichteres Assistant-Style-Tool.
-Das bedeutet mehr Pipeline-Denken, mehr Grenzen und weniger "Magie".
+Dieses Design ist expliziter und strukturierter als ein leichteres assistentenartiges Werkzeug.
+Das bedeutet mehr Pipeline-Denken, mehr Grenzen und weniger „Magie“.
 
-Ich akzeptiere diesen Trade-off, weil lokale Wissensarbeit Nachvollziehbarkeit stärker braucht als theatralische Flüssigkeit.
+Ich akzeptiere diese Abwägung, weil lokale Wissensarbeit Nachvollziehbarkeit stärker braucht als theatralische Flüssigkeit.
 
 ## Was ich als Nächstes verbessern würde
 
 Wenn ich die öffentliche Darstellung überarbeite, würde ich die Designgründe noch direkter sichtbar machen:
-warum grounded QA wichtig ist,
+warum evidenzgebundene Frage-Antwort wichtig ist,
 warum die Schichttrennung nicht verhandelbar ist,
 und warum dieses Repo ein produktförmiges lokales Wissenssystem ist statt ein öffentlicher ToF-Runtime-Spiegel.
