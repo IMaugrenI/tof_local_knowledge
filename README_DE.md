@@ -1,108 +1,63 @@
 # tof_local_knowledge
 
-> Deutsch ist die Spiegelversion dieses Repositories. Der englische Primärtext liegt in `README.md`.
-> Die Design-Begründung liegt in `docs/product/WHY_DE.md`. Der englische Primärtext dazu liegt in `docs/product/WHY.md`.
-> Produkt-Einstieg und Repo-Notizen liegen in `docs/product/START_HERE.md` und `docs/product/REPO_NOTE.md`.
+> Die englische Hauptfassung liegt in `README.md`.
 
-On-prem lokales Wissenssystem für Dokumenten-Indexierung, Suche und belegte Frage-Antwort.
+On_prem lokales Wissenssystem fuer Dokumenten_Indexierung, Suche und belegte Antworten.
 
-## Kurzüberblick
+Ich habe dieses Repo gebaut, damit lokale Dateien zu durchsuchbarer Evidenz und zu Antworten mit sichtbarer Quellenbasis werden.
 
-- local-first / on-prem Wissens- und Dokumentensystem
-- lokale Dateien bleiben lokal
-- Mehrnutzerzugriff im lokalen oder internen Netz
-- saubere Trennung zwischen Rohdaten, Extraktion, Index und Antwortschicht
-- Antworten sollen auf lokaler Evidenz beruhen statt auf freier Vermutung
-
-## Aktiver Runtime-Pfad
-
-Der aktive Runtime-Pfad in diesem Repository ist:
-
-- `compose.full.yml`
-- `services/*/app/runtime.py`
-- `docs/11_runtime_stack_DE.md`
-- `docs/12_first_run_DE.md`
-
-## Was im Repository bereits funktioniert
-
-- Source-Scan in Postgres-gestützte Dokumentobjekte
-- Extraktionshilfen für txt, md, json, html, csv, eml, pdf, docx und xlsx
-- Übersetzung roher Extraktionsblöcke in kanonische, zitierbare Segmente
-- Postgres-Volltextsuche über gespeicherte Segmente
-- belegter QA-Endpoint, der auf Suchtreffern antwortet
-- optional lokales Ollama und optionale Open-WebUI-Schicht
-
-## Wofür dieses Repository da ist
-
-Dieses Repository soll ein sauberes lokales Wissensprodukt für private / interne Dokumenträume werden:
-
-- lokale Quellen registrieren
-- lokale Pfade scannen
-- Inhalte extrahieren
-- Manifest und Katalog aufbauen
-- mit Belegen suchen
-- Fragen mit Quellenbezug beantworten
-
-## Was dieses Repository nicht ist
-
-- nicht ToF V7
-- nicht das Builder-Repo
-- kein cloud-first Produkt
-- kein verstecktes Remote-Sync-System
-- keine Behauptung, dass schon alles fertig ist
-
-## Schnellstart
-
-1. lokale Vorbereitung ausführen:
-
-```bash
-bash scripts/setup.sh
-```
-
-2. den Runtime-Stack starten:
-
-```bash
-bash scripts/up.sh
-```
-
-3. Health prüfen:
-
-```bash
-bash scripts/check.sh
-```
-
-## Befehle für den Betrieb
-
-Nutze für den normalen Betrieb diese kleinen Befehle:
+## start_here
 
 ```bash
 bash scripts/setup.sh
 bash scripts/up.sh
 bash scripts/check.sh
-bash scripts/logs.sh
-bash scripts/down.sh
 ```
 
-Mehr Details:
+## was_dieses_repo_macht
 
-- [`docs/commands_DE.md`](docs/commands_DE.md)
-- [`docs/commands.md`](docs/commands.md)
-- [`docs/product/START_HERE.md`](docs/product/START_HERE.md)
-- [`docs/product/WHY_DE.md`](docs/product/WHY_DE.md)
-- [`docs/product/WHY.md`](docs/product/WHY.md)
-- [`docs/product/REPO_NOTE.md`](docs/product/REPO_NOTE.md)
+1. es registriert und scannt lokale Quellen
+2. es extrahiert Inhalte aus gaengigen Dokumentenformaten
+3. es uebersetzt rohe Extraktionsbloecke in zitierbare Segmente
+4. es speichert durchsuchbare Datensaetze in Postgres
+5. es beantwortet Fragen aus Suchtreffern statt aus freiem Raten
+6. es kann optional lokale Ollama_ und Open_WebUI Ebenen nutzen
 
-## Wichtige Dokumente
+## was_bereits_funktioniert
 
-- [`docs/00_product_scope_DE.md`](docs/00_product_scope_DE.md) — Produktgrenze
-- [`docs/01_architecture_DE.md`](docs/01_architecture_DE.md) — Architekturüberblick
-- [`docs/04_ingest_flow_DE.md`](docs/04_ingest_flow_DE.md) — Datei- und Ingestfluss
-- [`docs/05_search_qa_DE.md`](docs/05_search_qa_DE.md) — Such- und QA-Konzept
-- [`docs/11_runtime_stack_DE.md`](docs/11_runtime_stack_DE.md) — aktiver Runtime-Stack
-- [`docs/12_first_run_DE.md`](docs/12_first_run_DE.md) — erster echter Lauf
-- [`docs/commands_DE.md`](docs/commands_DE.md) — öffentliche Kommandos
+1. Quellen_Scan in Postgres_gestuetzte Dokumentensaetze
+2. Extraktionshelfer fuer txt, md, json, html, csv, eml, pdf, docx und xlsx
+3. kanonische zitierbare Segmente
+4. full_text Suche ueber gespeicherte Segmente
+5. grounded QA Endpoint
 
-## Verwandte öffentliche Repositories
+## was_dieses_repo_zeigt
 
-- [`tof-showcase`](https://github.com/IMaugrenI/tof-showcase) — öffentlicher Architekturrahmen
-- [`tof_local_builder`](https://github.com/IMaugrenI/tof_local_builder) — lokaler Builder-Stack
+1. hands_on Arbeit mit Linux, Docker und Postgres
+2. evidence_first Dokumenten_Workflows
+3. klare Trennung zwischen Rohinput, Index und Antwort_Ebenen
+4. produktorientiertes Denken fuer lokale Wissensraeume
+5. praktische Dokumentations_ und Runtime_Disziplin
+
+## grenze
+
+1. das ist nicht das Builder_Repo
+2. das ist kein cloud_first Produkt
+3. das ist kein verstecktes Remote_Sync System
+4. dieses Repo konzentriert sich auf lokale oder interne Dokumentenraeume
+
+## wichtige_dokumente
+
+- `docs/00_product_scope.md`
+- `docs/01_architecture.md`
+- `docs/04_ingest_flow.md`
+- `docs/05_search_qa.md`
+- `docs/11_runtime_stack.md`
+- `docs/12_first_run.md`
+- `docs/commands.md`
+
+## verwandte_oeffentliche_repos
+
+- [`tof_local_builder`](https://github.com/IMaugrenI/tof_local_builder) — lokaler KI_Builder_Stack
+- [`tof_showcase`](https://github.com/IMaugrenI/tof-showcase) — oeffentlicher Architektur_Einstieg
+- [`tof_v7_public_frame`](https://github.com/IMaugrenI/tof-v7-public-frame) — reduzierter V7_Grenzrahmen
