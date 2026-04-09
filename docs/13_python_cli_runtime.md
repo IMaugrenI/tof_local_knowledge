@@ -13,6 +13,16 @@ python run.py doctor
 python run.py down
 ```
 
+## wrapper availability
+
+The runtime truth is `python run.py ...`.
+
+Platform-specific convenience wrappers are available as thin launchers:
+
+- Linux shell wrappers: `scripts/*.sh`
+- Windows PowerShell wrappers: `scripts/*.ps1`
+- macOS command launchers: `scripts/*.command`
+
 ## goal
 
 - one operational runtime entrypoint
@@ -25,6 +35,7 @@ python run.py down
 - `run.py` is available now
 - `tof_cli/` contains the new command and core runtime modules
 - legacy shell scripts still remain for backward compatibility during transition
+- Windows and macOS wrapper sets are available for the primary commands
 
 ## command summary
 

@@ -24,7 +24,23 @@ python run.py doctor
 python run.py down
 ```
 
-Linux Komfort_Wrapper existieren weiter, sind aber jetzt nur noch duenne Huelle um `python run.py ...`.
+## plattform_wrapper
+
+Die unterstuetzte Runtime_Wahrheit ist `python run.py ...`.
+
+Komfortstarter existieren jetzt fuer mehrere Betriebssysteme:
+
+- Linux: `scripts/*.sh`
+- Windows PowerShell: `scripts/*.ps1`
+- macOS Command_Starter: `scripts/*.command`
+
+Beispiele:
+
+```bash
+./scripts/setup.sh
+pwsh ./scripts/setup.ps1
+./scripts/setup.command
+```
 
 ## was_dieses_repo_macht
 
@@ -68,14 +84,11 @@ Linux Komfort_Wrapper existieren weiter, sind aber jetzt nur noch duenne Huelle 
 - `docs/11_runtime_stack.md`
 - `docs/commands.md`
 
-## legacy_shell_wrapper
+## wrapper_saetze
 
-- `scripts/setup.sh`
-- `scripts/up.sh`
-- `scripts/check.sh`
-- `scripts/down.sh`
-- `scripts/status.sh`
-- `scripts/doctor.sh`
+- Linux Shell_Wrapper: `scripts/*.sh`
+- Windows PowerShell_Wrapper: `scripts/*.ps1`
+- macOS Command_Starter: `scripts/*.command`
 
 ## verwandte_oeffentliche_repos
 
