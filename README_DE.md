@@ -8,11 +8,23 @@ Ich habe dieses Repo gebaut, damit lokale Dateien zu durchsuchbarer Evidenz und 
 
 ## start_here
 
+Primaerer Runtime_Einstieg:
+
 ```bash
-bash scripts/setup.sh
-bash scripts/up.sh
-bash scripts/check.sh
+python run.py setup
+python run.py up
+python run.py check
 ```
+
+Weitere Runtime_Befehle:
+
+```bash
+python run.py status
+python run.py doctor
+python run.py down
+```
+
+Linux Komfort_Wrapper existieren weiter, sind aber jetzt nur noch duenne Huelle um `python run.py ...`.
 
 ## was_dieses_repo_macht
 
@@ -46,15 +58,24 @@ bash scripts/check.sh
 3. das ist kein verstecktes Remote_Sync System
 4. dieses Repo konzentriert sich auf lokale oder interne Dokumentenraeume
 
-## wichtige_dokumente
+## zentrale_runtime_dateien
 
-- `docs/00_product_scope.md`
-- `docs/01_architecture.md`
-- `docs/04_ingest_flow.md`
-- `docs/05_search_qa.md`
+- `run.py`
+- `tof_cli/`
+- `compose.full.yml`
+- `.env.example`
+- `docs/13_python_cli_runtime.md`
 - `docs/11_runtime_stack.md`
-- `docs/12_first_run.md`
 - `docs/commands.md`
+
+## legacy_shell_wrapper
+
+- `scripts/setup.sh`
+- `scripts/up.sh`
+- `scripts/check.sh`
+- `scripts/down.sh`
+- `scripts/status.sh`
+- `scripts/doctor.sh`
 
 ## verwandte_oeffentliche_repos
 

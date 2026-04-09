@@ -8,11 +8,23 @@ I built this repo to turn local files into searchable evidence and answers with 
 
 ## start_here
 
+Primary runtime entrypoint:
+
 ```bash
-bash scripts/setup.sh
-bash scripts/up.sh
-bash scripts/check.sh
+python run.py setup
+python run.py up
+python run.py check
 ```
+
+Additional runtime commands:
+
+```bash
+python run.py status
+python run.py doctor
+python run.py down
+```
+
+Linux convenience wrappers still exist, but they are now only thin wrappers around `python run.py ...`.
 
 ## what_this_repo_does
 
@@ -46,15 +58,24 @@ bash scripts/check.sh
 3. this is not a hidden remote sync system
 4. this repo focuses on local or internal document spaces
 
-## key_docs
+## key_runtime_files
 
-- `docs/00_product_scope.md`
-- `docs/01_architecture.md`
-- `docs/04_ingest_flow.md`
-- `docs/05_search_qa.md`
+- `run.py`
+- `tof_cli/`
+- `compose.full.yml`
+- `.env.example`
+- `docs/13_python_cli_runtime.md`
 - `docs/11_runtime_stack.md`
-- `docs/12_first_run.md`
 - `docs/commands.md`
+
+## legacy_shell_wrappers
+
+- `scripts/setup.sh`
+- `scripts/up.sh`
+- `scripts/check.sh`
+- `scripts/down.sh`
+- `scripts/status.sh`
+- `scripts/doctor.sh`
 
 ## related_public_repos
 
