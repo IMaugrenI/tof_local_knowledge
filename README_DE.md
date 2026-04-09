@@ -28,11 +28,11 @@ python run.py down
 
 Die unterstuetzte Runtime_Wahrheit ist `python run.py ...`.
 
-Komfortstarter existieren jetzt fuer mehrere Betriebssysteme:
+Unterstuetzte Komfortstarter:
 
-- Linux: `scripts/*.sh`
-- Windows PowerShell: `scripts/*.ps1`
-- macOS Command_Starter: `scripts/*.command`
+- Linux: `scripts/setup.sh`, `scripts/up.sh`, `scripts/check.sh`, `scripts/down.sh`, `scripts/status.sh`, `scripts/doctor.sh`
+- Windows PowerShell: `scripts/setup.ps1`, `scripts/up.ps1`, `scripts/check.ps1`, `scripts/down.ps1`, `scripts/status.ps1`, `scripts/doctor.ps1`
+- macOS Command_Starter: `scripts/setup.command`, `scripts/up.command`, `scripts/check.command`, `scripts/down.command`, `scripts/status.command`, `scripts/doctor.command`
 
 Beispiele:
 
@@ -83,12 +83,6 @@ pwsh ./scripts/setup.ps1
 - `docs/13_python_cli_runtime.md`
 - `docs/11_runtime_stack.md`
 - `docs/commands.md`
-
-## wrapper_saetze
-
-- Linux Shell_Wrapper: `scripts/*.sh`
-- Windows PowerShell_Wrapper: `scripts/*.ps1`
-- macOS Command_Starter: `scripts/*.command`
 
 ## verwandte_oeffentliche_repos
 
