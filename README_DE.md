@@ -2,13 +2,19 @@
 
 > Die englische Hauptfassung liegt in `README.md`.
 
-On_prem lokales Wissenssystem fuer Dokumenten_Indexierung, Suche und belegte Antworten.
+On-prem lokales Wissenssystem für Dokumenten-Indexierung, Suche und belegte Antworten.
 
 Ich habe dieses Repo gebaut, damit lokale Dateien zu durchsuchbarer Evidenz und zu Antworten mit sichtbarer Quellenbasis werden.
 
-## start_here
+## Warum dieses Repo existiert
 
-Primaerer Runtime_Einstieg:
+Der Hauptpunkt dieses Repos ist nicht nur, lokale Daten nutzbar zu machen, sondern Antworten zu erzeugen, die an sichtbare Evidenz gebunden bleiben.
+
+Evidenzbasiertes Arbeiten ist mir wichtig, weil ich mich nicht auf Wirkung, Gefühl oder schöne Behauptungen verlassen will. Ich will Antworten, die wirklich tragen, weil sie mit Quellmaterial verbunden bleiben.
+
+## Einstieg
+
+Primärer Runtime-Einstieg:
 
 ```bash
 python run.py setup
@@ -16,7 +22,7 @@ python run.py up
 python run.py check
 ```
 
-Weitere Runtime_Befehle:
+Weitere Runtime-Befehle:
 
 ```bash
 python run.py status
@@ -24,15 +30,15 @@ python run.py doctor
 python run.py down
 ```
 
-## plattform_wrapper
+## Plattform-Wrapper
 
-Die unterstuetzte Runtime_Wahrheit ist `python run.py ...`.
+Die unterstützte Runtime-Wahrheit ist `python run.py ...`.
 
-Unterstuetzte Komfortstarter:
+Unterstützte Komfortstarter:
 
 - Linux: `scripts/setup.sh`, `scripts/up.sh`, `scripts/check.sh`, `scripts/down.sh`, `scripts/status.sh`, `scripts/doctor.sh`
 - Windows PowerShell: `scripts/setup.ps1`, `scripts/up.ps1`, `scripts/check.ps1`, `scripts/down.ps1`, `scripts/status.ps1`, `scripts/doctor.ps1`
-- macOS Command_Starter: `scripts/setup.command`, `scripts/up.command`, `scripts/check.command`, `scripts/down.command`, `scripts/status.command`, `scripts/doctor.command`
+- macOS Command-Starter: `scripts/setup.command`, `scripts/up.command`, `scripts/check.command`, `scripts/down.command`, `scripts/status.command`, `scripts/doctor.command`
 
 Beispiele:
 
@@ -42,39 +48,39 @@ pwsh ./scripts/setup.ps1
 ./scripts/setup.command
 ```
 
-## was_dieses_repo_macht
+## Was dieses Repo macht
 
-1. es registriert und scannt lokale Quellen
-2. es extrahiert Inhalte aus gaengigen Dokumentenformaten
-3. es uebersetzt rohe Extraktionsbloecke in zitierbare Segmente
-4. es speichert durchsuchbare Datensaetze in Postgres
-5. es beantwortet Fragen aus Suchtreffern statt aus freiem Raten
-6. es kann optional lokale Ollama_ und Open_WebUI Ebenen nutzen
+1. registriert und scannt lokale Quellen
+2. extrahiert Inhalte aus gängigen Dokumentenformaten
+3. übersetzt rohe Extraktionsblöcke in zitierbare Segmente
+4. speichert durchsuchbare Datensätze in Postgres
+5. beantwortet Fragen aus Suchtreffern statt freiem Raten
+6. kann optional lokale Ollama- und Open-WebUI-Ebenen nutzen
 
-## was_bereits_funktioniert
+## Was bereits funktioniert
 
-1. Quellen_Scan in Postgres_gestuetzte Dokumentensaetze
-2. Extraktionshelfer fuer txt, md, json, html, csv, eml, pdf, docx und xlsx
+1. Quellen-Scan in Postgres-gestützte Dokumentensätze
+2. Extraktionshelfer für txt, md, json, html, csv, eml, pdf, docx und xlsx
 3. kanonische zitierbare Segmente
-4. full_text Suche ueber gespeicherte Segmente
-5. grounded QA Endpoint
+4. Full-Text-Suche über gespeicherte Segmente
+5. grounded QA-Endpunkt
 
-## was_dieses_repo_zeigt
+## Was dieses Repo zeigt
 
-1. hands_on Arbeit mit Linux, Docker und Postgres
-2. evidence_first Dokumenten_Workflows
-3. klare Trennung zwischen Rohinput, Index und Antwort_Ebenen
-4. produktorientiertes Denken fuer lokale Wissensraeume
-5. praktische Dokumentations_ und Runtime_Disziplin
+1. hands-on Arbeit mit Linux, Docker und Postgres
+2. evidenzorientierte Dokumenten-Workflows
+3. klare Trennung zwischen Rohinput, Index und Antwort-Ebenen
+4. praktikables Design für lokale Wissensräume
+5. Dokumentations- und Runtime-Disziplin
 
-## grenze
+## Grenze
 
-1. das ist nicht das Builder_Repo
-2. das ist kein cloud_first Produkt
-3. das ist kein verstecktes Remote_Sync System
-4. dieses Repo konzentriert sich auf lokale oder interne Dokumentenraeume
+1. das ist nicht das Builder-Repo
+2. das ist kein Cloud-first Produkt
+3. das ist kein verstecktes Remote-Sync-System
+4. dieses Repo konzentriert sich auf lokale oder interne Dokumentenräume
 
-## zentrale_runtime_dateien
+## Zentrale Runtime-Dateien
 
 - `run.py`
 - `tof_cli/`
@@ -84,8 +90,8 @@ pwsh ./scripts/setup.ps1
 - `docs/11_runtime_stack.md`
 - `docs/commands.md`
 
-## verwandte_oeffentliche_repos
+## Verwandte öffentliche Repos
 
-- [`tof_local_builder`](https://github.com/IMaugrenI/tof_local_builder) — lokaler KI_Builder_Stack
-- [`tof_showcase`](https://github.com/IMaugrenI/tof-showcase) — oeffentlicher Architektur_Einstieg
-- [`tof_v7_public_frame`](https://github.com/IMaugrenI/tof-v7-public-frame) — reduzierter V7_Grenzrahmen
+- [`tof_local_builder`](https://github.com/IMaugrenI/tof_local_builder) — lokaler KI-Builder-Stack
+- [`tof_showcase`](https://github.com/IMaugrenI/tof-showcase) — öffentlicher Architektur-Einstieg
+- [`tof_v7_public_frame`](https://github.com/IMaugrenI/tof-v7-public-frame) — reduzierter V7-Grenzrahmen
