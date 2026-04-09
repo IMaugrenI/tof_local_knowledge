@@ -17,11 +17,11 @@ python run.py down
 
 The runtime truth is `python run.py ...`.
 
-Platform-specific convenience wrappers are available as thin launchers:
+Supported convenience wrappers are limited to these files:
 
-- Linux shell wrappers: `scripts/*.sh`
-- Windows PowerShell wrappers: `scripts/*.ps1`
-- macOS command launchers: `scripts/*.command`
+- Linux shell wrappers: `scripts/setup.sh`, `scripts/up.sh`, `scripts/check.sh`, `scripts/down.sh`, `scripts/status.sh`, `scripts/doctor.sh`
+- Windows PowerShell wrappers: `scripts/setup.ps1`, `scripts/up.ps1`, `scripts/check.ps1`, `scripts/down.ps1`, `scripts/status.ps1`, `scripts/doctor.ps1`
+- macOS command launchers: `scripts/setup.command`, `scripts/up.command`, `scripts/check.command`, `scripts/down.command`, `scripts/status.command`, `scripts/doctor.command`
 
 ## goal
 
@@ -34,8 +34,8 @@ Platform-specific convenience wrappers are available as thin launchers:
 
 - `run.py` is available now
 - `tof_cli/` contains the new command and core runtime modules
-- legacy shell scripts still remain for backward compatibility during transition
 - Windows and macOS wrapper sets are available for the primary commands
+- older helper scripts are not part of the supported runtime surface
 
 ## command summary
 
