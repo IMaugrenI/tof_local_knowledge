@@ -4,13 +4,27 @@
 
 On-prem lokales Wissenssystem für Dokumenten-Indexierung, Suche und belegte Antworten.
 
-Ich habe dieses Repo gebaut, damit lokale Dateien zu durchsuchbarer Evidenz und zu Antworten mit sichtbarer Quellenbasis werden.
+Dieses Repository ist ein öffentlicher Beleg für evidenzorientierte KI-gestützte Systemarbeit in lokalen Dokumentenräumen.
+
+Ich stelle dieses Repo nicht als klassischen Beweis für manuell Zeile für Zeile geschriebenen Code dar. Ich stelle es als Beleg dafür dar, dass aus Architektur, Evidenzgrenzen, Orchestrierung und Review in einem KI-gestützten Workflow ein konkretes belegtes System entstehen kann.
 
 ## Warum dieses Repo existiert
 
 Der Hauptpunkt dieses Repos ist nicht nur, lokale Daten nutzbar zu machen, sondern Antworten zu erzeugen, die an sichtbare Evidenz gebunden bleiben.
 
 Evidenzbasiertes Arbeiten ist mir wichtig, weil ich mich nicht auf Wirkung, Gefühl oder schöne Behauptungen verlassen will. Ich will Antworten, die wirklich tragen, weil sie mit Quellmaterial verbunden bleiben.
+
+## Meine Rolle in diesem Repo
+
+Meine Rolle hier ist:
+
+- Architektur und Evidenz-Grenzdefinition
+- Trennung zwischen Rohinput, Index-, Such- und Antwort-Ebenen
+- Workflow-Design und Runtime-Form
+- Review und Korrektur erzeugter Ausgaben
+- KI-gestützte Umsetzung unter meiner Führung
+
+Die konkrete Repo-Oberfläche ist stark KI-gestützt entstanden. Mein Anteil liegt in der Struktur dahinter: warum Antworten an Evidenz gebunden bleiben, warum Extraktion und Index getrennt sind und was als zulässige belegte Ausgabe gilt.
 
 ## Einstieg
 
@@ -67,10 +81,10 @@ pwsh ./scripts/setup.ps1
 
 ## Was dieses Repo zeigt
 
-1. hands-on Arbeit mit Linux, Docker und Postgres
+1. Architektur vor Umsetzung
 2. evidenzorientierte Dokumenten-Workflows
-3. klare Trennung zwischen Rohinput, Index und Antwort-Ebenen
-4. praktikables Design für lokale Wissensräume
+3. klare Trennung zwischen Rohinput, Index-, Such- und Antwort-Ebenen
+4. KI-gestützte Systemarbeit, die trotzdem belegbar und prüfbar bleibt
 5. Dokumentations- und Runtime-Disziplin
 
 ## Grenze

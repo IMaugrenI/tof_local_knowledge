@@ -4,13 +4,27 @@
 
 On-prem local knowledge system for document indexing, search, and grounded question answering.
 
-I built this repo to turn local files into searchable evidence and answers with visible source grounding.
+This repository is public proof of evidence-first AI-assisted system work for local document spaces.
+
+I do not present this repo as manual line-by-line coding proof in the traditional sense. I present it as proof that architecture, evidence boundaries, orchestration, and review can produce a concrete grounded system through an AI-assisted workflow.
 
 ## Why this repo exists
 
 The main point of this repo is not just to make local data usable, but to produce answers that stay tied to visible evidence.
 
 Grounded work matters to me because I do not want to rely on effect, feeling, or nice-sounding claims. I want answers that can carry real weight because they stay connected to source material.
+
+## My role in this repo
+
+My role here is:
+
+- architecture and evidence-boundary definition
+- separation between raw input, index, search, and answer layers
+- workflow design and runtime shape
+- review and correction of generated output
+- AI-assisted implementation under my direction
+
+The concrete repo surface is heavily AI-assisted. What is mine is the structure behind it: why answers stay tied to evidence, why extraction and indexing are separated, and what counts as acceptable grounded output.
 
 ## Start here
 
@@ -65,12 +79,12 @@ pwsh ./scripts/setup.ps1
 4. full-text search over stored segments
 5. grounded QA endpoint
 
-## What this shows
+## What this repo shows
 
-1. hands-on Linux, Docker, and Postgres work
+1. architecture before implementation
 2. evidence-first document workflows
-3. clear separation between raw input, index, and answer layers
-4. practical design for local knowledge spaces
+3. clear separation between raw input, index, search, and answer layers
+4. AI-assisted system work that still stays grounded and inspectable
 5. documentation and runtime discipline
 
 ## Boundary
