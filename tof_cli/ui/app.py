@@ -29,6 +29,13 @@ ACTIONS = {
     "down": ActionSpec("Stop stack", down.handle, {"remove_orphans": False}, "SAFE"),
 }
 
+LINKS = {
+    "openwebui": {"label": "Open WebUI", "url": "http://127.0.0.1:3000"},
+    "search_docs": {"label": "Open search API docs", "url": "http://127.0.0.1:8105/docs"},
+    "qa_docs": {"label": "Open QA API docs", "url": "http://127.0.0.1:8106/docs"},
+    "catalog_docs": {"label": "Open catalog API docs", "url": "http://127.0.0.1:8102/docs"},
+}
+
 
 HTML = """<!doctype html>
 <html lang=\"en\">
@@ -57,7 +64,7 @@ HTML = """<!doctype html>
   <div class=\"wrap\">
     <div class=\"hero\">
       <h1>tof_local_knowledge</h1>
-      <p class=\"lead\">A simple local control surface for the knowledge stack. Use the buttons below to prepare the system, start the stack, check it, inspect status, or stop it again.</p>
+      <p class=\"lead\">A simple local control surface for the knowledge stack. Use the buttons below to prepare the system, start the stack, check it, inspect status, open the main pages, or stop it again.</p>
       <p class=\"note\">This is a local-only helper UI. It does not replace the deeper runtime or search interfaces.</p>
     </div>
 
@@ -70,6 +77,13 @@ HTML = """<!doctype html>
         <button class=\"ghost\" onclick=\"runAction('status')\">Show runtime status</button>
         <button class=\"ghost\" onclick=\"runAction('doctor')\">Run doctor</button>
         <button onclick=\"runAction('down')\">Stop stack</button>
+      </div>
+      <h3 style=\"margin-top:22px;\">Useful links</h3>
+      <div class=\"actions\">
+        <button class=\"ghost\" onclick=\"openLink('openwebui')\">Open WebUI</button>
+        <button class=\"ghost\" onclick=\"openLink('search_docs')\">Open search API docs</button>
+        <button class=\"ghost\" onclick=\"openLink('qa_docs')\">Open QA API docs</button>
+        <button class=\"ghost\" onclick=\"openLink('catalog_docs')\">Open catalog API docs</button>
       </div>
       <div class=\"status\" id=\"next-step\">Loading current guidance ...</div>
       <div class=\"log\"><pre id=\"log\">Starting tof_local_knowledge UI...</pre></div>
@@ -96,6 +110,13 @@ HTML = """<!doctype html>
       await refreshSummary();
     }
 
+    async function openLink(name) {
+      appendLog(`Opening ${name} ...`);
+      const response = await fetch(`/api/open/${name}`, { method: 'POST' });
+      const data = await response.json();
+      appendLog(JSON.stringify(data, null, 2));
+    }
+
     refreshSummary();
   </script>
 </body>
@@ -120,13 +141,21 @@ def _run_action(name: str) -> dict[str, object]:
 
 
 
+def _open_link(name: str) -> dict[str, object]:
+    link = LINKS[name]
+    webbrowser.open(link["url"])
+    return {"opened": link["url"], "label": link["label"]}
+
+
+
 def _summary_payload() -> dict[str, object]:
     return {
-        "next_step": "Recommended order: prepare local setup, start stack, check services, then inspect runtime status.",
+        "next_step": "Recommended order: prepare local setup, start stack, check services, then open the main pages from the useful-links section.",
         "actions": [
             {"name": key, "label": spec.label, "safe_level": spec.safe_level}
             for key, spec in ACTIONS.items()
         ],
+        "links": LINKS,
     }
 
 
@@ -161,6 +190,11 @@ def run_ui(host: str = "127.0.0.1", port: int = 8785, open_browser: bool = True)
             if action in ACTIONS:
                 self._send(200, "application/json; charset=utf-8", _json_bytes(_run_action(action)))
                 return
+            if action.startswith('open/'):
+                name = action.removeprefix('open/')
+                if name in LINKS:
+                    self._send(200, "application/json; charset=utf-8", _json_bytes(_open_link(name)))
+                    return
             self._send(404, "application/json; charset=utf-8", _json_bytes({"error": "not found"}))
 
         def log_message(self, fmt: str, *args: object) -> None:  # noqa: A003
