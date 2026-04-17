@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import io
 import json
+import urllib.error
+import urllib.request
 import webbrowser
 from contextlib import redirect_stdout
 from dataclasses import dataclass
@@ -36,6 +38,11 @@ LINKS = {
     "catalog_docs": {"label": "Open catalog API docs", "url": "http://127.0.0.1:8102/docs"},
 }
 
+API_TARGETS = {
+    "search": "http://127.0.0.1:8105/search",
+    "answer": "http://127.0.0.1:8106/answer",
+}
+
 
 HTML = """<!doctype html>
 <html lang=\"en\">
@@ -55,17 +62,24 @@ HTML = """<!doctype html>
     button.secondary { background: #0f766e; }
     button.ghost { background: #e5e7eb; color: #111827; }
     .status { margin-top: 18px; background: #ecfeff; border: 1px solid #a5f3fc; color: #164e63; border-radius: 14px; padding: 16px; }
-    .log { margin-top: 18px; background: #111827; color: #d1fae5; border-radius: 14px; padding: 16px; min-height: 260px; }
+    .log, .result { margin-top: 18px; background: #111827; color: #d1fae5; border-radius: 14px; padding: 16px; min-height: 220px; }
+    .result { background: white; color: #18212f; min-height: 140px; }
     pre { margin: 0; white-space: pre-wrap; word-break: break-word; }
     h1 { margin-top: 0; }
+    textarea, input[type=text], input[type=number] { width: 100%; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; font: inherit; }
+    textarea { min-height: 90px; resize: vertical; }
+    .form-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 14px; }
+    .hint { color: #6b7280; font-size: 14px; margin-top: 10px; }
+    .two-col { display: grid; grid-template-columns: 1fr; gap: 20px; }
+    @media (min-width: 1100px) { .two-col { grid-template-columns: 1fr 1fr; } }
   </style>
 </head>
 <body>
   <div class=\"wrap\">
     <div class=\"hero\">
       <h1>tof_local_knowledge</h1>
-      <p class=\"lead\">A simple local control surface for the knowledge stack. Use the buttons below to prepare the system, start the stack, check it, inspect status, open the main pages, or stop it again.</p>
-      <p class=\"note\">This is a local-only helper UI. It does not replace the deeper runtime or search interfaces.</p>
+      <p class=\"lead\">A simple local control surface for the knowledge stack. Start the stack, open the main pages, search the local knowledge base, and ask grounded questions.</p>
+      <p class=\"note\">This UI is local-only. Search and answer requests stay on your local stack.</p>
     </div>
 
     <div class=\"panel\">
@@ -86,6 +100,36 @@ HTML = """<!doctype html>
         <button class=\"ghost\" onclick=\"openLink('catalog_docs')\">Open catalog API docs</button>
       </div>
       <div class=\"status\" id=\"next-step\">Loading current guidance ...</div>
+    </div>
+
+    <div class=\"two-col\">
+      <div class=\"panel\">
+        <h2>Search the local knowledge base</h2>
+        <div class=\"form-grid\">
+          <input id=\"search-query\" type=\"text\" placeholder=\"Type search words here\">
+          <input id=\"search-scope\" type=\"text\" placeholder=\"Optional source IDs, comma separated\">
+          <input id=\"search-limit\" type=\"number\" min=\"1\" max=\"20\" value=\"5\">
+          <button class=\"secondary\" onclick=\"runSearch()\">Run search</button>
+        </div>
+        <div class=\"hint\">Search uses the local `POST /search` endpoint of the running stack.</div>
+        <div class=\"result\"><pre id=\"search-result\">No search run yet.</pre></div>
+      </div>
+
+      <div class=\"panel\">
+        <h2>Ask a grounded question</h2>
+        <div class=\"form-grid\">
+          <textarea id=\"qa-question\" placeholder=\"Ask a question about your indexed local sources\"></textarea>
+          <input id=\"qa-scope\" type=\"text\" placeholder=\"Optional source IDs, comma separated\">
+          <input id=\"qa-limit\" type=\"number\" min=\"1\" max=\"10\" value=\"5\">
+          <button class=\"secondary\" onclick=\"runAnswer()\">Get grounded answer</button>
+        </div>
+        <div class=\"hint\">Questions use the local `POST /answer` endpoint of the running stack.</div>
+        <div class=\"result\"><pre id=\"qa-result\">No grounded answer run yet.</pre></div>
+      </div>
+    </div>
+
+    <div class=\"panel\">
+      <h2>Activity log</h2>
       <div class=\"log\"><pre id=\"log\">Starting tof_local_knowledge UI...</pre></div>
     </div>
   </div>
@@ -93,6 +137,11 @@ HTML = """<!doctype html>
     function appendLog(text) {
       const log = document.getElementById('log');
       log.textContent = `[${new Date().toLocaleTimeString()}] ${text}\n\n` + log.textContent;
+    }
+
+    function parseScope(value) {
+      if (!value || !value.trim()) return [];
+      return value.split(',').map(v => v.trim()).filter(Boolean);
     }
 
     async function refreshSummary() {
@@ -115,6 +164,40 @@ HTML = """<!doctype html>
       const response = await fetch(`/api/open/${name}`, { method: 'POST' });
       const data = await response.json();
       appendLog(JSON.stringify(data, null, 2));
+    }
+
+    async function runSearch() {
+      const payload = {
+        query: document.getElementById('search-query').value,
+        source_scope: parseScope(document.getElementById('search-scope').value),
+        limit: Number(document.getElementById('search-limit').value || 5),
+      };
+      appendLog('Running local search ...');
+      const response = await fetch('/api/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json();
+      document.getElementById('search-result').textContent = JSON.stringify(data, null, 2);
+      appendLog('Search finished.');
+    }
+
+    async function runAnswer() {
+      const payload = {
+        question: document.getElementById('qa-question').value,
+        source_scope: parseScope(document.getElementById('qa-scope').value),
+        limit: Number(document.getElementById('qa-limit').value || 5),
+      };
+      appendLog('Running grounded answer ...');
+      const response = await fetch('/api/answer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json();
+      document.getElementById('qa-result').textContent = JSON.stringify(data, null, 2);
+      appendLog('Grounded answer finished.');
     }
 
     refreshSummary();
@@ -148,9 +231,35 @@ def _open_link(name: str) -> dict[str, object]:
 
 
 
+def _read_json_body(handler: BaseHTTPRequestHandler) -> dict[str, object]:
+    length = int(handler.headers.get("Content-Length", "0"))
+    raw = handler.rfile.read(length) if length > 0 else b"{}"
+    return json.loads(raw.decode("utf-8")) if raw else {}
+
+
+
+def _post_json(url: str, payload: dict[str, object]) -> dict[str, object]:
+    request = urllib.request.Request(
+        url,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=25) as response:
+            raw = response.read().decode("utf-8")
+            return json.loads(raw) if raw else {}
+    except urllib.error.HTTPError as exc:
+        body = exc.read().decode("utf-8", errors="ignore")
+        return {"error": f"http_error_{exc.code}", "details": body or str(exc)}
+    except Exception as exc:
+        return {"error": "request_failed", "details": str(exc)}
+
+
+
 def _summary_payload() -> dict[str, object]:
     return {
-        "next_step": "Recommended order: prepare local setup, start stack, check services, then open the main pages from the useful-links section.",
+        "next_step": "Recommended order: prepare local setup, start stack, check services, then use search or grounded answer in this browser page.",
         "actions": [
             {"name": key, "label": spec.label, "safe_level": spec.safe_level}
             for key, spec in ACTIONS.items()
@@ -195,6 +304,14 @@ def run_ui(host: str = "127.0.0.1", port: int = 8785, open_browser: bool = True)
                 if name in LINKS:
                     self._send(200, "application/json; charset=utf-8", _json_bytes(_open_link(name)))
                     return
+            if action == 'search':
+                payload = _read_json_body(self)
+                self._send(200, "application/json; charset=utf-8", _json_bytes(_post_json(API_TARGETS['search'], payload)))
+                return
+            if action == 'answer':
+                payload = _read_json_body(self)
+                self._send(200, "application/json; charset=utf-8", _json_bytes(_post_json(API_TARGETS['answer'], payload)))
+                return
             self._send(404, "application/json; charset=utf-8", _json_bytes({"error": "not found"}))
 
         def log_message(self, fmt: str, *args: object) -> None:  # noqa: A003
