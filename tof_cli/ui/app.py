@@ -64,6 +64,12 @@ HTML = """<!doctype html>
     .status { margin-top: 18px; background: #ecfeff; border: 1px solid #a5f3fc; color: #164e63; border-radius: 14px; padding: 16px; }
     .log, .result { margin-top: 18px; background: #111827; color: #d1fae5; border-radius: 14px; padding: 16px; min-height: 220px; }
     .result { background: white; color: #18212f; min-height: 140px; }
+    .result-card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px; margin-top: 12px; background: #f8fafc; }
+    .result-card:first-child { margin-top: 0; }
+    .muted { color: #6b7280; font-size: 14px; }
+    .answer-main { font-size: 16px; line-height: 1.5; }
+    .chip-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .chip { background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe; border-radius: 999px; padding: 4px 10px; font-size: 12px; }
     pre { margin: 0; white-space: pre-wrap; word-break: break-word; }
     h1 { margin-top: 0; }
     textarea, input[type=text], input[type=number] { width: 100%; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; font: inherit; }
@@ -71,6 +77,7 @@ HTML = """<!doctype html>
     .form-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 14px; }
     .hint { color: #6b7280; font-size: 14px; margin-top: 10px; }
     .two-col { display: grid; grid-template-columns: 1fr; gap: 20px; }
+    details { margin-top: 12px; }
     @media (min-width: 1100px) { .two-col { grid-template-columns: 1fr 1fr; } }
   </style>
 </head>
@@ -112,7 +119,7 @@ HTML = """<!doctype html>
           <button class=\"secondary\" onclick=\"runSearch()\">Run search</button>
         </div>
         <div class=\"hint\">Search uses the local `POST /search` endpoint of the running stack.</div>
-        <div class=\"result\"><pre id=\"search-result\">No search run yet.</pre></div>
+        <div class=\"result\" id=\"search-result\">No search run yet.</div>
       </div>
 
       <div class=\"panel\">
@@ -124,7 +131,7 @@ HTML = """<!doctype html>
           <button class=\"secondary\" onclick=\"runAnswer()\">Get grounded answer</button>
         </div>
         <div class=\"hint\">Questions use the local `POST /answer` endpoint of the running stack.</div>
-        <div class=\"result\"><pre id=\"qa-result\">No grounded answer run yet.</pre></div>
+        <div class=\"result\" id=\"qa-result\">No grounded answer run yet.</div>
       </div>
     </div>
 
@@ -139,9 +146,69 @@ HTML = """<!doctype html>
       log.textContent = `[${new Date().toLocaleTimeString()}] ${text}\n\n` + log.textContent;
     }
 
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;');
+    }
+
     function parseScope(value) {
       if (!value || !value.trim()) return [];
       return value.split(',').map(v => v.trim()).filter(Boolean);
+    }
+
+    function renderSearchResult(data) {
+      const root = document.getElementById('search-result');
+      if (data.error) {
+        root.innerHTML = `<div class=\"result-card\"><strong>Search failed</strong><div class=\"muted\">${escapeHtml(data.details || data.error)}</div></div>`;
+        return;
+      }
+      const hits = data.results || data.hits || [];
+      if (!hits.length) {
+        root.innerHTML = '<div class=\"muted\">No search hits returned.</div>';
+        return;
+      }
+      let html = `<div class=\"muted\">Returned ${hits.length} hit(s).</div>`;
+      for (const hit of hits) {
+        const title = hit.title || hit.document_title || hit.source_id || 'Search hit';
+        const snippet = hit.snippet || hit.text || hit.chunk_text || '';
+        const source = hit.source_id || hit.document_id || hit.path || '';
+        html += `<div class=\"result-card\"><strong>${escapeHtml(title)}</strong>`;
+        if (source) html += `<div class=\"muted\">${escapeHtml(source)}</div>`;
+        if (snippet) html += `<div style=\"margin-top:8px;\">${escapeHtml(snippet)}</div>`;
+        html += `</div>`;
+      }
+      html += `<details><summary>Show raw search response</summary><pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre></details>`;
+      root.innerHTML = html;
+    }
+
+    function renderAnswerResult(data) {
+      const root = document.getElementById('qa-result');
+      if (data.error) {
+        root.innerHTML = `<div class=\"result-card\"><strong>Grounded answer failed</strong><div class=\"muted\">${escapeHtml(data.details || data.error)}</div></div>`;
+        return;
+      }
+      const answer = data.answer_text || data.answer || 'No answer text returned.';
+      const confidence = data.confidence ?? 'unknown';
+      const citations = data.citations || [];
+      const usedDocuments = data.used_documents || [];
+      let html = `<div class=\"result-card\"><div class=\"answer-main\">${escapeHtml(answer)}</div><div class=\"muted\" style=\"margin-top:10px;\">Confidence: ${escapeHtml(confidence)}</div></div>`;
+      if (citations.length) {
+        html += `<div class=\"result-card\"><strong>Citations</strong>`;
+        for (const citation of citations) {
+          html += `<div style=\"margin-top:10px;\"><div><strong>${escapeHtml(citation.title || citation.source_id || 'Citation')}</strong></div>`;
+          if (citation.snippet) html += `<div class=\"muted\" style=\"margin-top:4px;\">${escapeHtml(citation.snippet)}</div>`;
+          html += `</div>`;
+        }
+        html += `</div>`;
+      }
+      if (usedDocuments.length) {
+        html += `<div class=\"result-card\"><strong>Used documents</strong><div class=\"chip-list\">${usedDocuments.map(item => `<span class=\"chip\">${escapeHtml(item)}</span>`).join('')}</div></div>`;
+      }
+      html += `<details><summary>Show raw grounded-answer response</summary><pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre></details>`;
+      root.innerHTML = html;
     }
 
     async function refreshSummary() {
@@ -179,7 +246,7 @@ HTML = """<!doctype html>
         body: JSON.stringify(payload),
       });
       const data = await response.json();
-      document.getElementById('search-result').textContent = JSON.stringify(data, null, 2);
+      renderSearchResult(data);
       appendLog('Search finished.');
     }
 
@@ -196,7 +263,7 @@ HTML = """<!doctype html>
         body: JSON.stringify(payload),
       });
       const data = await response.json();
-      document.getElementById('qa-result').textContent = JSON.stringify(data, null, 2);
+      renderAnswerResult(data);
       appendLog('Grounded answer finished.');
     }
 
