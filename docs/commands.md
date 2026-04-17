@@ -27,7 +27,12 @@ If you want a simpler local control surface in the browser:
 python run.py ui
 ```
 
-That path opens a local page with large buttons for setup, start, check, status, doctor, and stop.
+That path opens a local page with:
+
+- large buttons for setup, start, check, status, doctor, and stop
+- direct links to the main local pages
+- a local search form
+- a grounded-answer form
 
 ## Standard command flow
 
@@ -42,7 +47,7 @@ bash scripts/down.sh
 ## Commands
 
 - `bash scripts/start_here.sh` — beginner path that runs setup, up, and check in sequence
-- `python run.py ui` — local browser control surface for the main runtime steps
+- `python run.py ui` — local browser control surface for startup, search, and grounded answer
 - `bash scripts/setup.sh` — prepare `.env` and local directories
 - `bash scripts/up.sh` — start the full stack through the public wrapper
 - `bash scripts/check.sh` — run health checks for the live stack
@@ -51,6 +56,20 @@ bash scripts/down.sh
 - `bash scripts/down.sh` — stop the stack cleanly without deleting data
 - `bash scripts/restart.sh` — restart through the public wrappers
 - `bash scripts/reset.sh` — destructive reset for local service data and derived/export storage
+
+## Browser UI notes
+
+The current browser UI can directly call the local:
+
+- search endpoint `POST /search`
+- grounded-answer endpoint `POST /answer`
+
+The UI also links to:
+
+- Open WebUI
+- search API docs
+- QA API docs
+- catalog API docs
 
 ## Safety markers
 
