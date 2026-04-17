@@ -28,6 +28,14 @@ pwsh ./scripts/start_here.ps1
 ./scripts/start_here.command
 ```
 
+## Alternative browser-first path
+
+If you want a simpler browser control path:
+
+```bash
+python run.py ui
+```
+
 ## What happens
 
 The start-here path does three things in order:
@@ -36,6 +44,13 @@ The start-here path does three things in order:
 2. starts the local knowledge stack
 3. checks whether the main services answered correctly
 
+The browser UI gives you:
+
+- stack control buttons
+- direct links to the main local pages
+- a local search form
+- a grounded-answer form
+
 ## What success looks like
 
 You should end up with:
@@ -43,6 +58,15 @@ You should end up with:
 - the local stack running
 - local sources ready to register
 - a working search and grounded-answer environment
+- a browser page where you can run search and answer directly
+
+## Simple normal path
+
+- start the stack
+- open the browser UI
+- run a search
+- ask a grounded question
+- open the main local pages when needed
 
 ## If something fails
 
