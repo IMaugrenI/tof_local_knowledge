@@ -105,6 +105,21 @@ A successful first run means:
 - local source paths can be registered
 - search and grounded answering are available
 
+## Role in the public product line
+
+Ground (evidence-based retrieval)
+
+### Works standalone
+Yes.
+
+### Can be combined with
+- `tof_local_builder` for processing grounded results
+- `local_case_organizer` for structuring extracted evidence
+
+### Not intended for
+- accepting generated content as truth
+- acting as a general-purpose builder system
+
 ## What this repo shows
 
 1. architecture before implementation
