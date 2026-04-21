@@ -1,12 +1,16 @@
 # tof_local_knowledge
 
+**Search local documents and get evidence-grounded answers**
+
+An on-prem knowledge system for indexing documents, searching them, and answering questions from citable evidence instead of free-form guessing.
+
 > English is the primary text in this repository. A German clone is available in `README_DE.md`.
 
 On-prem local knowledge system for document indexing, search, and grounded question answering.
 
-This repository is public proof of evidence-first AI-assisted system work for local document spaces.
+## Why this repo exists
 
-I do not present this repo as manual line-by-line coding proof in the traditional sense. I present it as proof that architecture, evidence boundaries, orchestration, and review can produce a concrete grounded system through an AI-assisted workflow.
+The main point of this repo is not just to make local data usable, but to produce answers that stay tied to visible evidence.
 
 ## Use this repo in the simplest way
 
@@ -38,11 +42,22 @@ That path runs:
 
 A beginner guide is available in `docs/00_beginner_quickstart.md`.
 
-## Why this repo exists
+## What this repo does
 
-The main point of this repo is not just to make local data usable, but to produce answers that stay tied to visible evidence.
+1. registers and scans local sources
+2. extracts content from common document formats
+3. translates raw extraction blocks into citable segments
+4. stores searchable records in Postgres
+5. answers questions from search hits instead of free-form guessing
+6. can optionally use local Ollama and Open WebUI layers
 
-Grounded work matters to me because I do not want to rely on effect, feeling, or nice-sounding claims. I want answers that can carry real weight because they stay connected to source material.
+## What already works
+
+1. source scan into Postgres-backed document records
+2. extraction helpers for txt, md, json, html, csv, eml, pdf, docx, and xlsx
+3. canonical citable segments
+4. full-text search over stored segments
+5. grounded QA endpoint
 
 ## My role in this repo
 
@@ -53,8 +68,6 @@ My role here is:
 - workflow design and runtime shape
 - review and correction of generated output
 - AI-assisted implementation under my direction
-
-The concrete repo surface is heavily AI-assisted. What is mine is the structure behind it: why answers stay tied to evidence, why extraction and indexing are separated, and what counts as acceptable grounded output.
 
 ## Start here
 
@@ -84,14 +97,6 @@ Supported convenience wrappers:
 - Windows PowerShell: `scripts/setup.ps1`, `scripts/up.ps1`, `scripts/check.ps1`, `scripts/down.ps1`, `scripts/status.ps1`, `scripts/doctor.ps1`, `scripts/start_here.ps1`
 - macOS command launchers: `scripts/setup.command`, `scripts/up.command`, `scripts/check.command`, `scripts/down.command`, `scripts/status.command`, `scripts/doctor.command`, `scripts/start_here.command`
 
-Examples:
-
-```bash
-./scripts/start_here.sh
-pwsh ./scripts/start_here.ps1
-./scripts/start_here.command
-```
-
 ## What success looks like
 
 A successful first run means:
@@ -99,23 +104,6 @@ A successful first run means:
 - the local knowledge stack is running
 - local source paths can be registered
 - search and grounded answering are available
-
-## What this repo does
-
-1. registers and scans local sources
-2. extracts content from common document formats
-3. translates raw extraction blocks into citable segments
-4. stores searchable records in Postgres
-5. answers questions from search hits instead of free-form guessing
-6. can optionally use local Ollama and Open WebUI layers
-
-## What already works
-
-1. source scan into Postgres-backed document records
-2. extraction helpers for txt, md, json, html, csv, eml, pdf, docx, and xlsx
-3. canonical citable segments
-4. full-text search over stored segments
-5. grounded QA endpoint
 
 ## What this repo shows
 
