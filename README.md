@@ -1,5 +1,9 @@
 # tof_local_knowledge
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/IMaugrenI/IMaugrenI/main/assets/banner/tof_local_knowledge_banner_clean.png" alt="tof_local_knowledge banner" width="100%" />
+</p>
+
 **Search local documents and get evidence-grounded answers**
 
 An on-prem knowledge system for indexing documents, searching them, and answering questions from citable evidence instead of free-form guessing.
