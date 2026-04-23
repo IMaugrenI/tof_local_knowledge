@@ -1,12 +1,34 @@
 # tof_local_knowledge
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/IMaugrenI/IMaugrenI/main/assets/banner/tof_local_knowledge_banner_clean.png" alt="tof_local_knowledge banner" width="100%" />
+</p>
+
 > Die englische Hauptfassung liegt in `README.md`.
 
 **Lokales Wissenssystem für Suche und evidenzbasierte Antworten**
 
 Ein On-Prem-System für Dokumenten-Indexierung, Suche und belegte Antworten statt freiem Raten.
 
-On-prem lokales Wissenssystem für Dokumenten-Indexierung, Suche und belegte Antworten.
+On-prem lokales Wissenssystem für Dokumenten-Indexierung, Suche und grounded Answers.
+
+## Was dieses Repo ist
+
+Dieses Repository ist das öffentliche **Ground**-Repo in der Produktlinie.
+
+## Für wen es gedacht ist
+
+Dieses Repo ist für Menschen und Teams, die lokale Dokumenten-Indexierung, prüfbare Suche und evidenzgebundene Antworten statt freiem Raten wollen.
+
+## Was es nicht ist
+
+Dieses Repo ist kein Cloud-first Produkt, kein versteckter Remote-Sync-Dienst und kein allgemeines Builder-System.
+
+## Wohin du als Nächstes gehen kannst
+
+- `tof-showcase` — öffentlicher Architektur- und Produktlinien-Überblick
+- `tof_local_builder` — kontrollierte Generierung aus grounded Input
+- `local_case_organizer` — grounded Material strukturieren und exportieren
 
 ## Warum dieses Repo existiert
 
@@ -37,7 +59,7 @@ pwsh ./scripts/start_here.ps1
 Dieser Pfad führt aus:
 
 1. setup
-2. start
+2. startup
 3. health check
 
 Ein Einsteiger-Guide liegt in `docs/00_beginner_quickstart.md`.
@@ -112,7 +134,7 @@ Unterstützte Komfortstarter:
 
 - Linux: `scripts/setup.sh`, `scripts/up.sh`, `scripts/check.sh`, `scripts/down.sh`, `scripts/status.sh`, `scripts/doctor.sh`, `scripts/start_here.sh`
 - Windows PowerShell: `scripts/setup.ps1`, `scripts/up.ps1`, `scripts/check.ps1`, `scripts/down.ps1`, `scripts/status.ps1`, `scripts/doctor.ps1`, `scripts/start_here.ps1`
-- macOS Command-Starter: `scripts/setup.command`, `scripts/up.command`, `scripts/check.command`, `scripts/down.command`, `scripts/status.command`, `scripts/doctor.command`, `scripts/start_here.command`
+- macOS-Command-Starter: `scripts/setup.command`, `scripts/up.command`, `scripts/check.command`, `scripts/down.command`, `scripts/status.command`, `scripts/doctor.command`, `scripts/start_here.command`
 
 ## Erfolgszustand
 
