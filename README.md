@@ -4,9 +4,27 @@
 
 An on-prem knowledge system for indexing documents, searching them, and answering questions from citable evidence instead of free-form guessing.
 
-> English is the primary text in this repository. A German clone is available in `README_DE.md`.
+> English is the primary text in this repository. A German mirror is available in `README_DE.md`.
 
 On-prem local knowledge system for document indexing, search, and grounded question answering.
+
+## What this repo is
+
+This repository is the public Ground repo in the product line.
+
+## Who it is for
+
+This repo is for people and teams who want local document indexing, inspectable search, and evidence-grounded answers instead of free-form guessing.
+
+## What it is not
+
+This repo is not a cloud-first product, not a hidden remote sync service, and not a general builder system.
+
+## Where to go next
+
+- `tof-showcase` — public architecture and product-line overview
+- `tof_local_builder` — controlled generation from grounded input
+- `local_case_organizer` — structure and export grounded material
 
 ## Why this repo exists
 
@@ -148,5 +166,5 @@ Yes.
 ## Related public repos
 
 - [`tof_local_builder`](https://github.com/IMaugrenI/tof_local_builder) — local AI builder stack
-- [`tof_showcase`](https://github.com/IMaugrenI/tof-showcase) — public architecture entry point
-- [`tof_v7_public_frame`](https://github.com/IMaugrenI/tof-v7-public-frame) — reduced V7 boundary frame
+- [`tof-showcase`](https://github.com/IMaugrenI/tof-showcase) — public architecture entry point
+- [`tof-v7-public-frame`](https://github.com/IMaugrenI/tof-v7-public-frame) — reduced V7 boundary frame
