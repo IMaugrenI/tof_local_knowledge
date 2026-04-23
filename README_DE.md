@@ -150,5 +150,5 @@ Ein erfolgreicher erster Start bedeutet:
 ## Verwandte öffentliche Repos
 
 - [`tof_local_builder`](https://github.com/IMaugrenI/tof_local_builder) — lokaler KI-Builder-Stack
-- [`tof_showcase`](https://github.com/IMaugrenI/tof-showcase) — öffentlicher Architektur-Einstieg
-- [`tof_v7_public_frame`](https://github.com/IMaugrenI/tof-v7-public-frame) — reduzierter V7-Grenzrahmen
+- [`tof-showcase`](https://github.com/IMaugrenI/tof-showcase) — öffentlicher Architektur-Einstieg
+- [`tof-v7-public-frame`](https://github.com/IMaugrenI/tof-v7-public-frame) — reduzierter V7-Grenzrahmen
