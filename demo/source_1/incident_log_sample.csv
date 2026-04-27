@@ -1,0 +1,6 @@
+date,type,summary,status
+2026-01-10,indexing,Demo source folder scanned successfully,resolved
+2026-01-11,extraction,Demo handbook converted into citable segments,resolved
+2026-01-12,search,Demo query returned evidence with citation labels,resolved
+2026-01-13,qa,Grounded answer returned used documents and citations,resolved
+2026-01-14,safety,Demo screenshots confirmed to use only synthetic data,resolved
