@@ -66,6 +66,19 @@ Ein Einsteiger-Guide liegt in `docs/00_beginner_quickstart.md`.
 Eine Doku-Übersicht liegt in `docs/README.md`.
 Ein deutscher Doku-Spiegel liegt in `docs/README_DE.md`.
 
+## Sichere Demo zuerst
+
+Bevor du private oder wichtige Dokumente verwendest, teste den Stack mit den neutralen Demo-Quelldateien in `demo/source_1/`.
+
+Nutze:
+
+- `demo/source_1/` — synthetische lokale Quelldateien für sichere Tests
+- `demo/questions.md` — Beispiel-Suchanfragen und grounded Fragen
+- `demo/expected_results.md` — erwartete Ergebnisformen und Sicherheitshinweise
+- `docs/01_demo_flow.md` — Schritt-für-Schritt-Demo-Ablauf vor echten Screenshots
+
+Öffentliche Screenshots sollten nur aus der echten lokalen UI oder echter lokaler API-Ausgabe mit neutralen Demo-Daten aufgenommen werden. Fake-Screenshots dürfen nicht als echte UI-Ausgabe dargestellt werden.
+
 ## Was dieses Repo macht
 
 1. registriert und scannt lokale Quellen
@@ -165,6 +178,8 @@ Ein erfolgreicher erster Start bedeutet:
 - `tof_cli/`
 - `compose.full.yml`
 - `.env.example`
+- `docs/00_beginner_quickstart.md`
+- `docs/01_demo_flow.md`
 - `docs/13_python_cli_runtime.md`
 - `docs/11_runtime_stack.md`
 - `docs/commands.md`
