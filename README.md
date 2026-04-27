@@ -64,6 +64,19 @@ That path runs:
 
 A beginner guide is available in `docs/00_beginner_quickstart.md`.
 
+## Safe demo first
+
+Before using private or important documents, test the stack with the neutral demo source files in `demo/source_1/`.
+
+Use:
+
+- `demo/source_1/` — synthetic local source files for safe testing
+- `demo/questions.md` — example search queries and grounded questions
+- `demo/expected_results.md` — expected result shapes and safety notes
+- `docs/01_demo_flow.md` — step-by-step demo flow before real screenshots
+
+Public screenshots should be captured only from the real local UI or real local API output using neutral demo data. Do not present fake screenshots as real UI output.
+
 ## What this repo does
 
 1. registers and scans local sources
@@ -163,6 +176,8 @@ Yes.
 - `tof_cli/`
 - `compose.full.yml`
 - `.env.example`
+- `docs/00_beginner_quickstart.md`
+- `docs/01_demo_flow.md`
 - `docs/13_python_cli_runtime.md`
 - `docs/11_runtime_stack.md`
 - `docs/commands.md`

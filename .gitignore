@@ -1,0 +1,33 @@
+.env
+.env.*
+!.env.example
+
+# Runtime data
+/data/
+/storage/
+/logs/
+*.log
+
+# Local-only source material
+/local_sources/
+/screenshots/private/
+/tmp/
+/exports/
+
+# Python/cache
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local databases
+*.sqlite
+*.sqlite3
+*.db
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
