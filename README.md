@@ -99,6 +99,11 @@ Use:
 
 Public screenshots should be captured only from the real local UI or real local API output using neutral demo data. Do not present fake screenshots as real UI output.
 
+For issue and screenshot hygiene, see:
+
+- `SECURITY.md`
+- `docs/04_third_party.md`
+
 ## What this repo does
 
 1. registers and scans local sources
@@ -204,10 +209,12 @@ Yes.
 - `tof_cli/`
 - `compose.full.yml`
 - `.env.example`
+- `SECURITY.md`
 - `docs/00_beginner_quickstart.md`
 - `docs/01_demo_flow.md`
 - `docs/02_demo_validation_checklist.md`
 - `docs/03_demo_evidence_screenshots.md`
+- `docs/04_third_party.md`
 - `docs/13_python_cli_runtime.md`
 - `docs/11_runtime_stack.md`
 - `docs/commands.md`
