@@ -1,0 +1,31 @@
+# Local runtime state must never enter Docker build context
+.env
+.env.*
+!.env.example
+
+# Python/local caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Git and editor state
+.git/
+.gitignore
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local runtime data and generated artifacts
+data/
+storage/
+logs/
+exports/
+
+# OS files
+.DS_Store
+Thumbs.db
