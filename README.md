@@ -16,9 +16,9 @@ On-prem local knowledge system for document indexing, search, and grounded quest
 
 The neutral demo flow has been validated from a local run using only synthetic files from `demo/source_1/`.
 
-![Grounded answer demo](assets/screenshots/knowledge-05-grounded-answer-vacation.png)
+![Local UI grounded answer demo](assets/screenshots/knowledge-07-ui-grounded-answer-dark.png)
 
-This screenshot shows a grounded answer that uses retrieved evidence, exposes the citation label, lists the used document, and shows the fallback search query used for inspectability.
+This screenshot shows the local browser UI rendering a search result, a grounded answer, citation labels, used documents, and the fallback search queries for inspectability.
 
 Full evidence chain:
 
@@ -27,6 +27,7 @@ Full evidence chain:
 - [extraction: citable segment created](assets/screenshots/knowledge-03-extraction-citation.png)
 - [search: vacation policy evidence found](assets/screenshots/knowledge-04-search-vacation-policy.png)
 - [grounded answer: vacation policy with citation](assets/screenshots/knowledge-05-grounded-answer-vacation.png)
+- [UI grounded answer: local browser view](assets/screenshots/knowledge-07-ui-grounded-answer-dark.png)
 - [no-evidence answer: private contract number rejected](assets/screenshots/knowledge-06-no-evidence-contract-number.png)
 
 See `docs/03_demo_evidence_screenshots.md` for the compact evidence index and screenshot safety boundary.
@@ -115,6 +116,7 @@ Public screenshots should be captured only from the real local UI or real local 
 4. full-text search over stored segments
 5. grounded QA endpoint with no-evidence behavior
 6. keyword fallback for natural-language QA questions
+7. local browser UI with German/English and light/dark modes
 
 ## My role in this repo
 
@@ -134,6 +136,7 @@ Primary Linux/macOS runtime entrypoint:
 python3 run.py setup
 python3 run.py up
 python3 run.py check
+python3 run.py ui
 ```
 
 Additional Linux/macOS runtime commands:
@@ -163,6 +166,7 @@ A successful first run means:
 - the local knowledge stack is running
 - local source paths can be registered
 - search and grounded answering are available
+- the local browser UI can run on `127.0.0.1:8785`
 
 ## Role in the public product line
 
