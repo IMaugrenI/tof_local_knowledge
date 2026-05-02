@@ -4,6 +4,35 @@
 
 Dieses Repository zeigt einen kleinen öffentlichen Operator-Pfad, damit lokales Starten und Beenden leicht verständlich bleibt.
 
+## Schnellster Einstieg
+
+```bash
+bash scripts/start_here.sh
+```
+
+Äquivalente Einstiegspunkte:
+
+- PowerShell: `pwsh ./scripts/start_here.ps1`
+- macOS: `./scripts/start_here.command`
+
+Dieser Pfad führt Setup, Start und Health-Check in der erwarteten Reihenfolge aus.
+
+## Direkter Runtime-Pfad für Linux/macOS
+
+```bash
+python3 run.py setup
+python3 run.py up
+python3 run.py check
+python3 run.py status
+python3 run.py down
+```
+
+## Browser-Control-Pfad
+
+```bash
+python3 run.py ui
+```
+
 ## Standard-Befehlsfluss
 
 ```bash
@@ -16,6 +45,8 @@ bash scripts/down.sh
 
 ## Befehle
 
+- `bash scripts/start_here.sh` — Einsteigerpfad, der Setup, Up und Check nacheinander ausführt
+- `python3 run.py ui` — lokale Browser-Steuerfläche für Start, Suche und grounded Answer
 - `bash scripts/setup.sh` — `.env` und lokale Verzeichnisse vorbereiten
 - `bash scripts/up.sh` — den vollen Stack über den öffentlichen Wrapper starten
 - `bash scripts/check.sh` — Health-Prüfungen für den laufenden Stack ausführen
@@ -27,8 +58,6 @@ bash scripts/down.sh
 
 ## Hinweise
 
-- `setup.sh` kapselt das bestehende `bootstrap_dev.sh`
-- `up.sh` kapselt das bestehende `start_full.sh`
-- `check.sh` kapselt das bestehende `check_full.sh`
+- Linux-Shell-Wrapper rufen `python3 run.py ...` auf
 - `down.sh` ist standardmäßig nicht destruktiv
 - `reset.sh` ist der destruktive Pfad und sollte bewusst verwendet werden
