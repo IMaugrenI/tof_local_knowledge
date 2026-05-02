@@ -107,25 +107,27 @@ My role here is:
 
 ## Start here
 
-Primary runtime entrypoint:
+Primary Linux/macOS runtime entrypoint:
 
 ```bash
-python run.py setup
-python run.py up
-python run.py check
+python3 run.py setup
+python3 run.py up
+python3 run.py check
 ```
 
-Additional runtime commands:
+Additional Linux/macOS runtime commands:
 
 ```bash
-python run.py status
-python run.py doctor
-python run.py down
+python3 run.py status
+python3 run.py doctor
+python3 run.py down
 ```
+
+Windows users should normally use the PowerShell wrappers listed below.
 
 ## Cross-platform wrappers
 
-The supported runtime truth is `python run.py ...`.
+The supported Linux/macOS runtime truth is `python3 run.py ...`.
 
 Supported convenience wrappers:
 
