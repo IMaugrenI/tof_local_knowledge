@@ -67,9 +67,12 @@ HTML = """<!doctype html>
     .result-card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px; margin-top: 12px; background: #f8fafc; }
     .result-card:first-child { margin-top: 0; }
     .muted { color: #6b7280; font-size: 14px; }
-    .answer-main { font-size: 16px; line-height: 1.5; }
+    .answer-main { font-size: 16px; line-height: 1.5; white-space: pre-wrap; }
+    .preview { margin-top: 8px; line-height: 1.45; white-space: pre-wrap; }
     .chip-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
     .chip { background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe; border-radius: 999px; padding: 4px 10px; font-size: 12px; }
+    .chip.warn { background: #fff7ed; color: #9a3412; border-color: #fed7aa; }
+    .meta-grid { display: grid; grid-template-columns: 1fr; gap: 6px; margin-top: 10px; }
     pre { margin: 0; white-space: pre-wrap; word-break: break-word; }
     h1 { margin-top: 0; }
     textarea, input[type=text], input[type=number] { width: 100%; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; font: inherit; }
@@ -159,6 +162,17 @@ HTML = """<!doctype html>
       return value.split(',').map(v => v.trim()).filter(Boolean);
     }
 
+    function asList(value) {
+      if (!value) return [];
+      return Array.isArray(value) ? value : [value];
+    }
+
+    function renderChips(items, cssClass = '') {
+      const list = asList(items).filter(item => item !== null && item !== undefined && String(item).trim() !== '');
+      if (!list.length) return '';
+      return `<div class=\"chip-list\">${list.map(item => `<span class=\"chip ${cssClass}\">${escapeHtml(item)}</span>`).join('')}</div>`;
+    }
+
     function renderSearchResult(data) {
       const root = document.getElementById('search-result');
       if (data.error) {
@@ -170,18 +184,34 @@ HTML = """<!doctype html>
         root.innerHTML = '<div class=\"muted\">No search hits returned.</div>';
         return;
       }
-      let html = `<div class=\"muted\">Returned ${hits.length} hit(s).</div>`;
+      let html = `<div class=\"muted\">Query: ${escapeHtml(data.query || '')} · Returned ${hits.length} hit(s).</div>`;
       for (const hit of hits) {
-        const title = hit.title || hit.document_title || hit.source_id || 'Search hit';
-        const snippet = hit.snippet || hit.text || hit.chunk_text || '';
-        const source = hit.source_id || hit.document_id || hit.path || '';
+        const title = hit.relative_path || hit.title || hit.document_title || hit.document_id || 'Search hit';
+        const preview = hit.preview_text || hit.snippet || hit.text || hit.chunk_text || '';
         html += `<div class=\"result-card\"><strong>${escapeHtml(title)}</strong>`;
-        if (source) html += `<div class=\"muted\">${escapeHtml(source)}</div>`;
-        if (snippet) html += `<div style=\"margin-top:8px;\">${escapeHtml(snippet)}</div>`;
+        html += '<div class=\"meta-grid\">';
+        if (hit.source_id) html += `<div class=\"muted\">Source: ${escapeHtml(hit.source_id)}</div>`;
+        if (hit.document_id) html += `<div class=\"muted\">Document: ${escapeHtml(hit.document_id)}</div>`;
+        if (hit.citation_label) html += `<div class=\"muted\">Citation: ${escapeHtml(hit.citation_label)}</div>`;
+        if (hit.score !== undefined && hit.score !== null) html += `<div class=\"muted\">Score: ${escapeHtml(hit.score)}</div>`;
+        html += '</div>';
+        if (preview) html += `<div class=\"preview\">${escapeHtml(preview)}</div>`;
         html += `</div>`;
       }
       html += `<details><summary>Show raw search response</summary><pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre></details>`;
       root.innerHTML = html;
+    }
+
+    function renderCitation(citation) {
+      if (typeof citation === 'string') {
+        return `<div style=\"margin-top:10px;\"><strong>${escapeHtml(citation)}</strong></div>`;
+      }
+      const title = citation.title || citation.citation_label || citation.source_id || citation.document_id || 'Citation';
+      let html = `<div style=\"margin-top:10px;\"><strong>${escapeHtml(title)}</strong>`;
+      if (citation.relative_path) html += `<div class=\"muted\">${escapeHtml(citation.relative_path)}</div>`;
+      if (citation.snippet || citation.preview_text) html += `<div class=\"muted\" style=\"margin-top:4px;\">${escapeHtml(citation.snippet || citation.preview_text)}</div>`;
+      html += '</div>';
+      return html;
     }
 
     function renderAnswerResult(data) {
@@ -192,20 +222,29 @@ HTML = """<!doctype html>
       }
       const answer = data.answer_text || data.answer || 'No answer text returned.';
       const confidence = data.confidence ?? 'unknown';
-      const citations = data.citations || [];
-      const usedDocuments = data.used_documents || [];
-      let html = `<div class=\"result-card\"><div class=\"answer-main\">${escapeHtml(answer)}</div><div class=\"muted\" style=\"margin-top:10px;\">Confidence: ${escapeHtml(confidence)}</div></div>`;
+      const citations = asList(data.citations);
+      const usedDocuments = asList(data.used_documents);
+      const uncertainties = asList(data.uncertainties);
+      const searchQueries = asList(data.search_queries);
+
+      let html = `<div class=\"result-card\"><div class=\"answer-main\">${escapeHtml(answer)}</div><div class=\"muted\" style=\"margin-top:10px;\">Confidence: ${escapeHtml(confidence)}</div>`;
+      if (uncertainties.length) {
+        html += `<div style=\"margin-top:10px;\"><strong>Uncertainties</strong>${renderChips(uncertainties, 'warn')}</div>`;
+      }
+      html += '</div>';
+
       if (citations.length) {
         html += `<div class=\"result-card\"><strong>Citations</strong>`;
         for (const citation of citations) {
-          html += `<div style=\"margin-top:10px;\"><div><strong>${escapeHtml(citation.title || citation.source_id || 'Citation')}</strong></div>`;
-          if (citation.snippet) html += `<div class=\"muted\" style=\"margin-top:4px;\">${escapeHtml(citation.snippet)}</div>`;
-          html += `</div>`;
+          html += renderCitation(citation);
         }
         html += `</div>`;
       }
       if (usedDocuments.length) {
-        html += `<div class=\"result-card\"><strong>Used documents</strong><div class=\"chip-list\">${usedDocuments.map(item => `<span class=\"chip\">${escapeHtml(item)}</span>`).join('')}</div></div>`;
+        html += `<div class=\"result-card\"><strong>Used documents</strong>${renderChips(usedDocuments)}</div>`;
+      }
+      if (searchQueries.length) {
+        html += `<div class=\"result-card\"><strong>Search queries</strong>${renderChips(searchQueries)}</div>`;
       }
       html += `<details><summary>Show raw grounded-answer response</summary><pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre></details>`;
       root.innerHTML = html;
@@ -290,19 +329,16 @@ def _run_action(name: str) -> dict[str, object]:
     }
 
 
-
 def _open_link(name: str) -> dict[str, object]:
     link = LINKS[name]
     webbrowser.open(link["url"])
     return {"opened": link["url"], "label": link["label"]}
 
 
-
 def _read_json_body(handler: BaseHTTPRequestHandler) -> dict[str, object]:
     length = int(handler.headers.get("Content-Length", "0"))
     raw = handler.rfile.read(length) if length > 0 else b"{}"
     return json.loads(raw.decode("utf-8")) if raw else {}
-
 
 
 def _post_json(url: str, payload: dict[str, object]) -> dict[str, object]:
@@ -323,7 +359,6 @@ def _post_json(url: str, payload: dict[str, object]) -> dict[str, object]:
         return {"error": "request_failed", "details": str(exc)}
 
 
-
 def _summary_payload() -> dict[str, object]:
     return {
         "next_step": "Recommended order: prepare local setup, start stack, check services, then use search or grounded answer in this browser page.",
@@ -335,10 +370,8 @@ def _summary_payload() -> dict[str, object]:
     }
 
 
-
 def _json_bytes(payload: dict[str, object]) -> bytes:
     return json.dumps(payload, indent=2).encode("utf-8")
-
 
 
 def run_ui(host: str = "127.0.0.1", port: int = 8785, open_browser: bool = True) -> int:
