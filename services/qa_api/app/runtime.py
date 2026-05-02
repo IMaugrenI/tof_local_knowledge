@@ -1,4 +1,5 @@
 import os
+import re
 
 import httpx
 from fastapi import FastAPI
@@ -6,6 +7,39 @@ from pydantic import BaseModel, Field
 
 app = FastAPI(title='tof_local_knowledge_qa_api', version='0.2.0')
 SEARCH_API_URL = os.environ.get('SEARCH_API_URL', 'http://search_api:8105/search')
+
+QUESTION_STOPWORDS = {
+    'a',
+    'an',
+    'about',
+    'and',
+    'are',
+    'as',
+    'does',
+    'do',
+    'for',
+    'from',
+    'how',
+    'is',
+    'it',
+    'me',
+    'of',
+    'on',
+    'or',
+    'say',
+    'says',
+    'tell',
+    'the',
+    'to',
+    'was',
+    'what',
+    'when',
+    'where',
+    'which',
+    'who',
+    'why',
+    'with',
+}
 
 
 class QaRequest(BaseModel):
@@ -19,21 +53,46 @@ def health():
     return {'status': 'ok', 'service': 'qa_api'}
 
 
+def fallback_search_query(question: str) -> str:
+    """Create a simple keyword query for local FTS fallback.
+
+    The search API uses Postgres websearch_to_tsquery. A full natural-language
+    question can become too restrictive because many question words are kept as
+    required terms. The fallback keeps content-bearing terms only.
+    """
+
+    tokens = re.findall(r"[A-Za-z0-9_]+", question.lower())
+    keywords = [token for token in tokens if token not in QUESTION_STOPWORDS and len(token) > 1]
+    return ' '.join(keywords).strip()
+
+
+def run_search(client: httpx.Client, query: str, payload: QaRequest) -> dict:
+    response = client.post(
+        SEARCH_API_URL,
+        json={
+            'query': query,
+            'source_scope': payload.source_scope or [],
+            'limit': payload.limit,
+        },
+    )
+    response.raise_for_status()
+    return response.json()
+
+
 @app.post('/answer')
 def answer(payload: QaRequest):
-    with httpx.Client(timeout=20.0) as client:
-        response = client.post(
-            SEARCH_API_URL,
-            json={
-                'query': payload.question,
-                'source_scope': payload.source_scope or [],
-                'limit': payload.limit,
-            },
-        )
-        response.raise_for_status()
-        data = response.json()
+    attempted_queries = [payload.question]
 
-    hits = data.get('hits', [])
+    with httpx.Client(timeout=20.0) as client:
+        data = run_search(client, payload.question, payload)
+        hits = data.get('hits', [])
+
+        fallback_query = fallback_search_query(payload.question)
+        if not hits and fallback_query and fallback_query != payload.question.lower().strip():
+            attempted_queries.append(fallback_query)
+            data = run_search(client, fallback_query, payload)
+            hits = data.get('hits', [])
+
     if not hits:
         return {
             'answer_text': 'Keine belastbare Antwort gefunden. Es wurden keine passenden Fundstellen im erlaubten Scope gefunden.',
@@ -41,6 +100,7 @@ def answer(payload: QaRequest):
             'citations': [],
             'used_documents': [],
             'uncertainties': ['no_evidence'],
+            'search_queries': attempted_queries,
         }
 
     primary = hits[0]
@@ -63,4 +123,5 @@ def answer(payload: QaRequest):
         'citations': citations,
         'used_documents': used_documents,
         'uncertainties': uncertainties,
+        'search_queries': attempted_queries,
     }
