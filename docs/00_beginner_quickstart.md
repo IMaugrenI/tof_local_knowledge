@@ -30,11 +30,13 @@ pwsh ./scripts/start_here.ps1
 
 ## Alternative browser-first path
 
-If you want a simpler browser control path:
+If you want a simpler browser control path on Linux or macOS:
 
 ```bash
-python run.py ui
+python3 run.py ui
 ```
+
+Windows users should normally use the PowerShell wrapper path.
 
 ## What happens
 
@@ -73,7 +75,7 @@ You should end up with:
 Run:
 
 ```bash
-python run.py doctor
+python3 run.py doctor
 ```
 
 Then read the printed checks and fix the first failing item.
@@ -81,7 +83,7 @@ Then read the printed checks and fix the first failing item.
 ## Normal everyday commands after first startup
 
 ```bash
-python run.py status
-python run.py check
-python run.py down
+python3 run.py status
+python3 run.py check
+python3 run.py down
 ```
