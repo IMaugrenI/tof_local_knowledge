@@ -10,10 +10,10 @@ Run this from a clean local checkout or a clean branch state.
 
 ```bash
 git status --short
-python run.py setup
-python run.py up
-python run.py check
-python run.py status
+python3 run.py setup
+python3 run.py up
+python3 run.py check
+python3 run.py status
 ```
 
 The validation is acceptable only if:
