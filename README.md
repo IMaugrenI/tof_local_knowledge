@@ -12,6 +12,25 @@ An on-prem knowledge system for indexing documents, searching them, and answerin
 
 On-prem local knowledge system for document indexing, search, and grounded question answering.
 
+## Public demo baseline
+
+The neutral demo flow has been validated from a local run using only synthetic files from `demo/source_1/`.
+
+![Grounded answer demo](assets/screenshots/knowledge-05-grounded-answer-vacation.png)
+
+This screenshot shows a grounded answer that uses retrieved evidence, exposes the citation label, lists the used document, and shows the fallback search query used for inspectability.
+
+Full evidence chain:
+
+- [healthcheck: all services OK](assets/screenshots/knowledge-01-healthcheck.png)
+- [scan: neutral demo source indexed](assets/screenshots/knowledge-02-scan-demo-source.png)
+- [extraction: citable segment created](assets/screenshots/knowledge-03-extraction-citation.png)
+- [search: vacation policy evidence found](assets/screenshots/knowledge-04-search-vacation-policy.png)
+- [grounded answer: vacation policy with citation](assets/screenshots/knowledge-05-grounded-answer-vacation.png)
+- [no-evidence answer: private contract number rejected](assets/screenshots/knowledge-06-no-evidence-contract-number.png)
+
+See `docs/03_demo_evidence_screenshots.md` for the compact evidence index and screenshot safety boundary.
+
 ## What this repo is
 
 This repository is the public Ground repo in the product line.
@@ -28,7 +47,7 @@ This repo is not a cloud-first product, not a hidden remote sync service, and no
 
 - `tof-showcase` — public architecture and product-line overview
 - `tof_local_builder` — controlled generation from grounded input
-- `local_case_organizer` — structure and export grounded material
+- `local_case_organizer` — structure extracted material into local cases and exports
 
 ## Why this repo exists
 
@@ -75,6 +94,7 @@ Use:
 - `demo/expected_results.md` — expected result shapes and safety notes
 - `docs/01_demo_flow.md` — step-by-step demo flow before real screenshots
 - `docs/02_demo_validation_checklist.md` — local acceptance checklist before screenshots or release notes
+- `docs/03_demo_evidence_screenshots.md` — compact public evidence screenshot index
 
 Public screenshots should be captured only from the real local UI or real local API output using neutral demo data. Do not present fake screenshots as real UI output.
 
@@ -93,7 +113,8 @@ Public screenshots should be captured only from the real local UI or real local 
 2. extraction helpers for txt, md, json, html, csv, eml, pdf, docx, and xlsx
 3. canonical citable segments
 4. full-text search over stored segments
-5. grounded QA endpoint
+5. grounded QA endpoint with no-evidence behavior
+6. keyword fallback for natural-language QA questions
 
 ## My role in this repo
 
@@ -182,6 +203,7 @@ Yes.
 - `docs/00_beginner_quickstart.md`
 - `docs/01_demo_flow.md`
 - `docs/02_demo_validation_checklist.md`
+- `docs/03_demo_evidence_screenshots.md`
 - `docs/13_python_cli_runtime.md`
 - `docs/11_runtime_stack.md`
 - `docs/commands.md`
