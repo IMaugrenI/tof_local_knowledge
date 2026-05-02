@@ -48,7 +48,7 @@ cd tof_local_knowledge
 If you are testing this branch before merge:
 
 ```bash
-git checkout prep-safe-demo-flow
+git checkout docs/demo-validation-checklist
 ```
 
 ## Step 2 — point the local source root to the demo folder
@@ -97,10 +97,10 @@ macOS:
 ./scripts/start_here.command
 ```
 
-Alternative browser-first path:
+Alternative Linux/macOS browser-first path:
 
 ```bash
-python run.py ui
+python3 run.py ui
 ```
 
 ## Step 4 — scan or index the demo source
