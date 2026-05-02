@@ -1,21 +1,21 @@
 # Python CLI runtime
 
-This repo now has a Python-first runtime entrypoint.
+This repo has a Python-first runtime entrypoint.
 
-## primary entrypoint
+## Primary Linux/macOS entrypoint
 
 ```bash
-python run.py setup
-python run.py up
-python run.py check
-python run.py status
-python run.py doctor
-python run.py down
+python3 run.py setup
+python3 run.py up
+python3 run.py check
+python3 run.py status
+python3 run.py doctor
+python3 run.py down
 ```
 
-## wrapper availability
+## Wrapper availability
 
-The runtime truth is `python run.py ...`.
+The Linux/macOS runtime truth is `python3 run.py ...`.
 
 Supported convenience wrappers are limited to these files:
 
@@ -23,21 +23,23 @@ Supported convenience wrappers are limited to these files:
 - Windows PowerShell wrappers: `scripts/setup.ps1`, `scripts/up.ps1`, `scripts/check.ps1`, `scripts/down.ps1`, `scripts/status.ps1`, `scripts/doctor.ps1`
 - macOS command launchers: `scripts/setup.command`, `scripts/up.command`, `scripts/check.command`, `scripts/down.command`, `scripts/status.command`, `scripts/doctor.command`
 
-## goal
+## Goal
 
 - one operational runtime entrypoint
 - cross-platform start logic in Python
 - compose remains the runtime truth
-- shell scripts can become thin wrappers later
+- shell scripts stay thin wrappers around `run.py`
 
-## current migration state
+## Current migration state
 
 - `run.py` is available now
-- `tof_cli/` contains the new command and core runtime modules
+- `run.py` uses a `python3` shebang
+- Linux shell wrappers already call `python3 run.py ...`
+- `tof_cli/` contains the command and core runtime modules
 - Windows and macOS wrapper sets are available for the primary commands
 - older helper scripts are not part of the supported runtime surface
 
-## command summary
+## Command summary
 
 ### setup
 

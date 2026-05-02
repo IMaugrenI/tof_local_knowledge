@@ -76,6 +76,7 @@ Nutze:
 - `demo/questions.md` — Beispiel-Suchanfragen und grounded Fragen
 - `demo/expected_results.md` — erwartete Ergebnisformen und Sicherheitshinweise
 - `docs/01_demo_flow.md` — Schritt-für-Schritt-Demo-Ablauf vor echten Screenshots
+- `docs/02_demo_validation_checklist_DE.md` — lokale Abnahmecheckliste vor Screenshots oder Release Notes
 
 Öffentliche Screenshots sollten nur aus der echten lokalen UI oder echter lokaler API-Ausgabe mit neutralen Demo-Daten aufgenommen werden. Fake-Screenshots dürfen nicht als echte UI-Ausgabe dargestellt werden.
 
@@ -123,25 +124,27 @@ Meine Rolle hier ist:
 
 ## Einstieg
 
-Primärer Runtime-Einstieg:
+Primärer Runtime-Einstieg für Linux/macOS:
 
 ```bash
-python run.py setup
-python run.py up
-python run.py check
+python3 run.py setup
+python3 run.py up
+python3 run.py check
 ```
 
-Weitere Runtime-Befehle:
+Weitere Runtime-Befehle für Linux/macOS:
 
 ```bash
-python run.py status
-python run.py doctor
-python run.py down
+python3 run.py status
+python3 run.py doctor
+python3 run.py down
 ```
+
+Windows-Nutzer sollten normalerweise die unten genannten PowerShell-Wrapper verwenden.
 
 ## Plattform-Wrapper
 
-Die unterstützte Runtime-Wahrheit ist `python run.py ...`.
+Die unterstützte Runtime-Wahrheit für Linux/macOS ist `python3 run.py ...`.
 
 Unterstützte Komfortstarter:
 
@@ -180,6 +183,7 @@ Ein erfolgreicher erster Start bedeutet:
 - `.env.example`
 - `docs/00_beginner_quickstart.md`
 - `docs/01_demo_flow.md`
+- `docs/02_demo_validation_checklist_DE.md`
 - `docs/13_python_cli_runtime.md`
 - `docs/11_runtime_stack.md`
 - `docs/commands.md`

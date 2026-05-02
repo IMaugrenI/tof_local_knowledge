@@ -19,12 +19,22 @@ Equivalent entry points:
 
 That path runs setup, startup, and health check in the expected order.
 
+## Direct Linux/macOS runtime path
+
+```bash
+python3 run.py setup
+python3 run.py up
+python3 run.py check
+python3 run.py status
+python3 run.py down
+```
+
 ## Browser control path
 
 If you want a simpler local control surface in the browser:
 
 ```bash
-python run.py ui
+python3 run.py ui
 ```
 
 That path opens a local page with:
@@ -47,7 +57,7 @@ bash scripts/down.sh
 ## Commands
 
 - `bash scripts/start_here.sh` — beginner path that runs setup, up, and check in sequence
-- `python run.py ui` — local browser control surface for startup, search, and grounded answer
+- `python3 run.py ui` — local browser control surface for startup, search, and grounded answer
 - `bash scripts/setup.sh` — prepare `.env` and local directories
 - `bash scripts/up.sh` — start the full stack through the public wrapper
 - `bash scripts/check.sh` — run health checks for the live stack
@@ -73,14 +83,12 @@ The UI also links to:
 
 ## Safety markers
 
-- SAFE: `start_here`, `setup`, `check`, `status`, `doctor`, `down`, `python run.py ui`
+- SAFE: `start_here`, `setup`, `check`, `status`, `doctor`, `down`, `python3 run.py ui`
 - ADVANCED: `logs`, `pull`, `restart`
 - DESTRUCTIVE: `reset`
 
 ## Notes
 
-- `setup.sh` wraps the existing `bootstrap_dev.sh`
-- `up.sh` wraps the existing `start_full.sh`
-- `check.sh` wraps the existing `check_full.sh`
+- Linux shell wrappers call `python3 run.py ...`
 - `down.sh` is non-destructive by default
 - `reset.sh` is the destructive path and should be used deliberately

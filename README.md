@@ -74,6 +74,7 @@ Use:
 - `demo/questions.md` — example search queries and grounded questions
 - `demo/expected_results.md` — expected result shapes and safety notes
 - `docs/01_demo_flow.md` — step-by-step demo flow before real screenshots
+- `docs/02_demo_validation_checklist.md` — local acceptance checklist before screenshots or release notes
 
 Public screenshots should be captured only from the real local UI or real local API output using neutral demo data. Do not present fake screenshots as real UI output.
 
@@ -106,25 +107,27 @@ My role here is:
 
 ## Start here
 
-Primary runtime entrypoint:
+Primary Linux/macOS runtime entrypoint:
 
 ```bash
-python run.py setup
-python run.py up
-python run.py check
+python3 run.py setup
+python3 run.py up
+python3 run.py check
 ```
 
-Additional runtime commands:
+Additional Linux/macOS runtime commands:
 
 ```bash
-python run.py status
-python run.py doctor
-python run.py down
+python3 run.py status
+python3 run.py doctor
+python3 run.py down
 ```
+
+Windows users should normally use the PowerShell wrappers listed below.
 
 ## Cross-platform wrappers
 
-The supported runtime truth is `python run.py ...`.
+The supported Linux/macOS runtime truth is `python3 run.py ...`.
 
 Supported convenience wrappers:
 
@@ -178,6 +181,7 @@ Yes.
 - `.env.example`
 - `docs/00_beginner_quickstart.md`
 - `docs/01_demo_flow.md`
+- `docs/02_demo_validation_checklist.md`
 - `docs/13_python_cli_runtime.md`
 - `docs/11_runtime_stack.md`
 - `docs/commands.md`
