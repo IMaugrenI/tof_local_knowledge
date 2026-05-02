@@ -124,25 +124,27 @@ Meine Rolle hier ist:
 
 ## Einstieg
 
-Primärer Runtime-Einstieg:
+Primärer Runtime-Einstieg für Linux/macOS:
 
 ```bash
-python run.py setup
-python run.py up
-python run.py check
+python3 run.py setup
+python3 run.py up
+python3 run.py check
 ```
 
-Weitere Runtime-Befehle:
+Weitere Runtime-Befehle für Linux/macOS:
 
 ```bash
-python run.py status
-python run.py doctor
-python run.py down
+python3 run.py status
+python3 run.py doctor
+python3 run.py down
 ```
+
+Windows-Nutzer sollten normalerweise die unten genannten PowerShell-Wrapper verwenden.
 
 ## Plattform-Wrapper
 
-Die unterstützte Runtime-Wahrheit ist `python run.py ...`.
+Die unterstützte Runtime-Wahrheit für Linux/macOS ist `python3 run.py ...`.
 
 Unterstützte Komfortstarter:
 
