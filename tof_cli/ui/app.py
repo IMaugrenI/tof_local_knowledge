@@ -128,6 +128,19 @@ HTML = """<!doctype html>
 
     button, input, textarea, summary { font: inherit; }
 
+    .skip-link {
+      position: absolute;
+      left: 16px;
+      top: -64px;
+      z-index: 20;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: var(--gold);
+      color: #17120d;
+      font-weight: 750;
+    }
+    .skip-link:focus { top: 16px; }
+
     .wrap {
       width: min(calc(100% - 40px), 1180px);
       margin: 0 auto;
@@ -379,6 +392,7 @@ HTML = """<!doctype html>
   </style>
 </head>
 <body class="dark">
+  <a class="skip-link" href="#main-content" data-i18n="skipLink">Zum Inhalt springen</a>
   <div class="wrap">
     <header class="topbar">
       <div class="brand" aria-label="ToF Systems Knowledge">
@@ -406,7 +420,7 @@ HTML = """<!doctype html>
       </div>
     </header>
 
-    <main>
+    <main id="main-content">
       <section class="hero">
         <div>
           <p class="eyebrow" data-i18n="heroEyebrow">DEINE DOKUMENTE · DEINE QUELLEN</p>
@@ -426,33 +440,33 @@ HTML = """<!doctype html>
           <p class="eyebrow" data-i18n="answerEyebrow">FRAGE STELLEN</p>
           <h2 data-i18n="answerTitle">Was möchtest du aus deinen Dokumenten wissen?</h2>
           <div class="form-grid">
-            <textarea id="qa-question" data-i18n-placeholder="questionPlaceholder" placeholder="Zum Beispiel: Was steht in meinen Unterlagen zur Urlaubsregelung?"></textarea>
+            <textarea id="qa-question" aria-label="Frage an deine Dokumente" data-i18n-aria-label="questionLabel" data-i18n-placeholder="questionPlaceholder" placeholder="Zum Beispiel: Was steht in meinen Unterlagen zur Urlaubsregelung?"></textarea>
             <div class="options-row">
-              <input id="qa-scope" type="text" data-i18n-placeholder="scopePlaceholder" placeholder="Optional: Suche auf bestimmte Quellen begrenzen">
+              <input id="qa-scope" type="text" aria-label="Suche optional auf bestimmte Quellen begrenzen" data-i18n-aria-label="scopeLabel" data-i18n-placeholder="scopePlaceholder" placeholder="Optional: Suche auf bestimmte Quellen begrenzen">
               <input id="qa-limit" type="number" min="1" max="10" value="5" aria-label="Maximale Anzahl berücksichtigter Treffer">
             </div>
             <button onclick="runAnswer()" data-i18n="runAnswer">Antwort aus meinen Dokumenten holen</button>
           </div>
           <div class="hint" data-i18n="answerHint">ToF sucht passende Stellen und zeigt die verwendeten Quellen zusammen mit der Antwort.</div>
-          <div class="result" id="qa-result" data-i18n="noAnswerYet">Hier erscheint deine Antwort mit den dazugehörigen Quellen.</div>
+          <div class="result" id="qa-result" role="status" aria-live="polite" data-i18n="noAnswerYet">Hier erscheint deine Antwort mit den dazugehörigen Quellen.</div>
         </div>
 
         <div class="search-panel">
           <p class="eyebrow" data-i18n="searchEyebrow">DOKUMENTE DURCHSUCHEN</p>
           <h2 data-i18n="searchTitle">Finde passende Stellen direkt.</h2>
           <div class="form-grid">
-            <input id="search-query" type="text" data-i18n-placeholder="searchPlaceholder" placeholder="Wonach möchtest du suchen?">
+            <input id="search-query" type="text" aria-label="Dokumente durchsuchen" data-i18n-aria-label="searchLabel" data-i18n-placeholder="searchPlaceholder" placeholder="Wonach möchtest du suchen?">
             <div class="options-row">
-              <input id="search-scope" type="text" data-i18n-placeholder="scopePlaceholder" placeholder="Optional: Suche auf bestimmte Quellen begrenzen">
+              <input id="search-scope" type="text" aria-label="Suche optional auf bestimmte Quellen begrenzen" data-i18n-aria-label="scopeLabel" data-i18n-placeholder="scopePlaceholder" placeholder="Optional: Suche auf bestimmte Quellen begrenzen">
               <input id="search-limit" type="number" min="1" max="20" value="5" aria-label="Maximale Anzahl Suchtreffer">
             </div>
             <button class="secondary" onclick="runSearch()" data-i18n="runSearch">Dokumente durchsuchen</button>
           </div>
           <div class="hint" data-i18n="searchHint">Du bekommst die passendsten Fundstellen mit Dokument und Textausschnitt.</div>
-          <div class="result" id="search-result" data-i18n="noSearchYet">Hier erscheinen passende Fundstellen aus deinen Dokumenten.</div>
+          <div class="result" id="search-result" role="status" aria-live="polite" data-i18n="noSearchYet">Hier erscheinen passende Fundstellen aus deinen Dokumenten.</div>
         </div>
 
-        <div class="status" id="next-step" data-i18n="nextStep">Wenn du ToF zum ersten Mal nutzt, öffne unten „Einrichtung & technische Details“ und starte dort die lokale Umgebung.</div>
+        <div class="status" id="next-step" role="status" aria-live="polite" data-i18n="nextStep">Wenn du ToF zum ersten Mal nutzt, öffne unten „Einrichtung & technische Details“ und starte dort die lokale Umgebung.</div>
 
         <details class="tech-panel">
           <summary data-i18n="techTitle">Einrichtung & technische Details</summary>
@@ -528,6 +542,13 @@ HTML = """<!doctype html>
         noAnswerYet: 'Hier erscheint deine Antwort mit den dazugehörigen Quellen.',
         activityLog: 'Technisches Protokoll',
         languageButton: 'English',
+        skipLink: 'Zum Inhalt springen',
+        questionLabel: 'Frage an deine Dokumente',
+        searchLabel: 'Dokumente durchsuchen',
+        scopeLabel: 'Suche optional auf bestimmte Quellen begrenzen',
+        tryAgainHelp: 'Prüfe zuerst, ob die lokale Umgebung läuft. Wenn das Problem bleibt, öffne „Einrichtung & technische Details“ und wähle „Probleme finden“.',
+        technicalError: 'Technische Details anzeigen',
+        noHitsHelp: 'Versuche andere Suchbegriffe oder prüfe, ob die passenden Dokumente bereits eingelesen wurden.',
         themeButtonLight: 'Hell',
         themeButtonDark: 'Dunkel',
         searchFailed: 'Suche fehlgeschlagen',
@@ -595,6 +616,13 @@ HTML = """<!doctype html>
         noAnswerYet: 'Your answer and its sources will appear here.',
         activityLog: 'Technical log',
         languageButton: 'Deutsch',
+        skipLink: 'Skip to content',
+        questionLabel: 'Question for your documents',
+        searchLabel: 'Search documents',
+        scopeLabel: 'Optionally limit the search to specific sources',
+        tryAgainHelp: 'First check that the local environment is running. If the problem remains, open “Setup & technical details” and choose “Find problems”.',
+        technicalError: 'Show technical details',
+        noHitsHelp: 'Try different search words or check whether the relevant documents have already been added.',
         themeButtonLight: 'Light',
         themeButtonDark: 'Dark',
         searchFailed: 'Search failed',
@@ -796,14 +824,19 @@ HTML = """<!doctype html>
         limit: Number(document.getElementById('search-limit').value || 5),
       };
       appendLog(t('runningSearch'));
-      const response = await fetch('/api/search', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      const data = await response.json();
-      renderSearchResult(data);
-      appendLog(t('searchFinished'));
+      try {
+        const response = await fetch('/api/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await response.json();
+        renderSearchResult(data);
+        appendLog(t('searchFinished'));
+      } catch (error) {
+        renderSearchResult({ error: 'request_failed', details: String(error) });
+        appendLog('Search request failed: ' + error);
+      }
     }
 
     async function runAnswer() {
@@ -813,14 +846,19 @@ HTML = """<!doctype html>
         limit: Number(document.getElementById('qa-limit').value || 5),
       };
       appendLog(t('runningAnswer'));
-      const response = await fetch('/api/answer', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      const data = await response.json();
-      renderAnswerResult(data);
-      appendLog(t('answerFinished'));
+      try {
+        const response = await fetch('/api/answer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await response.json();
+        renderAnswerResult(data);
+        appendLog(t('answerFinished'));
+      } catch (error) {
+        renderAnswerResult({ error: 'request_failed', details: String(error) });
+        appendLog('Answer request failed: ' + error);
+      }
     }
 
     applyTheme();

@@ -1,21 +1,23 @@
 # Hier starten
 
-Das ist der kürzeste sichere Einstieg für neue Nutzer.
+Das ist der kürzeste sichere Weg vom frischen Klon bis zur ersten Antwort aus lokalen Dokumenten.
 
 > English version: [START_HERE.md](START_HERE.md)
 
-## Was dieses Tool macht
+## Wofür dieses Produkt gedacht ist
 
-`tof_local_knowledge` indexiert lokale Dokumente, macht die gespeicherte Evidenz durchsuchbar und kann Fragen aus gefundenen Belegen beantworten, statt frei zu raten.
+Lege Dokumente auf deinem Rechner ab, durchsuche sie und stelle Fragen zu ihrem Inhalt.
 
-Für den ersten Lauf werden nur die synthetischen Demo-Dateien aus dem Repository verwendet. Ein frischer Klon setzt `LOCAL_SOURCE_ROOT_1` standardmäßig auf `./demo/source_1`, sodass du für den ersten Start keinen privaten Quellpfad eintragen musst.
+Die wichtigste Regel ist einfach: **Antworten sollen auf sichtbaren Quellen beruhen.** Wenn deine Dokumente eine Antwort nicht tragen, soll ToF das sagen, statt etwas zu erfinden.
 
-## Voraussetzungen
+Beim ersten Start werden nur die mitgelieferten synthetischen Demo-Dokumente verwendet. Du musst für den Test keine privaten Dateien angeben.
 
-- Python 3.11+ (unter Windows über `py` oder `python` erreichbar)
+## Was du brauchst
+
+- Python 3.11+ (unter Windows über `py` oder `python`)
 - Docker mit Docker Compose
-- ein lokaler Browser
-- genügend Speicherplatz für Postgres und optionale lokale Modellschichten
+- einen lokalen Browser
+- genügend Speicherplatz für den Dokumentindex und ein optionales lokales KI-Modell
 
 ## Erster Start
 
@@ -43,59 +45,40 @@ cd tof_local_knowledge
 ./scripts/start_here.command
 ```
 
-Der Start-hier-Pfad führt Setup, Stack-Start und Health-Check aus.
+Der erste Start bereitet die lokale Umgebung vor, startet sie und prüft die wichtigen Teile.
 
-## Prüfen, ob alles läuft
-
-Linux/macOS:
-
-```bash
-python3 run.py check
-```
-
-Danach lokale UI öffnen:
+Die lokale Oberfläche öffnest du mit:
 
 ```bash
 python3 run.py ui
 ```
 
-Die UI ist für lokale Nutzung auf `127.0.0.1:8785` gedacht. Auch die von Docker veröffentlichten Service-Ports binden standardmäßig über `BIND_HOST=127.0.0.1` nur an den lokalen Rechner.
+## Dein erstes sinnvolles Ergebnis
 
-## Sicherer erster Test
+Nutze die mitgelieferten Demo-Dokumente und stelle eine der Beispielfragen aus `demo/questions.md`.
 
-Bevor du private Dokumente verwendest, nutze die Demo:
+Ein erfolgreicher Ablauf bedeutet:
 
-- Quelldateien: `demo/source_1/`
-- Beispielfragen: `demo/questions.md`
-- erwartete Ergebnisformen: `demo/expected_results.md`
+- du bekommst eine Antwort aus den Demo-Dokumenten
+- die verwendeten Quellen werden sichtbar
+- du kannst die passenden Fundstellen nachvollziehen
+- eine Frage ohne ausreichende Grundlage bleibt sichtbar unbeantwortet
 
-Folge [docs/01_demo_flow.md](docs/01_demo_flow.md).
+Du musst die interne Indexierung oder die einzelnen Dienste dafür nicht verstehen.
 
-Der Erfolgsweg ist:
+## Wenn nichts gefunden wird
 
-```text
-lokale Datei
-  → Scan
-  → Extraktion
-  → zitierbares Segment
-  → Suchtreffer
-  → belegte Antwort
-  → sichtbare Quelle
-```
+Das ist nicht automatisch ein Fehler.
 
-Wenn keine Evidenz vorhanden ist, soll das System diesen Zustand sichtbar lassen statt etwas zu erfinden.
+Versuche:
 
-## Befehle im Alltag
+1. andere Suchbegriffe
+2. zu prüfen, ob das Dokument bereits hinzugefügt wurde
+3. die Frage enger zu formulieren
 
-```bash
-python3 run.py up
-python3 run.py status
-python3 run.py check
-python3 run.py ui
-python3 run.py down
-```
+Wenn die lokale Umgebung selbst nicht erreichbar ist, öffne **Einrichtung & technische Details → Probleme finden**.
 
-Bei Problemen:
+Im Terminal:
 
 ```bash
 python3 run.py doctor
@@ -103,31 +86,36 @@ python3 run.py doctor
 
 ## Vor echten Dokumenten
 
-Lies [SECURITY.md](SECURITY.md).
+Die Demo ist absichtlich künstlich. Bevor du private Dokumente hinzufügst, lies [SECURITY.md](SECURITY.md).
 
-Nicht öffentlich posten:
+Die normale lokale Konfiguration bindet die erreichbaren Dienste standardmäßig nur an diesen Rechner. Veröffentliche keine privaten Dokumente, Screenshots, lokalen Pfade, Zugangsdaten oder Antworten mit sensiblen Informationen.
 
-- echte private Dokumente
-- Screenshots echter Quellen
-- Zugangsdaten oder `.env`-Werte
-- private Pfade, Hostnamen oder Kundendaten
+## Stoppen und später weitermachen
 
-Für öffentliche Issues und Screenshots nur Demo-Daten verwenden.
+Stoppen:
 
-## Was dieses Tool nicht ist
+```bash
+python3 run.py down
+```
 
-Es ist kein:
+Später:
 
-- Cloud-first Dokumentendienst
-- Garant für immer korrekte Antworten
-- Ersatz für professionelle oder rechtliche Prüfung
-- Builder, der generierten Text automatisch zu Evidenz machen darf
+```bash
+python3 run.py up
+python3 run.py ui
+```
+
+Dein lokaler Index und die Konfiguration bleiben auf diesem Rechner, solange du sie nicht selbst entfernst.
+
+## Beispiel aus echter Nutzung
+
+[docs/USER_JOURNEY_DE.md](docs/USER_JOURNEY_DE.md) zeigt einen kompletten Weg von der Frage über die Antwort bis zur Quelle und zusätzlich einen Fall ohne ausreichende Grundlage.
 
 ## Mehr Details
 
 - [Einsteiger-Quickstart](docs/00_beginner_quickstart.md)
 - [Demo-Ablauf](docs/01_demo_flow.md)
 - [Validierungscheckliste](docs/02_demo_validation_checklist_DE.md)
-- [Suche und QA](docs/05_search_qa_DE.md)
-- [Runtime](docs/11_runtime_stack.md)
+- [Suche und Antworten](docs/05_search_qa_DE.md)
+- [Technische Runtime](docs/11_runtime_stack.md)
 - [Befehle](docs/commands.md)

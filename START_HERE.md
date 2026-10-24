@@ -1,21 +1,23 @@
 # Start here
 
-This is the shortest safe path for a first-time user.
+This is the shortest safe path from a fresh clone to your first answer from local documents.
 
 > German version: [START_HERE_DE.md](START_HERE_DE.md)
 
-## What this tool does
+## What this product is for
 
-`tof_local_knowledge` indexes local documents, lets you search the indexed evidence, and can answer questions from retrieved evidence instead of guessing freely.
+Add documents on your computer, search them, and ask questions about what they contain.
 
-The safest first run uses only the synthetic demo files already included in the repository. A fresh clone defaults `LOCAL_SOURCE_ROOT_1` to `./demo/source_1`, so no private source path is needed for the first run.
+The important rule is simple: **answers should stay tied to visible sources**. If the documents do not support an answer, ToF should say that instead of inventing one.
 
-## Requirements
+The first run uses only the synthetic demo documents included in this repository. You do not need to point ToF at private files just to try it.
+
+## What you need
 
 - Python 3.11+ (`py` or `python` on Windows)
 - Docker with Docker Compose
 - a local browser
-- enough disk space for Postgres and any optional local model layer you enable
+- enough local disk space for the document index and optional local AI model
 
 ## First start
 
@@ -43,59 +45,40 @@ cd tof_local_knowledge
 ./scripts/start_here.command
 ```
 
-The start-here path performs setup, starts the local stack, and checks service health.
+The first run prepares the local environment, starts it, and checks whether the important parts are ready.
 
-## Check that it is running
-
-Linux/macOS:
-
-```bash
-python3 run.py check
-```
-
-Then start/open the local UI:
+Open the local page with:
 
 ```bash
 python3 run.py ui
 ```
 
-The UI is intended to stay local on `127.0.0.1:8785`. Docker-published service ports also default to `127.0.0.1` through `BIND_HOST=127.0.0.1`.
+## Your first useful result
 
-## Safe first test
+Use the bundled demo documents and ask one of the example questions from `demo/questions.md`.
 
-Before using private documents, use the repository demo:
+A successful result means:
 
-- source files: `demo/source_1/`
-- example questions: `demo/questions.md`
-- expected result shapes: `demo/expected_results.md`
+- you get an answer based on the demo documents
+- the answer shows which source material it used
+- you can open the matching passages
+- a question that is not supported by the documents stays visibly unsupported
 
-Follow [docs/01_demo_flow.md](docs/01_demo_flow.md).
+You do not need to understand the internal indexing or service layout to use the browser page.
 
-A successful demo should show the full chain:
+## If nothing is found
 
-```text
-local file
-  → scan
-  → extraction
-  → citable segment
-  → search hit
-  → grounded answer
-  → visible citation
-```
+That is not automatically an error.
 
-A question with no supporting evidence should remain clearly unsupported instead of being invented.
+Try:
 
-## Everyday commands
+1. different search words
+2. checking whether the document was added
+3. asking a narrower question
 
-```bash
-python3 run.py up
-python3 run.py status
-python3 run.py check
-python3 run.py ui
-python3 run.py down
-```
+If the local environment itself is unavailable, open **Setup & technical details → Find problems**.
 
-If something is unclear:
+From the terminal:
 
 ```bash
 python3 run.py doctor
@@ -103,31 +86,36 @@ python3 run.py doctor
 
 ## Before using real documents
 
-Read [SECURITY.md](SECURITY.md).
+The demo is intentionally synthetic. Before adding private documents, read [SECURITY.md](SECURITY.md).
 
-Do not publish:
+The normal local configuration binds the browser-facing services to this computer by default. Do not publish private documents, screenshots, local paths, credentials or generated answers containing sensitive information.
 
-- real private documents
-- screenshots of private sources
-- credentials or `.env` values
-- private paths, hostnames, or customer data
+## Stop and come back later
 
-Use synthetic demo data for public issues and screenshots.
+Stop with:
 
-## What this tool is not
+```bash
+python3 run.py down
+```
 
-It is not:
+Later:
 
-- a cloud-first document service
-- a guarantee that every answer is correct
-- a substitute for professional/legal review
-- a builder that is allowed to turn generated text into evidence automatically
+```bash
+python3 run.py up
+python3 run.py ui
+```
+
+Your local index and configuration remain local unless you remove them yourself.
+
+## Real-life example
+
+See [docs/USER_JOURNEY.md](docs/USER_JOURNEY.md) for a complete question → answer → source journey plus a no-evidence example.
 
 ## More detail
 
 - [Beginner quickstart](docs/00_beginner_quickstart.md)
 - [Demo flow](docs/01_demo_flow.md)
 - [Validation checklist](docs/02_demo_validation_checklist.md)
-- [Search and QA](docs/05_search_qa.md)
-- [Runtime](docs/11_runtime_stack.md)
+- [Search and answers](docs/05_search_qa.md)
+- [Technical runtime](docs/11_runtime_stack.md)
 - [Commands](docs/commands.md)
