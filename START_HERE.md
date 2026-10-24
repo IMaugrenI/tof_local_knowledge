@@ -8,7 +8,7 @@ This is the shortest safe path for a first-time user.
 
 `tof_local_knowledge` indexes local documents, lets you search the indexed evidence, and can answer questions from retrieved evidence instead of guessing freely.
 
-The safest first run uses only the synthetic demo files already included in the repository.
+The safest first run uses only the synthetic demo files already included in the repository. A fresh clone defaults `LOCAL_SOURCE_ROOT_1` to `./demo/source_1`, so no private source path is needed for the first run.
 
 ## Requirements
 

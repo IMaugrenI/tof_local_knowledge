@@ -42,7 +42,7 @@ Windows users should normally use the PowerShell wrapper path.
 
 The start-here path does three things in order:
 
-1. prepares local folders and `.env` defaults
+1. prepares local folders and `.env` defaults (the fresh-clone source defaults to the synthetic `demo/source_1/` folder)
 2. starts the local knowledge stack
 3. checks whether the main services answered correctly
 

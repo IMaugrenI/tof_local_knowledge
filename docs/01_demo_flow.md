@@ -45,29 +45,19 @@ git clone https://github.com/IMaugrenI/tof_local_knowledge.git
 cd tof_local_knowledge
 ```
 
-## Step 2 — point the local source root to the demo folder
+## Step 2 — use the safe demo source default
 
-Copy `.env.example` to `.env` if it does not already exist:
-
-```bash
-cp .env.example .env
-```
-
-Then set the first local source root to the absolute path of the demo folder.
-
-Example on Linux or macOS:
-
-```bash
-LOCAL_SOURCE_ROOT_1=/absolute/path/to/tof_local_knowledge/demo/source_1
-```
-
-Example on Windows PowerShell syntax inside `.env` should still be a normal path value, for example:
+A fresh clone already contains this safe default in `.env.example`:
 
 ```text
-LOCAL_SOURCE_ROOT_1=C:\Users\demo\tof_local_knowledge\demo\source_1
+LOCAL_SOURCE_ROOT_1=./demo/source_1
 ```
 
-Use your real local path, but avoid showing personal path details in public screenshots.
+The normal setup copies that value into `.env`, so the first demo run does not require a private or absolute host path.
+
+If you already have an older local `.env`, set `LOCAL_SOURCE_ROOT_1=./demo/source_1` manually before reproducing the public demo.
+
+Only change this value to a real document folder after the demo works and after reading `SECURITY.md`.
 
 ## Step 3 — start the stack
 

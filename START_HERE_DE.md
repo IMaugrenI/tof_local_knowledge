@@ -8,7 +8,7 @@ Das ist der kürzeste sichere Einstieg für neue Nutzer.
 
 `tof_local_knowledge` indexiert lokale Dokumente, macht die gespeicherte Evidenz durchsuchbar und kann Fragen aus gefundenen Belegen beantworten, statt frei zu raten.
 
-Für den ersten Lauf solltest du nur die synthetischen Demo-Dateien aus dem Repository verwenden.
+Für den ersten Lauf werden nur die synthetischen Demo-Dateien aus dem Repository verwendet. Ein frischer Klon setzt `LOCAL_SOURCE_ROOT_1` standardmäßig auf `./demo/source_1`, sodass du für den ersten Start keinen privaten Quellpfad eintragen musst.
 
 ## Voraussetzungen
 
