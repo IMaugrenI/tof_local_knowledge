@@ -12,7 +12,7 @@ The safest first run uses only the synthetic demo files already included in the 
 
 ## Requirements
 
-- Python 3.11+
+- Python 3.11+ (`py` or `python` on Windows)
 - Docker with Docker Compose
 - a local browser
 - enough disk space for Postgres and any optional local model layer you enable

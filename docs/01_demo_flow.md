@@ -45,12 +45,6 @@ git clone https://github.com/IMaugrenI/tof_local_knowledge.git
 cd tof_local_knowledge
 ```
 
-If you are testing this branch before merge:
-
-```bash
-git checkout docs/demo-validation-checklist
-```
-
 ## Step 2 — point the local source root to the demo folder
 
 Copy `.env.example` to `.env` if it does not already exist:

@@ -12,7 +12,7 @@ Für den ersten Lauf solltest du nur die synthetischen Demo-Dateien aus dem Repo
 
 ## Voraussetzungen
 
-- Python 3.11+
+- Python 3.11+ (unter Windows über `py` oder `python` erreichbar)
 - Docker mit Docker Compose
 - ein lokaler Browser
 - genügend Speicherplatz für Postgres und optionale lokale Modellschichten
