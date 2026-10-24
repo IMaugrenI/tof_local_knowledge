@@ -134,6 +134,10 @@ def run_scan(payload: ScanRequest):
                     (payload.source_id,),
                 )
                 for previous in cur.fetchall():
+                    relative = Path(previous['relative_path'])
+                    if not payload.include_hidden and any(part.startswith('.') for part in relative.parts):
+                        # A scan that omits hidden paths cannot prove they are missing.
+                        continue
                     if previous['relative_path'] not in seen_paths and previous['extraction_status'] != 'missing':
                         cur.execute(
                             '''
