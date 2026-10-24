@@ -59,7 +59,7 @@ Danach lokale UI öffnen:
 python3 run.py ui
 ```
 
-Die UI ist für lokale Nutzung auf `127.0.0.1:8785` gedacht.
+Die UI ist für lokale Nutzung auf `127.0.0.1:8785` gedacht. Auch die von Docker veröffentlichten Service-Ports binden standardmäßig über `BIND_HOST=127.0.0.1` nur an den lokalen Rechner.
 
 ## Sicherer erster Test
 

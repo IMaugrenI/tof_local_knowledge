@@ -39,6 +39,8 @@ Use GitHub security reporting when available, or open a minimal public issue tha
 
 ## Project boundary
 
+This project binds Docker-published ports to `127.0.0.1` by default through `BIND_HOST=127.0.0.1`. This keeps Postgres and the local APIs off the LAN by default. Changing `BIND_HOST` to another address is an explicit operator decision and changes the exposure boundary.
+
 This project is designed to:
 
 - run locally

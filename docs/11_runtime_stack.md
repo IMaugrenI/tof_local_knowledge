@@ -23,6 +23,16 @@ For the real core runtime, `compose.full.yml` is the authoritative compose file.
 - runtime entrypoint: `python3 run.py ...`
 - compose file: `compose.full.yml`
 
+## Default network bind
+
+Docker-published ports default to the loopback interface:
+
+```text
+BIND_HOST=127.0.0.1
+```
+
+That means Postgres and the local APIs are reachable from the same machine but are not published to the LAN by default. Change `BIND_HOST` only if you intentionally need remote access and have added appropriate network/security controls.
+
 ## Default host ports
 
 The internal Postgres service still listens on container port `5432`.
