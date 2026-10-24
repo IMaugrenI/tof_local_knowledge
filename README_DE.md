@@ -4,37 +4,21 @@
   <img src="https://raw.githubusercontent.com/IMaugrenI/IMaugrenI/main/assets/banner/tof_local_knowledge_banner_clean.png" alt="tof_local_knowledge banner" width="100%" />
 </p>
 
-> Die englische Hauptfassung liegt in `README.md`.
+**Lokale Dokumente durchsuchen und Antworten anhand sichtbarer Belege nachvollziehen.**
 
-> **Neu hier?** Starte mit [START_HERE_DE.md](START_HERE_DE.md). Dort kommst du vom Klonen bis zu einer sicheren Demo-Frage, ohne zuerst die interne Service-Struktur verstehen zu müssen.
+Local Knowledge hilft bei der Indexierung und Suche lokaler Dokumente sowie beim Erzeugen beleggestützter Antworten. Es richtet sich an Menschen und Teams, die **nachprüfbare Quellen statt unbelegter Freitextantworten** benötigen.
 
-**Lokales Wissenssystem für Suche und evidenzbasierte Antworten**
+**Einstieg:** [Sicherer Schnellstart und Demo](START_HERE_DE.md) · [English README](README.md) · [ToF Systems Übersicht](https://github.com/IMaugrenI/tof-showcase)
 
-Ein On-Prem-System für Dokumenten-Indexierung, Suche und belegte Antworten statt freiem Raten.
+## So sieht eine belegte Antwort aus
 
-On-prem lokales Wissenssystem für Dokumenten-Indexierung, Suche und grounded Answers.
+Die öffentliche Demo verwendet synthetische Dokumente aus `demo/source_1/`. Der Screenshot zeigt eine echte lokale Ansicht mit Suchtreffern, zitierter Antwort und verwendeten Dokumenten.
 
-## Was dieses Repo ist
+![Local Knowledge: belegte Antwort](assets/screenshots/knowledge-07-ui-grounded-answer-dark.png)
 
-Dieses Repository ist das öffentliche **Ground**-Repo in der Produktlinie.
+[Demo-Nachweise und Screenshots](docs/03_demo_evidence_screenshots.md) · [Beispiel ohne ausreichende Evidenz](assets/screenshots/knowledge-06-no-evidence-contract-number.png)
 
-## Für wen es gedacht ist
-
-Dieses Repo ist für Menschen und Teams, die lokale Dokumenten-Indexierung, prüfbare Suche und evidenzgebundene Antworten statt freiem Raten wollen.
-
-## Was es nicht ist
-
-Dieses Repo ist kein Cloud-first Produkt, kein versteckter Remote-Sync-Dienst und kein allgemeines Builder-System.
-
-## Wohin du als Nächstes gehen kannst
-
-- `tof-showcase` — öffentlicher Architektur- und Produktlinien-Überblick
-- `tof_local_builder` — kontrollierte Generierung aus grounded Input
-- `local_case_organizer` — grounded Material strukturieren und exportieren
-
-## Warum dieses Repo existiert
-
-Der Hauptpunkt dieses Repos ist nicht nur, lokale Daten nutzbar zu machen, sondern Antworten zu erzeugen, die an sichtbare Evidenz gebunden bleiben.
+**Einordnung:** Dieses Repository ist das eigenständige **Ground**-Werkzeug. Es ist weder ein Cloud-Synchronisierungsdienst noch ein allgemeiner KI-Builder oder eine automatische Wahrheitsinstanz. Belegte Informationen und fehlende Evidenz bleiben unterscheidbar. Eine Verbindung mit anderen Werkzeugen ist möglich, wird aber nicht als bereits integriert vorausgesetzt.
 
 ## Einfachster Einstieg
 
