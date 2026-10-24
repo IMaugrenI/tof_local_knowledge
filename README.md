@@ -4,57 +4,21 @@
   <img src="https://raw.githubusercontent.com/IMaugrenI/IMaugrenI/main/assets/banner/tof_local_knowledge_banner_clean.png" alt="tof_local_knowledge banner" width="100%" />
 </p>
 
-**Search local documents and get evidence-grounded answers**
+**Find answers in local documents — with evidence you can inspect.**
 
-An on-prem knowledge system for indexing documents, searching them, and answering questions from citable evidence instead of free-form guessing.
+Local Knowledge helps you index documents, search their contents, and generate evidence-grounded answers. It is designed for people and teams that need **traceable sources rather than unverified free-form answers**.
 
-> English is the primary text in this repository. A German mirror is available in `README_DE.md`.
+**Get started:** [First run and safe demo](START_HERE.md) · [German README](README_DE.md) · [ToF Systems overview](https://github.com/IMaugrenI/tof-showcase)
 
-> **New here?** Start with [START_HERE.md](START_HERE.md). It takes you from clone to a safe demo question without requiring you to understand the internal service layout first.
+## See a grounded answer
 
-On-prem local knowledge system for document indexing, search, and grounded question answering.
+The public demo uses synthetic documents from `demo/source_1/`. The screenshot below is a real local UI view of a retrieved result, an answer with citations, and the documents used.
 
-## Public demo baseline
+![Local Knowledge evidence-grounded answer](assets/screenshots/knowledge-07-ui-grounded-answer-dark.png)
 
-The neutral demo flow has been validated from a local run using only synthetic files from `demo/source_1/`.
+[Demo evidence and screenshots](docs/03_demo_evidence_screenshots.md) · [No-evidence example](assets/screenshots/knowledge-06-no-evidence-contract-number.png)
 
-![Local UI grounded answer demo](assets/screenshots/knowledge-07-ui-grounded-answer-dark.png)
-
-This screenshot shows the local browser UI rendering a search result, a grounded answer, citation labels, used documents, and the fallback search queries for inspectability.
-
-Full evidence chain:
-
-- [healthcheck: all services OK](assets/screenshots/knowledge-01-healthcheck.png)
-- [scan: neutral demo source indexed](assets/screenshots/knowledge-02-scan-demo-source.png)
-- [extraction: citable segment created](assets/screenshots/knowledge-03-extraction-citation.png)
-- [search: vacation policy evidence found](assets/screenshots/knowledge-04-search-vacation-policy.png)
-- [grounded answer: vacation policy with citation](assets/screenshots/knowledge-05-grounded-answer-vacation.png)
-- [UI grounded answer: local browser view](assets/screenshots/knowledge-07-ui-grounded-answer-dark.png)
-- [no-evidence answer: private contract number rejected](assets/screenshots/knowledge-06-no-evidence-contract-number.png)
-
-See `docs/03_demo_evidence_screenshots.md` for the compact evidence index and screenshot safety boundary.
-
-## What this repo is
-
-This repository is the public Ground repo in the product line.
-
-## Who it is for
-
-This repo is for people and teams who want local document indexing, inspectable search, and evidence-grounded answers instead of free-form guessing.
-
-## What it is not
-
-This repo is not a cloud-first product, not a hidden remote sync service, and not a general builder system.
-
-## Where to go next
-
-- `tof-showcase` — public architecture and product-line overview
-- `tof_local_builder` — controlled generation from grounded input
-- `local_case_organizer` — structure extracted material into local cases and exports
-
-## Why this repo exists
-
-The main point of this repo is not just to make local data usable, but to produce answers that stay tied to visible evidence.
+**Scope:** this repository is the independent **Ground** tool. It is not a cloud sync service, general AI builder, or an automatic source of truth. Retrieved evidence and missing evidence must remain distinguishable. Its outputs can inform other tools, but integration is not implied.
 
 ## Use this repo in the simplest way
 
