@@ -32,5 +32,10 @@ jobs:
       - name: Compile all Python sources
         run: python -m compileall -q .
 
+      - name: Validate Docker Compose config
+        run: |
+          cp .env.example .env
+          docker compose -f compose.full.yml config > /dev/null
+
       - name: Run tests
         run: pytest -q
