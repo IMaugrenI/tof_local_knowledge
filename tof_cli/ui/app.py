@@ -23,19 +23,19 @@ class ActionSpec:
 
 
 ACTIONS = {
-    "setup": ActionSpec("Prepare local setup", setup.handle, {}, "SAFE"),
-    "up": ActionSpec("Start stack", up.handle, {"build": True}, "SAFE"),
-    "check": ActionSpec("Check services", check.handle, {}, "SAFE"),
-    "status": ActionSpec("Show runtime status", status.handle, {}, "SAFE"),
-    "doctor": ActionSpec("Run doctor", doctor.handle, {}, "SAFE"),
-    "down": ActionSpec("Stop stack", down.handle, {"remove_orphans": False}, "SAFE"),
+    "setup": ActionSpec("Prepare local environment", setup.handle, {}, "SAFE"),
+    "up": ActionSpec("Start local environment", up.handle, {"build": True}, "SAFE"),
+    "check": ActionSpec("Check if everything is ready", check.handle, {}, "SAFE"),
+    "status": ActionSpec("Show technical status", status.handle, {}, "SAFE"),
+    "doctor": ActionSpec("Find problems", doctor.handle, {}, "SAFE"),
+    "down": ActionSpec("Stop local environment", down.handle, {"remove_orphans": False}, "SAFE"),
 }
 
 LINKS = {
-    "openwebui": {"label": "Open WebUI", "url": "http://127.0.0.1:3000"},
-    "search_docs": {"label": "Open search API docs", "url": "http://127.0.0.1:8105/docs"},
-    "qa_docs": {"label": "Open QA API docs", "url": "http://127.0.0.1:8106/docs"},
-    "catalog_docs": {"label": "Open catalog API docs", "url": "http://127.0.0.1:8102/docs"},
+    "openwebui": {"label": "Open advanced workspace", "url": "http://127.0.0.1:3000"},
+    "search_docs": {"label": "Technical search documentation", "url": "http://127.0.0.1:8105/docs"},
+    "qa_docs": {"label": "Technical answer documentation", "url": "http://127.0.0.1:8106/docs"},
+    "catalog_docs": {"label": "Technical source documentation", "url": "http://127.0.0.1:8102/docs"},
 }
 
 API_TARGETS = {
@@ -881,7 +881,7 @@ def _post_json(url: str, payload: dict[str, object]) -> dict[str, object]:
 
 def _summary_payload() -> dict[str, object]:
     return {
-        "next_step": "Recommended order: prepare local setup, start stack, check services, then use search or grounded answer in this browser page.",
+        "next_step": "Prepare the local environment once, then ask questions or search your documents from this page.",
         "actions": [
             {"name": key, "label": spec.label, "safe_level": spec.safe_level}
             for key, spec in ACTIONS.items()
