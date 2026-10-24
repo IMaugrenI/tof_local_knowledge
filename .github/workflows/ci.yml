@@ -31,5 +31,5 @@ jobs:
       - name: Compile all Python sources
         run: python -m compileall -q .
 
-      - name: Collect tests (if any)
-        run: pytest --collect-only -q || true
+      - name: Run tests
+        run: pytest -q

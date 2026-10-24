@@ -10,6 +10,8 @@ An on-prem knowledge system for indexing documents, searching them, and answerin
 
 > English is the primary text in this repository. A German mirror is available in `README_DE.md`.
 
+> **New here?** Start with [START_HERE.md](START_HERE.md). It takes you from clone to a safe demo question without requiring you to understand the internal service layout first.
+
 On-prem local knowledge system for document indexing, search, and grounded question answering.
 
 ## Public demo baseline

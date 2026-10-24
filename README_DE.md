@@ -6,6 +6,8 @@
 
 > Die englische Hauptfassung liegt in `README.md`.
 
+> **Neu hier?** Starte mit [START_HERE_DE.md](START_HERE_DE.md). Dort kommst du vom Klonen bis zu einer sicheren Demo-Frage, ohne zuerst die interne Service-Struktur verstehen zu müssen.
+
 **Lokales Wissenssystem für Suche und evidenzbasierte Antworten**
 
 Ein On-Prem-System für Dokumenten-Indexierung, Suche und belegte Antworten statt freiem Raten.
