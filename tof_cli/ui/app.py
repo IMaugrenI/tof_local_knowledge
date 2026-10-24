@@ -52,280 +52,582 @@ HTML = """<!doctype html>
   <title>tof_local_knowledge</title>
   <style>
     :root {
-      --bg: #f5f7fb;
-      --surface: #ffffff;
-      --surface-soft: #f8fafc;
-      --text: #18212f;
-      --muted: #6b7280;
-      --border: #e5e7eb;
-      --shadow: rgba(0,0,0,0.06);
-      --primary: #1f6feb;
-      --secondary: #0f766e;
-      --ghost-bg: #e5e7eb;
-      --ghost-text: #111827;
-      --status-bg: #ecfeff;
-      --status-border: #a5f3fc;
-      --status-text: #164e63;
-      --log-bg: #111827;
-      --log-text: #d1fae5;
-      --chip-bg: #eef2ff;
-      --chip-text: #3730a3;
-      --chip-border: #c7d2fe;
-      --warn-bg: #fff7ed;
-      --warn-text: #9a3412;
-      --warn-border: #fed7aa;
+      --bg: #0d0d0c;
+      --bg-soft: #13120f;
+      --surface: #181612;
+      --surface-soft: #211e18;
+      --text: #f4f0e8;
+      --muted: #aaa49a;
+      --gold: #c69a52;
+      --gold-bright: #e1b969;
+      --border: rgba(244,240,232,.10);
+      --border-strong: rgba(198,154,82,.34);
+      --shadow: 0 24px 80px rgba(0,0,0,.30);
+      --ok: #71c39b;
+      --warn: #d8a85f;
+      --danger: #cf7b72;
+      --chip-bg: rgba(198,154,82,.08);
+      --chip-text: #e1b969;
+      --chip-border: rgba(198,154,82,.28);
+      --warn-bg: rgba(216,168,95,.08);
+      --warn-text: #e7c48a;
+      --warn-border: rgba(216,168,95,.30);
+      color-scheme: dark;
     }
-    body.dark {
-      --bg: #0b1120;
-      --surface: #111827;
-      --surface-soft: #1f2937;
-      --text: #e5e7eb;
-      --muted: #9ca3af;
-      --border: #374151;
-      --shadow: rgba(0,0,0,0.35);
-      --primary: #3b82f6;
-      --secondary: #14b8a6;
-      --ghost-bg: #253041;
-      --ghost-text: #e5e7eb;
-      --status-bg: #082f49;
-      --status-border: #0e7490;
-      --status-text: #cffafe;
-      --log-bg: #020617;
-      --log-text: #bbf7d0;
-      --chip-bg: #312e81;
-      --chip-text: #e0e7ff;
-      --chip-border: #6366f1;
-      --warn-bg: #431407;
-      --warn-text: #fed7aa;
-      --warn-border: #9a3412;
+
+    body:not(.dark) {
+      --bg: #efe9df;
+      --bg-soft: #f6f1e8;
+      --surface: #fbf8f2;
+      --surface-soft: #f1eadf;
+      --text: #211d18;
+      --muted: #6f675e;
+      --gold: #9b7135;
+      --gold-bright: #7f591f;
+      --border: rgba(50,40,28,.12);
+      --border-strong: rgba(155,113,53,.36);
+      --shadow: 0 22px 60px rgba(52,41,28,.12);
+      --chip-bg: rgba(155,113,53,.08);
+      --chip-text: #76511d;
+      --chip-border: rgba(155,113,53,.25);
+      --warn-bg: rgba(164,111,35,.08);
+      --warn-text: #7f5418;
+      --warn-border: rgba(164,111,35,.26);
+      color-scheme: light;
     }
-    body { font-family: Arial, sans-serif; margin: 0; background: var(--bg); color: var(--text); transition: background 0.2s ease, color 0.2s ease; }
-    .wrap { max-width: 1080px; margin: 0 auto; padding: 24px; }
-    .hero, .panel { background: var(--surface); border-radius: 16px; padding: 24px; box-shadow: 0 8px 30px var(--shadow); border: 1px solid var(--border); }
-    .panel { margin-top: 20px; }
-    .hero-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
-    .toolbar { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
-    .lead { color: var(--muted); line-height: 1.5; }
-    .note { color: var(--muted); font-size: 14px; }
-    .actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin-top: 18px; }
-    button { border: 0; border-radius: 12px; padding: 14px 16px; font-size: 15px; cursor: pointer; background: var(--primary); color: white; }
-    button.secondary { background: var(--secondary); }
-    button.ghost { background: var(--ghost-bg); color: var(--ghost-text); }
-    button.small { padding: 10px 12px; font-size: 14px; }
-    .status { margin-top: 18px; background: var(--status-bg); border: 1px solid var(--status-border); color: var(--status-text); border-radius: 14px; padding: 16px; }
-    .log, .result { margin-top: 18px; background: var(--log-bg); color: var(--log-text); border-radius: 14px; padding: 16px; min-height: 220px; }
-    .result { background: var(--surface); color: var(--text); min-height: 140px; border: 1px solid var(--border); }
-    .result-card { border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-top: 12px; background: var(--surface-soft); }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 82% 7%, rgba(198,154,82,.08), transparent 28rem),
+        radial-gradient(circle at 7% 46%, rgba(198,154,82,.03), transparent 34rem),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-soft) 52%, var(--bg) 100%);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      transition: background .18s ease, color .18s ease;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .13;
+      background-image:
+        linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.014) 1px, transparent 1px);
+      background-size: 72px 72px;
+      mask-image: linear-gradient(180deg, #000 0, transparent 80%);
+      z-index: -1;
+    }
+
+    button, input, textarea, summary { font: inherit; }
+
+    .wrap {
+      width: min(calc(100% - 40px), 1180px);
+      margin: 0 auto;
+      padding: 26px 0 56px;
+    }
+
+    .topbar {
+      min-height: 68px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 22px;
+      margin-bottom: 58px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 13px;
+    }
+
+    .brand-mark { width: 38px; height: 38px; }
+    .brand-mark svg { width: 100%; height: 100%; display: block; }
+    .brand-copy { display: flex; flex-direction: column; gap: 2px; }
+    .brand-name { font-size: .83rem; letter-spacing: .19em; font-weight: 800; }
+    .product-name { color: var(--muted); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; }
+
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+
+    button {
+      min-height: 46px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      padding: 0 17px;
+      cursor: pointer;
+      font-weight: 750;
+      background: var(--gold);
+      color: #17120d;
+      transition: transform .16s ease, border-color .16s ease, background .16s ease, color .16s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:focus-visible, summary:focus-visible, input:focus-visible, textarea:focus-visible {
+      outline: 2px solid var(--gold-bright);
+      outline-offset: 3px;
+    }
+
+    button.secondary {
+      border-color: var(--border-strong);
+      background: rgba(198,154,82,.06);
+      color: var(--text);
+    }
+
+    button.ghost {
+      border-color: var(--border);
+      background: rgba(255,255,255,.018);
+      color: var(--muted);
+    }
+
+    button.small { min-height: 38px; padding: 0 12px; font-size: .83rem; }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0,1.05fr) minmax(340px,.95fr);
+      gap: 60px;
+      align-items: end;
+      padding-bottom: 56px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .eyebrow {
+      margin: 0 0 16px;
+      color: var(--gold);
+      font-size: .76rem;
+      letter-spacing: .18em;
+      font-weight: 800;
+    }
+
+    h1,h2,h3,p { margin-top: 0; }
+    h1 {
+      margin-bottom: 22px;
+      max-width: 760px;
+      font-size: clamp(2.9rem, 6vw, 5.7rem);
+      line-height: .97;
+      letter-spacing: -.045em;
+    }
+    h2 { margin-bottom: 12px; font-size: clamp(1.7rem,3vw,2.6rem); letter-spacing: -.03em; }
+    h3 { margin-bottom: 8px; }
+
+    .lead { margin-bottom: 12px; color: #c6bfb4; font-size: clamp(1.04rem,1.65vw,1.23rem); line-height: 1.72; }
+    body:not(.dark) .lead { color: #665e55; }
+    .note, .muted, .hint { color: var(--muted); font-size: .88rem; }
+
+    .hero-points { display: grid; border-top: 1px solid var(--border); }
+    .hero-point {
+      display: grid;
+      grid-template-columns: 38px 1fr;
+      gap: 14px;
+      padding: 15px 0;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+      font-size: .91rem;
+    }
+    .hero-point span { color: var(--gold); font-size: .76rem; letter-spacing: .1em; }
+
+    .section { padding-top: 48px; }
+
+    .answer-panel, .search-panel, details.tech-panel {
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: rgba(255,255,255,.014);
+      box-shadow: var(--shadow);
+    }
+
+    .answer-panel {
+      position: relative;
+      overflow: hidden;
+      padding: 30px;
+      border-color: var(--border-strong);
+      background:
+        radial-gradient(circle at 88% 10%, rgba(198,154,82,.11), transparent 21rem),
+        rgba(255,255,255,.014);
+    }
+
+    .answer-panel::before {
+      content: "ASK";
+      position: absolute;
+      right: 22px;
+      top: 18px;
+      color: rgba(225,185,105,.16);
+      font-size: .72rem;
+      letter-spacing: .18em;
+      font-weight: 800;
+    }
+
+    .search-panel { margin-top: 18px; padding: 24px; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 16px; }
+
+    textarea, input[type=text], input[type=number] {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 13px;
+      background: rgba(255,255,255,.018);
+      color: var(--text);
+    }
+
+    textarea { min-height: 116px; resize: vertical; }
+    input[type=number] { max-width: 120px; }
+
+    .options-row {
+      display: grid;
+      grid-template-columns: minmax(0,1fr) 120px;
+      gap: 10px;
+    }
+
+    .result {
+      margin-top: 18px;
+      min-height: 120px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      background: rgba(0,0,0,.10);
+      color: var(--text);
+    }
+
+    .result-card {
+      margin-top: 12px;
+      padding: 15px;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      background: rgba(255,255,255,.015);
+    }
     .result-card:first-child { margin-top: 0; }
-    .muted { color: var(--muted); font-size: 14px; }
-    .answer-main { font-size: 16px; line-height: 1.5; white-space: pre-wrap; }
-    .preview { margin-top: 8px; line-height: 1.45; white-space: pre-wrap; }
+    .answer-main { font-size: 1.02rem; line-height: 1.65; white-space: pre-wrap; }
+    .preview { margin-top: 8px; line-height: 1.5; white-space: pre-wrap; }
+
     .chip-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-    .chip { background: var(--chip-bg); color: var(--chip-text); border: 1px solid var(--chip-border); border-radius: 999px; padding: 4px 10px; font-size: 12px; }
+    .chip { background: var(--chip-bg); color: var(--chip-text); border: 1px solid var(--chip-border); border-radius: 999px; padding: 5px 10px; font-size: 12px; }
     .chip.warn { background: var(--warn-bg); color: var(--warn-text); border-color: var(--warn-border); }
     .meta-grid { display: grid; grid-template-columns: 1fr; gap: 6px; margin-top: 10px; }
-    pre { margin: 0; white-space: pre-wrap; word-break: break-word; }
-    h1 { margin-top: 0; }
-    textarea, input[type=text], input[type=number] { width: 100%; box-sizing: border-box; border: 1px solid var(--border); border-radius: 8px; padding: 10px; font: inherit; background: var(--surface); color: var(--text); }
-    textarea { min-height: 90px; resize: vertical; }
-    .form-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 14px; }
-    .hint { color: var(--muted); font-size: 14px; margin-top: 10px; }
-    .two-col { display: grid; grid-template-columns: 1fr; gap: 20px; }
+
+    .status {
+      margin-top: 18px;
+      padding: 16px 18px;
+      border-left: 2px solid var(--gold);
+      background: rgba(198,154,82,.045);
+      color: var(--muted);
+    }
+
     details { margin-top: 12px; }
-    summary { cursor: pointer; }
-    @media (min-width: 1100px) { .two-col { grid-template-columns: 1fr 1fr; } }
-    @media (max-width: 720px) { .hero-top { flex-direction: column; } .toolbar { justify-content: flex-start; } }
+    details.tech-panel { margin-top: 38px; box-shadow: none; overflow: hidden; }
+    summary { cursor: pointer; list-style: none; padding: 17px 19px; font-weight: 750; }
+    summary::-webkit-details-marker { display: none; }
+    summary::after { content: "+"; float: right; color: var(--gold); font-size: 1.2rem; }
+    details[open] summary::after { content: "−"; }
+
+    .tech-body { border-top: 1px solid var(--border); padding: 20px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    .subhead { margin: 22px 0 10px; font-size: .95rem; color: var(--muted); }
+
+    .log {
+      margin-top: 12px;
+      min-height: 150px;
+      max-height: 340px;
+      overflow: auto;
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 12px;
+      background: #090a09;
+      color: #c6d7c8;
+      padding: 15px;
+      font: 12px/1.6 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    pre { margin: 0; white-space: pre-wrap; word-break: break-word; }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      margin-top: 44px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: .79rem;
+    }
+
+    @media (max-width: 820px) {
+      .hero { grid-template-columns: 1fr; gap: 32px; }
+      .topbar { margin-bottom: 38px; align-items: flex-start; }
+    }
+
+    @media (max-width: 560px) {
+      .wrap { width: min(calc(100% - 26px),1180px); padding-top: 16px; }
+      .topbar { flex-direction: column; }
+      h1 { font-size: clamp(2.5rem,13vw,3.65rem); }
+      .answer-panel, .search-panel { padding: 21px; }
+      .options-row { grid-template-columns: 1fr; }
+      input[type=number] { max-width: none; }
+      .actions { flex-direction: column; }
+      button { width: 100%; }
+      .footer { flex-direction: column; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,*::before,*::after { transition-duration: .001ms !important; animation-duration: .001ms !important; }
+    }
   </style>
 </head>
-<body>
-  <div class=\"wrap\">
-    <div class=\"hero\">
-      <div class=\"hero-top\">
+<body class="dark">
+  <div class="wrap">
+    <header class="topbar">
+      <div class="brand" aria-label="ToF Systems Knowledge">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 64 64" fill="none">
+            <g stroke="#e1b969" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M32 5.5C25.8 13.3 25.5 22.7 32 30.8C38.5 22.7 38.2 13.3 32 5.5Z"/>
+              <path d="M31.6 30.1C23.1 20.8 12.4 22.4 5.8 31.8C13.4 40.5 23.7 41.2 31.8 32.5"/>
+              <path d="M32.4 30.1C40.9 20.8 51.6 22.4 58.2 31.8C50.6 40.5 40.3 41.2 32.2 32.5"/>
+              <path d="M32 33.2C25.7 41.4 26 50.8 32 58.5C38 50.8 38.3 41.4 32 33.2Z"/>
+              <path d="M32 24.8L39.2 32L32 39.2L24.8 32L32 24.8Z"/>
+              <path d="M19.7 29.1L15.2 33.2L23.2 39.1"/>
+              <path d="M44.3 29.1L48.8 33.2L40.8 39.1"/>
+            </g>
+          </svg>
+        </span>
+        <span class="brand-copy">
+          <span class="brand-name">TOF SYSTEMS</span>
+          <span class="product-name">Knowledge</span>
+        </span>
+      </div>
+      <div class="toolbar">
+        <button class="ghost small" id="language-toggle" onclick="toggleLanguage()">English</button>
+        <button class="ghost small" id="theme-toggle" onclick="toggleTheme()">Hell</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
         <div>
-          <h1>tof_local_knowledge</h1>
-          <p class=\"lead\" data-i18n=\"heroLead\">Lokale Steueroberfläche für den Knowledge-Stack. Starte den Stack, öffne die wichtigsten Seiten, suche in lokalen Quellen und stelle beleggebundene Fragen.</p>
-          <p class=\"note\" data-i18n=\"heroNote\">Diese UI läuft lokal. Such- und Antwortanfragen bleiben auf deinem lokalen Stack.</p>
+          <p class="eyebrow" data-i18n="heroEyebrow">DEINE DOKUMENTE · DEINE QUELLEN</p>
+          <h1 data-i18n="heroTitle">Frag deine Dokumente.</h1>
+          <p class="lead" data-i18n="heroLead">Durchsuche deine lokalen Unterlagen oder stelle eine Frage. Antworten zeigen dir, auf welche Dokumente sie sich stützen.</p>
+          <p class="note" data-i18n="heroNote">Deine Unterlagen und Anfragen bleiben auf diesem Computer.</p>
         </div>
-        <div class=\"toolbar\">
-          <button class=\"ghost small\" id=\"language-toggle\" onclick=\"toggleLanguage()\">English</button>
-          <button class=\"ghost small\" id=\"theme-toggle\" onclick=\"toggleTheme()\">Dunkel</button>
+        <div class="hero-points">
+          <div class="hero-point"><span>01</span><div data-i18n="heroPointOne">Suche direkt in deinen eigenen Unterlagen.</div></div>
+          <div class="hero-point"><span>02</span><div data-i18n="heroPointTwo">Antworten zeigen die verwendeten Quellen.</div></div>
+          <div class="hero-point"><span>03</span><div data-i18n="heroPointThree">Wenn keine passende Grundlage gefunden wird, bleibt das sichtbar.</div></div>
         </div>
-      </div>
-    </div>
+      </section>
 
-    <div class=\"panel\">
-      <h2 data-i18n=\"mainActions\">Hauptaktionen</h2>
-      <div class=\"actions\">
-        <button onclick=\"runAction('setup')\" data-i18n=\"setupButton\">1. Lokales Setup vorbereiten</button>
-        <button class=\"secondary\" onclick=\"runAction('up')\" data-i18n=\"upButton\">2. Stack starten</button>
-        <button onclick=\"runAction('check')\" data-i18n=\"checkButton\">3. Services prüfen</button>
-        <button class=\"ghost\" onclick=\"runAction('status')\" data-i18n=\"statusButton\">Runtime-Status anzeigen</button>
-        <button class=\"ghost\" onclick=\"runAction('doctor')\" data-i18n=\"doctorButton\">Doctor ausführen</button>
-        <button onclick=\"runAction('down')\" data-i18n=\"downButton\">Stack stoppen</button>
-      </div>
-      <h3 style=\"margin-top:22px;\" data-i18n=\"usefulLinks\">Nützliche Links</h3>
-      <div class=\"actions\">
-        <button class=\"ghost\" onclick=\"openLink('openwebui')\" data-i18n=\"openWebui\">Open WebUI öffnen</button>
-        <button class=\"ghost\" onclick=\"openLink('search_docs')\" data-i18n=\"openSearchDocs\">Search-API-Doku öffnen</button>
-        <button class=\"ghost\" onclick=\"openLink('qa_docs')\" data-i18n=\"openQaDocs\">QA-API-Doku öffnen</button>
-        <button class=\"ghost\" onclick=\"openLink('catalog_docs')\" data-i18n=\"openCatalogDocs\">Catalog-API-Doku öffnen</button>
-      </div>
-      <div class=\"status\" id=\"next-step\" data-i18n=\"nextStep\">Empfohlene Reihenfolge: Setup vorbereiten, Stack starten, Services prüfen, danach Suche oder beleggebundene Antwort nutzen.</div>
-    </div>
-
-    <div class=\"two-col\">
-      <div class=\"panel\">
-        <h2 data-i18n=\"searchTitle\">Lokale Knowledge Base durchsuchen</h2>
-        <div class=\"form-grid\">
-          <input id=\"search-query\" type=\"text\" data-i18n-placeholder=\"searchPlaceholder\" placeholder=\"Suchbegriffe eingeben\">
-          <input id=\"search-scope\" type=\"text\" data-i18n-placeholder=\"scopePlaceholder\" placeholder=\"Optionale Source-IDs, durch Komma getrennt\">
-          <input id=\"search-limit\" type=\"number\" min=\"1\" max=\"20\" value=\"5\">
-          <button class=\"secondary\" onclick=\"runSearch()\" data-i18n=\"runSearch\">Suche ausführen</button>
+      <section class="section">
+        <div class="answer-panel">
+          <p class="eyebrow" data-i18n="answerEyebrow">FRAGE STELLEN</p>
+          <h2 data-i18n="answerTitle">Was möchtest du aus deinen Dokumenten wissen?</h2>
+          <div class="form-grid">
+            <textarea id="qa-question" data-i18n-placeholder="questionPlaceholder" placeholder="Zum Beispiel: Was steht in meinen Unterlagen zur Urlaubsregelung?"></textarea>
+            <div class="options-row">
+              <input id="qa-scope" type="text" data-i18n-placeholder="scopePlaceholder" placeholder="Optional: Suche auf bestimmte Quellen begrenzen">
+              <input id="qa-limit" type="number" min="1" max="10" value="5" aria-label="Maximale Anzahl berücksichtigter Treffer">
+            </div>
+            <button onclick="runAnswer()" data-i18n="runAnswer">Antwort aus meinen Dokumenten holen</button>
+          </div>
+          <div class="hint" data-i18n="answerHint">ToF sucht passende Stellen und zeigt die verwendeten Quellen zusammen mit der Antwort.</div>
+          <div class="result" id="qa-result" data-i18n="noAnswerYet">Hier erscheint deine Antwort mit den dazugehörigen Quellen.</div>
         </div>
-        <div class=\"hint\" data-i18n=\"searchHint\">Die Suche nutzt lokal den laufenden `POST /search` Endpunkt.</div>
-        <div class=\"result\" id=\"search-result\" data-i18n=\"noSearchYet\">Noch keine Suche ausgeführt.</div>
-      </div>
 
-      <div class=\"panel\">
-        <h2 data-i18n=\"answerTitle\">Beleggebundene Frage stellen</h2>
-        <div class=\"form-grid\">
-          <textarea id=\"qa-question\" data-i18n-placeholder=\"questionPlaceholder\" placeholder=\"Stelle eine Frage zu deinen indexierten lokalen Quellen\"></textarea>
-          <input id=\"qa-scope\" type=\"text\" data-i18n-placeholder=\"scopePlaceholder\" placeholder=\"Optionale Source-IDs, durch Komma getrennt\">
-          <input id=\"qa-limit\" type=\"number\" min=\"1\" max=\"10\" value=\"5\">
-          <button class=\"secondary\" onclick=\"runAnswer()\" data-i18n=\"runAnswer\">Beleggebundene Antwort holen</button>
+        <div class="search-panel">
+          <p class="eyebrow" data-i18n="searchEyebrow">DOKUMENTE DURCHSUCHEN</p>
+          <h2 data-i18n="searchTitle">Finde passende Stellen direkt.</h2>
+          <div class="form-grid">
+            <input id="search-query" type="text" data-i18n-placeholder="searchPlaceholder" placeholder="Wonach möchtest du suchen?">
+            <div class="options-row">
+              <input id="search-scope" type="text" data-i18n-placeholder="scopePlaceholder" placeholder="Optional: Suche auf bestimmte Quellen begrenzen">
+              <input id="search-limit" type="number" min="1" max="20" value="5" aria-label="Maximale Anzahl Suchtreffer">
+            </div>
+            <button class="secondary" onclick="runSearch()" data-i18n="runSearch">Dokumente durchsuchen</button>
+          </div>
+          <div class="hint" data-i18n="searchHint">Du bekommst die passendsten Fundstellen mit Dokument und Textausschnitt.</div>
+          <div class="result" id="search-result" data-i18n="noSearchYet">Hier erscheinen passende Fundstellen aus deinen Dokumenten.</div>
         </div>
-        <div class=\"hint\" data-i18n=\"answerHint\">Fragen nutzen lokal den laufenden `POST /answer` Endpunkt.</div>
-        <div class=\"result\" id=\"qa-result\" data-i18n=\"noAnswerYet\">Noch keine beleggebundene Antwort ausgeführt.</div>
-      </div>
-    </div>
 
-    <div class=\"panel\">
-      <h2 data-i18n=\"activityLog\">Aktivitätslog</h2>
-      <div class=\"log\"><pre id=\"log\">tof_local_knowledge UI wird gestartet...</pre></div>
-    </div>
+        <div class="status" id="next-step" data-i18n="nextStep">Wenn du ToF zum ersten Mal nutzt, öffne unten „Einrichtung & technische Details“ und starte dort die lokale Umgebung.</div>
+
+        <details class="tech-panel">
+          <summary data-i18n="techTitle">Einrichtung & technische Details</summary>
+          <div class="tech-body">
+            <div class="actions">
+              <button class="secondary" onclick="runAction('setup')" data-i18n="setupButton">Einrichtung vorbereiten</button>
+              <button class="secondary" onclick="runAction('up')" data-i18n="upButton">Lokale Umgebung starten</button>
+              <button class="secondary" onclick="runAction('check')" data-i18n="checkButton">Prüfen, ob alles bereit ist</button>
+              <button class="ghost" onclick="runAction('status')" data-i18n="statusButton">Technischen Status anzeigen</button>
+              <button class="ghost" onclick="runAction('doctor')" data-i18n="doctorButton">Probleme finden</button>
+              <button class="ghost" onclick="runAction('down')" data-i18n="downButton">Lokale Umgebung stoppen</button>
+            </div>
+
+            <p class="subhead" data-i18n="usefulLinks">Weitere technische Seiten</p>
+            <div class="actions">
+              <button class="ghost" onclick="openLink('openwebui')" data-i18n="openWebui">Erweiterte Arbeitsoberfläche öffnen</button>
+              <button class="ghost" onclick="openLink('search_docs')" data-i18n="openSearchDocs">Technische Such-Dokumentation</button>
+              <button class="ghost" onclick="openLink('qa_docs')" data-i18n="openQaDocs">Technische Antwort-Dokumentation</button>
+              <button class="ghost" onclick="openLink('catalog_docs')" data-i18n="openCatalogDocs">Technische Quellen-Dokumentation</button>
+            </div>
+
+            <details>
+              <summary data-i18n="activityLog">Technisches Protokoll</summary>
+              <div class="log"><pre id="log">ToF Knowledge ist bereit.</pre></div>
+            </details>
+          </div>
+        </details>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>ToF Systems · Knowledge</span>
+      <span data-i18n="footerText">Lokal arbeiten · Quellen sichtbar halten</span>
+    </footer>
   </div>
   <script>
     const I18N = {
       de: {
-        heroLead: 'Lokale Steueroberfläche für den Knowledge-Stack. Starte den Stack, öffne die wichtigsten Seiten, suche in lokalen Quellen und stelle beleggebundene Fragen.',
-        heroNote: 'Diese UI läuft lokal. Such- und Antwortanfragen bleiben auf deinem lokalen Stack.',
-        mainActions: 'Hauptaktionen',
-        setupButton: '1. Lokales Setup vorbereiten',
-        upButton: '2. Stack starten',
-        checkButton: '3. Services prüfen',
-        statusButton: 'Runtime-Status anzeigen',
-        doctorButton: 'Doctor ausführen',
-        downButton: 'Stack stoppen',
-        usefulLinks: 'Nützliche Links',
-        openWebui: 'Open WebUI öffnen',
-        openSearchDocs: 'Search-API-Doku öffnen',
-        openQaDocs: 'QA-API-Doku öffnen',
-        openCatalogDocs: 'Catalog-API-Doku öffnen',
-        nextStep: 'Empfohlene Reihenfolge: Setup vorbereiten, Stack starten, Services prüfen, danach Suche oder beleggebundene Antwort nutzen.',
-        searchTitle: 'Lokale Knowledge Base durchsuchen',
-        searchPlaceholder: 'Suchbegriffe eingeben',
-        scopePlaceholder: 'Optionale Source-IDs, durch Komma getrennt',
-        runSearch: 'Suche ausführen',
-        searchHint: 'Die Suche nutzt lokal den laufenden `POST /search` Endpunkt.',
-        noSearchYet: 'Noch keine Suche ausgeführt.',
-        answerTitle: 'Beleggebundene Frage stellen',
-        questionPlaceholder: 'Stelle eine Frage zu deinen indexierten lokalen Quellen',
-        runAnswer: 'Beleggebundene Antwort holen',
-        answerHint: 'Fragen nutzen lokal den laufenden `POST /answer` Endpunkt.',
-        noAnswerYet: 'Noch keine beleggebundene Antwort ausgeführt.',
-        activityLog: 'Aktivitätslog',
+        heroEyebrow: 'DEINE DOKUMENTE · DEINE QUELLEN',
+        heroTitle: 'Frag deine Dokumente.',
+        heroLead: 'Durchsuche deine lokalen Unterlagen oder stelle eine Frage. Antworten zeigen dir, auf welche Dokumente sie sich stützen.',
+        heroPointOne: 'Suche direkt in deinen eigenen Unterlagen.',
+        heroPointTwo: 'Antworten zeigen die verwendeten Quellen.',
+        heroPointThree: 'Wenn keine passende Grundlage gefunden wird, bleibt das sichtbar.',
+        answerEyebrow: 'FRAGE STELLEN',
+        searchEyebrow: 'DOKUMENTE DURCHSUCHEN',
+        techTitle: 'Einrichtung & technische Details',
+        footerText: 'Lokal arbeiten · Quellen sichtbar halten',
+        heroNote: 'Deine Unterlagen und Anfragen bleiben auf diesem Computer.',
+        mainActions: 'Einrichtung',
+        setupButton: 'Einrichtung vorbereiten',
+        upButton: 'Lokale Umgebung starten',
+        checkButton: 'Prüfen, ob alles bereit ist',
+        statusButton: 'Technischen Status anzeigen',
+        doctorButton: 'Probleme finden',
+        downButton: 'Lokale Umgebung stoppen',
+        usefulLinks: 'Weitere technische Seiten',
+        openWebui: 'Erweiterte Arbeitsoberfläche öffnen',
+        openSearchDocs: 'Technische Such-Dokumentation',
+        openQaDocs: 'Technische Antwort-Dokumentation',
+        openCatalogDocs: 'Technische Quellen-Dokumentation',
+        nextStep: 'Wenn du ToF zum ersten Mal nutzt, öffne unten „Einrichtung & technische Details“ und starte dort die lokale Umgebung.',
+        searchTitle: 'Finde passende Stellen direkt.',
+        searchPlaceholder: 'Wonach möchtest du suchen?',
+        scopePlaceholder: 'Optional: Suche auf bestimmte Quellen begrenzen',
+        runSearch: 'Dokumente durchsuchen',
+        searchHint: 'Du bekommst die passendsten Fundstellen mit Dokument und Textausschnitt.',
+        noSearchYet: 'Hier erscheinen passende Fundstellen aus deinen Dokumenten.',
+        answerTitle: 'Was möchtest du aus deinen Dokumenten wissen?',
+        questionPlaceholder: 'Zum Beispiel: Was steht in meinen Unterlagen zur Urlaubsregelung?',
+        runAnswer: 'Antwort aus meinen Dokumenten holen',
+        answerHint: 'ToF sucht passende Stellen und zeigt die verwendeten Quellen zusammen mit der Antwort.',
+        noAnswerYet: 'Hier erscheint deine Antwort mit den dazugehörigen Quellen.',
+        activityLog: 'Technisches Protokoll',
         languageButton: 'English',
         themeButtonLight: 'Hell',
         themeButtonDark: 'Dunkel',
         searchFailed: 'Suche fehlgeschlagen',
-        noHits: 'Keine Suchtreffer zurückgegeben.',
-        query: 'Query',
-        returned: 'Zurückgegeben',
+        noHits: 'Dazu wurde in deinen Dokumenten nichts Passendes gefunden.',
+        query: 'Suche',
+        returned: 'Gefunden',
         hits: 'Treffer',
         source: 'Quelle',
         document: 'Dokument',
-        citation: 'Zitat',
-        score: 'Score',
-        rawSearch: 'Rohe Suchantwort anzeigen',
-        answerFailed: 'Beleggebundene Antwort fehlgeschlagen',
+        citation: 'Quelle',
+        score: 'Übereinstimmung',
+        rawSearch: 'Technische Suchdetails anzeigen',
+        answerFailed: 'Die Antwort konnte nicht erstellt werden',
         noAnswerText: 'Keine Antwort zurückgegeben.',
-        confidence: 'Konfidenz',
-        uncertainties: 'Unsicherheiten',
-        citations: 'Zitate',
+        confidence: 'Sicherheit der Antwort',
+        uncertainties: 'Was noch unklar ist',
+        citations: 'Verwendete Quellen',
         usedDocuments: 'Verwendete Dokumente',
-        searchQueries: 'Suchanfragen',
-        rawAnswer: 'Rohe Antwortdaten anzeigen',
+        searchQueries: 'Verwendete Suchbegriffe',
+        rawAnswer: 'Technische Antwortdetails anzeigen',
         summaryRefreshed: 'Statushinweis aktualisiert.',
         runningAction: 'Führe Aktion aus',
         opening: 'Öffne',
         runningSearch: 'Lokale Suche läuft ...',
         searchFinished: 'Suche abgeschlossen.',
-        runningAnswer: 'Beleggebundene Antwort läuft ...',
-        answerFinished: 'Beleggebundene Antwort abgeschlossen.',
-        uiStarted: 'tof_local_knowledge UI wird gestartet...',
+        runningAnswer: 'Antwort wird aus deinen Dokumenten erstellt ...',
+        answerFinished: 'Antwort ist fertig.',
+        uiStarted: 'ToF Knowledge ist bereit.',
       },
       en: {
-        heroLead: 'A simple local control surface for the knowledge stack. Start the stack, open the main pages, search local sources, and ask grounded questions.',
-        heroNote: 'This UI is local-only. Search and answer requests stay on your local stack.',
-        mainActions: 'Main actions',
-        setupButton: '1. Prepare local setup',
-        upButton: '2. Start stack',
-        checkButton: '3. Check services',
-        statusButton: 'Show runtime status',
-        doctorButton: 'Run doctor',
-        downButton: 'Stop stack',
-        usefulLinks: 'Useful links',
-        openWebui: 'Open WebUI',
-        openSearchDocs: 'Open search API docs',
-        openQaDocs: 'Open QA API docs',
-        openCatalogDocs: 'Open catalog API docs',
-        nextStep: 'Recommended order: prepare local setup, start stack, check services, then use search or grounded answer in this browser page.',
-        searchTitle: 'Search the local knowledge base',
-        searchPlaceholder: 'Type search words here',
-        scopePlaceholder: 'Optional source IDs, comma separated',
-        runSearch: 'Run search',
-        searchHint: 'Search uses the local `POST /search` endpoint of the running stack.',
-        noSearchYet: 'No search run yet.',
-        answerTitle: 'Ask a grounded question',
-        questionPlaceholder: 'Ask a question about your indexed local sources',
-        runAnswer: 'Get grounded answer',
-        answerHint: 'Questions use the local `POST /answer` endpoint of the running stack.',
-        noAnswerYet: 'No grounded answer run yet.',
-        activityLog: 'Activity log',
+        heroEyebrow: 'YOUR DOCUMENTS · YOUR SOURCES',
+        heroTitle: 'Ask your documents.',
+        heroLead: 'Search your local documents or ask a question. Answers show which documents they are based on.',
+        heroPointOne: 'Search directly across your own documents.',
+        heroPointTwo: 'Answers show the sources they used.',
+        heroPointThree: 'If there is not enough evidence, that stays visible.',
+        answerEyebrow: 'ASK A QUESTION',
+        searchEyebrow: 'SEARCH DOCUMENTS',
+        techTitle: 'Setup & technical details',
+        footerText: 'Work locally · keep sources visible',
+        heroNote: 'Your documents and questions stay on this computer.',
+        mainActions: 'Setup',
+        setupButton: 'Prepare setup',
+        upButton: 'Start local environment',
+        checkButton: 'Check if everything is ready',
+        statusButton: 'Show technical status',
+        doctorButton: 'Find problems',
+        downButton: 'Stop local environment',
+        usefulLinks: 'More technical pages',
+        openWebui: 'Open advanced workspace',
+        openSearchDocs: 'Technical search documentation',
+        openQaDocs: 'Technical answer documentation',
+        openCatalogDocs: 'Technical source documentation',
+        nextStep: 'If this is your first time using ToF, open “Setup & technical details” below and start the local environment there.',
+        searchTitle: 'Find matching passages directly.',
+        searchPlaceholder: 'What would you like to find?',
+        scopePlaceholder: 'Optional: limit the search to specific sources',
+        runSearch: 'Search documents',
+        searchHint: 'You will see the best matching passages with their document and text excerpt.',
+        noSearchYet: 'Matching passages from your documents will appear here.',
+        answerTitle: 'What would you like to know from your documents?',
+        questionPlaceholder: 'For example: What do my documents say about the vacation policy?',
+        runAnswer: 'Answer from my documents',
+        answerHint: 'ToF finds matching passages and shows the sources together with the answer.',
+        noAnswerYet: 'Your answer and its sources will appear here.',
+        activityLog: 'Technical log',
         languageButton: 'Deutsch',
         themeButtonLight: 'Light',
         themeButtonDark: 'Dark',
         searchFailed: 'Search failed',
-        noHits: 'No search hits returned.',
-        query: 'Query',
-        returned: 'Returned',
+        noHits: 'Nothing relevant was found in your documents.',
+        query: 'Search',
+        returned: 'Found',
         hits: 'hit(s)',
         source: 'Source',
         document: 'Document',
-        citation: 'Citation',
-        score: 'Score',
-        rawSearch: 'Show raw search response',
-        answerFailed: 'Grounded answer failed',
+        citation: 'Source',
+        score: 'Match',
+        rawSearch: 'Show technical search details',
+        answerFailed: 'The answer could not be created',
         noAnswerText: 'No answer text returned.',
-        confidence: 'Confidence',
-        uncertainties: 'Uncertainties',
-        citations: 'Citations',
+        confidence: 'Answer confidence',
+        uncertainties: 'What is still unclear',
+        citations: 'Sources used',
         usedDocuments: 'Used documents',
-        searchQueries: 'Search queries',
-        rawAnswer: 'Show raw grounded-answer response',
+        searchQueries: 'Search terms used',
+        rawAnswer: 'Show technical answer details',
         summaryRefreshed: 'Summary refreshed.',
         runningAction: 'Running action',
         opening: 'Opening',
         runningSearch: 'Running local search ...',
         searchFinished: 'Search finished.',
-        runningAnswer: 'Running grounded answer ...',
-        answerFinished: 'Grounded answer finished.',
-        uiStarted: 'Starting tof_local_knowledge UI...',
+        runningAnswer: 'Building an answer from your documents ...',
+        answerFinished: 'Answer is ready.',
+        uiStarted: 'ToF Knowledge is ready.',
       },
     };
 
     let currentLanguage = localStorage.getItem('tof_local_knowledge_language') || 'de';
-    let currentTheme = localStorage.getItem('tof_local_knowledge_theme') || 'light';
+    let currentTheme = localStorage.getItem('tof_local_knowledge_theme') || 'dark';
 
     function t(key) {
       return (I18N[currentLanguage] && I18N[currentLanguage][key]) || I18N.de[key] || key;
