@@ -50,6 +50,45 @@ def health():
     return {'status': 'ok', 'service': 'catalog_api'}
 
 
+@app.get('/sources/status')
+def list_source_status():
+    """Read-only source and index readiness summary for the existing local UI.
+
+    Uses existing tables; no extra runtime, migration or destructive scan.
+    """
+    with db_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT
+                    so.source_id,
+                    so.display_name,
+                    so.enabled,
+                    COUNT(d.document_id)::int AS documents_total,
+                    COUNT(d.document_id) FILTER (WHERE d.extraction_status = 'done')::int AS indexed,
+                    COUNT(d.document_id) FILTER (WHERE d.extraction_status = 'pending')::int AS pending,
+                    COUNT(d.document_id) FILTER (WHERE d.extraction_status = 'failed')::int AS failed,
+                    COUNT(d.document_id) FILTER (WHERE d.extraction_status = 'missing')::int AS missing,
+                    (
+                        SELECT m.generated_at FROM manifests m
+                        WHERE m.source_id = so.source_id
+                        ORDER BY m.generated_at DESC, m.manifest_id DESC LIMIT 1
+                    ) AS last_scan_at,
+                    (
+                        SELECT m.file_count FROM manifests m
+                        WHERE m.source_id = so.source_id
+                        ORDER BY m.generated_at DESC, m.manifest_id DESC LIMIT 1
+                    ) AS last_scan_files
+                FROM sources so
+                LEFT JOIN documents d ON d.source_id = so.source_id
+                GROUP BY so.source_id, so.display_name, so.enabled
+                ORDER BY so.display_name, so.source_id
+                """
+            )
+            rows = cur.fetchall()
+    return {'sources': rows, 'count': len(rows), 'scope': 'local_single_user_only'}
+
+
 @app.get('/sources')
 def list_sources():
     with db_conn() as conn:
