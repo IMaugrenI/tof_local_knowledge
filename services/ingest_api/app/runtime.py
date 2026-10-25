@@ -15,6 +15,7 @@ class ScanRequest(BaseModel):
     root_path: str = Field(min_length=1)
     include_hidden: bool = False
     limit_files: int = Field(default=10000, ge=1, le=100000)
+    start_after: str | None = Field(default=None, max_length=2048)
 
 
 @app.get('/health')
@@ -38,6 +39,7 @@ def run_scan(payload: ScanRequest):
     truncated = False
     seen_paths: set[str] = set()
     sample_documents: list[dict] = []
+    last_processed_path: str | None = None
 
     with db_conn() as conn:
         with conn.cursor() as cur:
@@ -58,12 +60,14 @@ def run_scan(payload: ScanRequest):
                     continue
                 if not payload.include_hidden and any(part.startswith('.') for part in path.relative_to(root).parts):
                     continue
+                rel_path = path.relative_to(root).as_posix()
+                if payload.start_after and rel_path <= payload.start_after:
+                    continue
                 if files_scanned >= payload.limit_files:
                     truncated = True
                     break
                 files_scanned += 1
-
-                rel_path = str(path.relative_to(root))
+                last_processed_path = rel_path
                 seen_paths.add(rel_path)
                 size_bytes = path.stat().st_size
                 fingerprint = sha256_file(path)
@@ -130,7 +134,7 @@ def run_scan(payload: ScanRequest):
 
             # Reconciliation is safe only after a complete scan. A scan stopped by
             # the configured limit must not mark unvisited documents as deleted.
-            if not truncated:
+            if not truncated and not payload.start_after:
                 cur.execute(
                     'SELECT document_id, relative_path, extraction_status FROM documents WHERE source_id = %s',
                     (payload.source_id,),
@@ -167,6 +171,8 @@ def run_scan(payload: ScanRequest):
         'files_scanned': files_scanned,
         'unreadable_count': unreadable_count,
         'scan_complete': not truncated,
+        'next_cursor': last_processed_path if truncated else None,
+        'reconciliation_performed': not truncated and not payload.start_after,
         'counts': counters,
         'sample_documents': sample_documents,
     }
