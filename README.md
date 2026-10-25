@@ -54,6 +54,12 @@ The additional `evidence_signal` response reports matched segments, distinct doc
 
 Search hits now include page and segment metadata with stable ordering. The same local, read-only source rules apply, with no cloud requirement or new stack.
 
+## K7 – Configured local endpoints and actionable errors
+
+The existing browser UI now resolves source, search, QA, evidence and documentation links from the repository's current `.env` port settings. Invalid ports fail closed; remote hosts are not accepted from browser input.
+
+Search and question requests require bounded JSON objects. Connection problems, invalid requests, and processing errors are distinguished with bilingual guidance and expandable technical details. Sources with pending or failed indexing receive contextual hints. The local single-user security boundary and existing Compose startup mechanism remain unchanged.
+
 ## Use this repo in the simplest way
 
 If you want the shortest safe path, start here:
