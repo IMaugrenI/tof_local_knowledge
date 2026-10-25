@@ -40,6 +40,12 @@ Suchtreffer und konkrete Belegreferenzen in Antworten bieten nun **„Textstelle
 
 Die Funktion ist ausschließlich **lesend und lokal für Einzelbenutzer**. Sie schafft weder einen neuen Login, eine Quellenberechtigungsprüfung noch eine allgemeine Freigabe für das Netzwerk. Bestehende `citations`- und `evidence_refs`-Felder bleiben erhalten.
 
+## Ausbau K5 — Große Quellen schrittweise indexieren
+
+Die Aktion **„Konfigurierte Quelle indexieren“** kann jetzt auch Dokumente hinter den ersten 100 Dateien erreichen. Der Scanner verarbeitet begrenzte 100-Dateien-Abschnitte und liefert einen Fortsetzungszeiger. Über die bestehende Browseroberfläche können weitere Chargen manuell gestartet oder der Dateidurchlauf zurückgesetzt werden. Pro Klick werden weiterhin höchstens acht Dokumente extrahiert. Unveränderte, bereits erfolgreich verarbeitete Dateien bleiben unberührt; einzelne dauerhaft fehlerhafte Dateien verhindern den Fortschritt zu späteren Abschnitten nicht.
+
+**Wichtige Grenze:** Ein nicht mehr vorhandenes Dokument darf nur bei einem vollständig ausgeführten Scan ohne Seitenteilung als fehlend markiert werden. Bei aufgeteilten Durchläufen erfolgt bewusst kein solcher Abgleich. Es wurden weder neue Dienste noch weitere Quell-Mounts oder Mehrbenutzerrechte eingeführt.
+
 ## Einfachster Einstieg
 
 Wenn du den kürzesten sicheren Weg willst, starte hier:
