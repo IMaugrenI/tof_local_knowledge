@@ -15,6 +15,7 @@ from urllib.parse import parse_qs, urlparse
 from tof_cli.commands import check, doctor, down, setup, status, up
 from tof_cli.knowledge.index_ops import index_configured_source
 from tof_cli.core.env_ops import read_env
+from tof_cli.ui.service_ops import classify_error, configured_targets, parse_bounded_json
 
 
 @dataclass(frozen=True)
@@ -576,6 +577,13 @@ HTML = """<!doctype html>
         themeButtonLight: 'Hell',
         themeButtonDark: 'Dunkel',
         searchFailed: 'Suche fehlgeschlagen',
+        issueInvalid: 'Bitte prüfe die Eingabe und versuche es erneut.',
+        issueService: 'Ein lokaler Dienst ist nicht erreichbar. Öffne Einrichtung & technische Details und wähle Probleme finden.',
+        issueConfig: 'Die eingestellten lokalen Ports sind ungültig. Prüfe die .env-Konfiguration.',
+        issueProcess: 'Die Anfrage konnte nicht verarbeitet werden. Technische Details sind unten verfügbar.',
+        issueDetails: 'Technische Fehlerdetails',
+        issuePending: 'Diese Quelle enthält noch nicht indexierte Dokumente. Die Indexierung kann über die vorhandene Schaltfläche fortgesetzt werden.',
+        issueFailedDocs: 'Einige Dokumente konnten nicht indexiert werden. Details stehen im Indexierungsbericht.',
         noHits: 'Dazu wurde in deinen Dokumenten nichts Passendes gefunden.',
         query: 'Suche',
         returned: 'Gefunden',
@@ -687,6 +695,13 @@ HTML = """<!doctype html>
         themeButtonLight: 'Light',
         themeButtonDark: 'Dark',
         searchFailed: 'Search failed',
+        issueInvalid: 'Check your input and try again.',
+        issueService: 'A local service is unavailable. Open Setup & technical details and choose Find problems.',
+        issueConfig: 'The configured local ports are invalid. Check your .env configuration.',
+        issueProcess: 'The request could not be processed. Technical details remain available below.',
+        issueDetails: 'Technical error details',
+        issuePending: 'Some documents in this source have not been indexed. Continue indexing using the existing button.',
+        issueFailedDocs: 'Some documents could not be indexed. See the indexing report for details.',
         noHits: 'Nothing relevant was found in your documents.',
         query: 'Search',
         returned: 'Found',
@@ -856,10 +871,28 @@ HTML = """<!doctype html>
       }
     }
 
+    function friendlyIssue(error) {
+      const code = String(error || '');
+      if (code === 'service_unavailable' || code === 'source_status_unavailable'
+          || code === 'request_failed') return t('issueService');
+      if (code === 'invalid_configuration' || code.startsWith('invalid_local_port'))
+        return t('issueConfig');
+      if (code === 'invalid_request' || code.startsWith('http_error_4')
+          || code === 'same_origin_json_required') return t('issueInvalid');
+      return t('issueProcess');
+    }
+
+    function errorMarkup(data, title) {
+      return '<div class="result-card"><strong>' + escapeHtml(title) + '</strong>'
+        + '<p class="muted">' + escapeHtml(friendlyIssue(data.error)) + '</p>'
+        + '<details><summary>' + escapeHtml(t('issueDetails')) + '</summary><pre>'
+        + escapeHtml(JSON.stringify(data, null, 2)) + '</pre></details></div>';
+    }
+
     function renderSearchResult(data) {
       const root = document.getElementById('search-result');
       if (data.error) {
-        root.innerHTML = `<div class=\"result-card\"><strong>${t('searchFailed')}</strong><div class=\"muted\">${escapeHtml(data.details || data.error)}</div></div>`;
+        root.innerHTML = errorMarkup(data, t('searchFailed'));
         return;
       }
       const hits = data.results || data.hits || [];
@@ -902,7 +935,7 @@ HTML = """<!doctype html>
     function renderAnswerResult(data) {
       const root = document.getElementById('qa-result');
       if (data.error) {
-        root.innerHTML = `<div class=\"result-card\"><strong>${t('answerFailed')}</strong><div class=\"muted\">${escapeHtml(data.details || data.error)}</div></div>`;
+        root.innerHTML = errorMarkup(data, t('answerFailed'));
         return;
       }
       const answer = data.answer_text || data.answer || t('noAnswerText');
@@ -1001,7 +1034,9 @@ HTML = """<!doctype html>
         });
         const data = await response.json();
         if (!response.ok || data.status === 'error') {
-          result.textContent = t('indexFailed') + ' ' + (data.detail || data.error || '');
+          result.textContent = t('indexFailed') + ' '
+            + friendlyIssue(data.error || data.detail)
+            + ' (' + (data.detail || data.error || 'unknown') + ')';
         } else {
           indexCursor = data.next_cursor || null;
           result.textContent = t('indexSuccess') + ': ' + (data.indexed_this_pass || 0)
@@ -1063,6 +1098,18 @@ HTML = """<!doctype html>
             document.getElementById('search-query').focus();
           });
           panel.append(title, stats, scan, select);
+          if (number(source.pending) > 0) {
+            const reminder = document.createElement('p');
+            reminder.className = 'hint';
+            reminder.textContent = t('issuePending');
+            panel.appendChild(reminder);
+          }
+          if (number(source.failed) > 0) {
+            const failure = document.createElement('p');
+            failure.className = 'hint';
+            failure.textContent = t('issueFailedDocs');
+            panel.appendChild(failure);
+          }
           root.appendChild(panel);
         }
       } catch (error) {
@@ -1141,16 +1188,29 @@ def _run_action(name: str) -> dict[str, object]:
     }
 
 
+def _configured_api_targets() -> dict[str, str]:
+    return configured_targets(read_env())
+
+
+def _configured_links() -> dict[str, dict[str, str]]:
+    targets = _configured_api_targets()
+    return {
+        name: {"label": item["label"], "url": targets[name]}
+        for name, item in LINKS.items()
+    }
+
+
 def _open_link(name: str) -> dict[str, object]:
-    link = LINKS[name]
+    try:
+        link = _configured_links()[name]
+    except ValueError as exc:
+        return {"opened": None, "error": classify_error(str(exc))}
     webbrowser.open(link["url"])
     return {"opened": link["url"], "label": link["label"]}
 
 
 def _read_json_body(handler: BaseHTTPRequestHandler) -> dict[str, object]:
-    length = int(handler.headers.get("Content-Length", "0"))
-    raw = handler.rfile.read(length) if length > 0 else b"{}"
-    return json.loads(raw.decode("utf-8")) if raw else {}
+    return parse_bounded_json(handler.rfile, handler.headers.get("Content-Length", ""))
 
 
 def _evidence_lookup(segment_id: str) -> dict[str, object]:
@@ -1161,12 +1221,17 @@ def _evidence_lookup(segment_id: str) -> dict[str, object]:
     if env.get("BIND_HOST", "127.0.0.1") not in {"localhost", "127.0.0.1", "::1"}:
         return {"error": "local_only"}
     try:
-        port = int(env.get("SEARCH_API_PORT", "8105"))
+        endpoint = _configured_api_targets()["evidence"]
     except ValueError:
-        return {"error": "invalid_search_port"}
-    if port < 1 or port > 65535:
-        return {"error": "invalid_search_port"}
-    return _get_json(f"http://127.0.0.1:{port}/evidence/{segment_id}")
+        return {"error": "invalid_configuration"}
+    return _get_json(f"{endpoint}/{segment_id}")
+
+
+def _configured_target(name: str) -> str | None:
+    try:
+        return _configured_api_targets()[name]
+    except ValueError:
+        return None
 
 
 def _get_json(url: str) -> dict[str, object]:
@@ -1174,8 +1239,13 @@ def _get_json(url: str) -> dict[str, object]:
         with urllib.request.urlopen(url, timeout=8) as response:
             raw = response.read().decode("utf-8")
             return json.loads(raw) if raw else {}
-    except (urllib.error.URLError, ValueError, TimeoutError) as exc:
-        return {"error": "source_status_unavailable", "details": str(exc)}
+    except urllib.error.HTTPError as exc:
+        return {"error": "service_unavailable" if exc.code >= 500 else "invalid_request",
+                "details": f"upstream_http_{exc.code}"}
+    except (urllib.error.URLError, OSError, TimeoutError):
+        return {"error": "service_unavailable"}
+    except (ValueError, UnicodeError):
+        return {"error": "processing_error"}
 
 
 def _post_json(url: str, payload: dict[str, object]) -> dict[str, object]:
@@ -1190,10 +1260,20 @@ def _post_json(url: str, payload: dict[str, object]) -> dict[str, object]:
             raw = response.read().decode("utf-8")
             return json.loads(raw) if raw else {}
     except urllib.error.HTTPError as exc:
-        body = exc.read().decode("utf-8", errors="ignore")
-        return {"error": f"http_error_{exc.code}", "details": body or str(exc)}
-    except Exception as exc:
-        return {"error": "request_failed", "details": str(exc)}
+        return {"error": "invalid_request" if 400 <= exc.code < 500 else "processing_error",
+                "details": f"upstream_http_{exc.code}"}
+    except (urllib.error.URLError, OSError, TimeoutError):
+        return {"error": "service_unavailable"}
+    except (ValueError, UnicodeError):
+        return {"error": "processing_error"}
+
+
+def _ports_valid() -> bool:
+    try:
+        _configured_api_targets()
+    except ValueError:
+        return False
+    return True
 
 
 def _summary_payload() -> dict[str, object]:
@@ -1203,7 +1283,8 @@ def _summary_payload() -> dict[str, object]:
             {"name": key, "label": spec.label, "safe_level": spec.safe_level}
             for key, spec in ACTIONS.items()
         ],
-        "links": LINKS,
+        "links": _configured_links() if _ports_valid() else {},
+        "configuration_error": None if _ports_valid() else "invalid_configuration",
     }
 
 
@@ -1236,7 +1317,8 @@ def run_ui(host: str = "127.0.0.1", port: int = 8785, open_browser: bool = True)
                 self._send(code, "application/json; charset=utf-8", _json_bytes(response))
                 return
             if parsed.path == "/api/sources":
-                report = _get_json(API_TARGETS["sources"])
+                target = _configured_target("sources")
+                report = _get_json(target) if target else {"error": "invalid_configuration"}
                 code = 503 if report.get("error") else 200
                 self._send(code, "application/json; charset=utf-8", _json_bytes(report))
                 return
@@ -1279,13 +1361,25 @@ def run_ui(host: str = "127.0.0.1", port: int = 8785, open_browser: bool = True)
                 self._send(200, "application/json; charset=utf-8",
                            _json_bytes(index_configured_source(start_after=cursor)))
                 return
-            if action == 'search':
-                payload = _read_json_body(self)
-                self._send(200, "application/json; charset=utf-8", _json_bytes(_post_json(API_TARGETS['search'], payload)))
-                return
-            if action == 'answer':
-                payload = _read_json_body(self)
-                self._send(200, "application/json; charset=utf-8", _json_bytes(_post_json(API_TARGETS['answer'], payload)))
+            if action in {'search', 'answer'}:
+                origin = self.headers.get("Origin", "")
+                expected = f"http://{host}:{port}"
+                content_type = self.headers.get("Content-Type", "").lower()
+                if (origin and origin != expected) or 'application/json' not in content_type:
+                    self._send(403, "application/json; charset=utf-8",
+                               _json_bytes({"error": "same_origin_json_required"}))
+                    return
+                try:
+                    payload = _read_json_body(self)
+                except ValueError as exc:
+                    self._send(400, "application/json; charset=utf-8",
+                               _json_bytes({"error": "invalid_request", "details": str(exc)}))
+                    return
+                target = _configured_target(action)
+                result = _post_json(target, payload) if target else {"error": "invalid_configuration"}
+                error = result.get("error")
+                status_code = 400 if error == "invalid_request" else (503 if error else 200)
+                self._send(status_code, "application/json; charset=utf-8", _json_bytes(result))
                 return
             self._send(404, "application/json; charset=utf-8", _json_bytes({"error": "not found"}))
 
