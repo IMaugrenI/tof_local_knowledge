@@ -1034,7 +1034,9 @@ HTML = """<!doctype html>
         });
         const data = await response.json();
         if (!response.ok || data.status === 'error') {
-          result.textContent = t('indexFailed') + ' ' + (data.detail || data.error || '');
+          result.textContent = t('indexFailed') + ' '
+            + friendlyIssue(data.error || data.detail)
+            + ' (' + (data.detail || data.error || 'unknown') + ')';
         } else {
           indexCursor = data.next_cursor || null;
           result.textContent = t('indexSuccess') + ': ' + (data.indexed_this_pass || 0)
@@ -1096,6 +1098,18 @@ HTML = """<!doctype html>
             document.getElementById('search-query').focus();
           });
           panel.append(title, stats, scan, select);
+          if (number(source.pending) > 0) {
+            const reminder = document.createElement('p');
+            reminder.className = 'hint';
+            reminder.textContent = t('issuePending');
+            panel.appendChild(reminder);
+          }
+          if (number(source.failed) > 0) {
+            const failure = document.createElement('p');
+            failure.className = 'hint';
+            failure.textContent = t('issueFailedDocs');
+            panel.appendChild(failure);
+          }
           root.appendChild(panel);
         }
       } catch (error) {
