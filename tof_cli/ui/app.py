@@ -1271,7 +1271,8 @@ def run_ui(host: str = "127.0.0.1", port: int = 8785, open_browser: bool = True)
                 self._send(code, "application/json; charset=utf-8", _json_bytes(response))
                 return
             if parsed.path == "/api/sources":
-                report = _get_json(API_TARGETS["sources"])
+                target = _configured_target("sources")
+                report = _get_json(target) if target else {"error": "invalid_configuration"}
                 code = 503 if report.get("error") else 200
                 self._send(code, "application/json; charset=utf-8", _json_bytes(report))
                 return
@@ -1314,13 +1315,25 @@ def run_ui(host: str = "127.0.0.1", port: int = 8785, open_browser: bool = True)
                 self._send(200, "application/json; charset=utf-8",
                            _json_bytes(index_configured_source(start_after=cursor)))
                 return
-            if action == 'search':
-                payload = _read_json_body(self)
-                self._send(200, "application/json; charset=utf-8", _json_bytes(_post_json(API_TARGETS['search'], payload)))
-                return
-            if action == 'answer':
-                payload = _read_json_body(self)
-                self._send(200, "application/json; charset=utf-8", _json_bytes(_post_json(API_TARGETS['answer'], payload)))
+            if action in {'search', 'answer'}:
+                origin = self.headers.get("Origin", "")
+                expected = f"http://{host}:{port}"
+                content_type = self.headers.get("Content-Type", "").lower()
+                if (origin and origin != expected) or 'application/json' not in content_type:
+                    self._send(403, "application/json; charset=utf-8",
+                               _json_bytes({"error": "same_origin_json_required"}))
+                    return
+                try:
+                    payload = _read_json_body(self)
+                except ValueError as exc:
+                    self._send(400, "application/json; charset=utf-8",
+                               _json_bytes({"error": "invalid_request", "details": str(exc)}))
+                    return
+                target = _configured_target(action)
+                result = _post_json(target, payload) if target else {"error": "invalid_configuration"}
+                error = result.get("error")
+                status_code = 400 if error == "invalid_request" else (503 if error else 200)
+                self._send(status_code, "application/json; charset=utf-8", _json_bytes(result))
                 return
             self._send(404, "application/json; charset=utf-8", _json_bytes({"error": "not found"}))
 
