@@ -28,6 +28,12 @@ Der Scan bewahrt erfolgreiche Zustände unveränderter Dokumente, erkennt geänd
 
 Der angezeigte QA-Wert wird ausdrücklich als **unkalibrierte Heuristik** bezeichnet, nicht als Wahrscheinlichkeit einer richtigen Antwort. Grenzen stehen im [K1-Entwicklungs-PR](https://github.com/IMaugrenI/tof_local_knowledge/pull/16) und im [Code-Status](docs/10_build_status.md).
 
+## Ausbau K2: Quellen mit einem Klick indexieren
+
+Die vorhandene lokale Browseroberfläche bietet nun **„Konfigurierte Quelle indexieren“**. Diese ausdrücklich ausgelöste Aktion scannt nur den bereits über `LOCAL_SOURCE_ROOT_1` schreibgeschützt eingebundenen Quellordner (`/sources/source_1` innerhalb der bestehenden Container). Die Quellkennung ist `LOCAL_SOURCE_ID_1` oder standardmäßig `demo_source_1`.
+
+Pro Klick werden höchstens 100 Dateien gescannt und höchstens acht neue/geänderte/erneut zu verarbeitende Dokumente extrahiert. Ergebnis, fehlgeschlagene Extraktionen und verbleibende Arbeit werden angezeigt; weitere Chargen können manuell gestartet werden. **Keine Hintergrundindexierung, keine neuen Dienste und keine Mehrbenutzerfreigabe.** Die Funktion ist für die bestehende lokale Einzelbenutzer-Nutzung vorgesehen.
+
 ## Einfachster Einstieg
 
 Wenn du den kürzesten sicheren Weg willst, starte hier:
