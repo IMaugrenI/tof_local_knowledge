@@ -72,7 +72,7 @@ def fallback_search_query(question: str) -> str:
     """
 
     # Unicode word matching preserves umlauts, accents and compound terms.
-    tokens = re.findall(r"[^\\W_]+(?:_[^\\W_]+)*", question.casefold(), flags=re.UNICODE)
+    tokens = re.findall(r"[^\W_]+(?:_[^\W_]+)*", question.casefold(), flags=re.UNICODE)
     unique = dict.fromkeys(
         token for token in tokens
         if token not in QUESTION_STOPWORDS and len(token) > 1
