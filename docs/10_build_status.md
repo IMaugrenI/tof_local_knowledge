@@ -1,28 +1,36 @@
-# Build Status
+# Build-Status — öffentlicher Quellcode
 
-## Bereits angelegt
-- compose stack
-- shared Python requirements
-- root requirements.txt
-- env example
-- product and architecture docs
-- contracts
-- core/search/audit SQL init files
-- auth/catalog/ingest/extractor/search/qa service stubs
-- extraction translator
-- bootstrap/start/check scripts
-- example configs
+**Stand:** 24. Oktober 2026 · Ausbaubranch `feature/k1-index-state-evidence`
 
-## Bereits echt nutzbar
-- Service-Start per compose
-- Health endpoints
-- translator endpoint `/translate/extraction`
+Diese Übersicht beschreibt den im Repository vorhandenen Code. Sie ist **kein Nachweis eines auf einem Zielrechner laufenden Systems**.
 
-## Noch offen
-- echte DB-Anbindung der APIs
-- echte Scannerlogik
-- echte Dateiparser
-- FTS-Queries gegen Postgres
-- QA-Pipeline aus realen Treffern
-- Nutzer-/Sessionpersistenz
-- UI jenseits optional Open WebUI
+## Implementiert im Quellcode
+
+- Offizieller Python-Startweg über `run.py`, `tof_cli` und `compose.full.yml`; optionale Ollama-/Open-WebUI-Profile.
+- PostgreSQL-Tabellen für Quellen, Dokumente, Segmente, Extraktionsereignisse, Benutzer-/Rollendatensätze und Scan-Manifeste.
+- Quellenscan mit Fingerprintvergleich, dokumentierten Scan-Zählern, unveränderten Erfolgszuständen sowie `pending`/`missing`-Kennzeichnung.
+- Datei-Extraktion aus mehreren unterstützten Formaten, Segmentübersetzung und Datenbankpersistenz.
+- PostgreSQL-Volltextsuche, belegbasierte Kurzantworten, Keyword-Fallback und Kennzeichnung unkalibrierter Confidence-Werte.
+- Lokale Browseroberfläche und Gesundheits-/Diagnosebefehle.
+
+## Wichtige K1-Korrekturen
+
+1. Wiederholter Scan setzt unveränderte, erfolgreich extrahierte Dokumente nicht erneut auf `pending`.
+2. Vollständige Scans markieren nicht mehr vorhandene Dokumente als `missing`. Abgebrochene bzw. durch Limit verkürzte Scans führen keine Lösch-/Fehlbestands-Reconciliation durch. Ausgeblendete Hidden-Dateien werden dabei nicht irrtümlich als fehlend bewertet.
+3. Die Suche liefert Segmente nur für `extraction_status = 'done'` und aktivierte Quellen zurück. Alte, fehlende oder in Bearbeitung befindliche Dokumente werden nicht als aktuelle Fundstellen präsentiert.
+4. Fehlgeschlagene Extraktionsversuche löschen vorhandene Segmente nicht. Diese bleiben als Wiederherstellungsgrundlage erhalten, sind aber aufgrund des Dokumentstatus nicht mehr durchsuchbar.
+5. Ein explizites `document_id` muss zur angefragten Quelle und Datei gehören. Extraktionswarnungen werden als valides JSON gespeichert.
+
+## Grenzen / noch nicht freigegeben
+
+- **Keine echte Mehrbenutzer-/Quellen-ACL-Freigabe.** Nutzer- und Grant-Tabellen allein sind keine aktive Berechtigungsprüfung. Der aktuelle Codepfad der Suche und der QA akzeptiert einen vom Client angegebenen `source_scope` als Filter, **nicht** als autorisierte Identität. Keine öffentliche oder ungesicherte LAN-Freigabe; die Standard-Konfiguration bindet lokale Ports an `127.0.0.1`.
+- Keine behauptete automatische Integration mit Local Builder oder der privaten ToF-Runtime.
+- Keine unabhängig kalibrierte Antwortwahrscheinlichkeit. `confidence` ist ein Kompatibilitäts-/Heuristikwert, markiert durch `confidence_uncalibrated`.
+- Ausbauschritte wie serverseitig validierte Benutzerrechte, verbesserte Quellen-/Indexansichten, echte Antwortsynthese und größere Datenmengen benötigen eigene Architekturentscheidungen und spätere Arbeit.
+- Die GitHub-CI prüft Python, gezielte Tests und Compose-Konfiguration. Sie ersetzt keine reale Betriebsbestätigung.
+
+## Orientierung
+
+- [README](../README.md)
+- [K1-Ausbauauftrag](https://github.com/IMaugrenI/tof_local_knowledge/issues/15)
+- [Runtime-Dokumentation](11_runtime_stack.md)

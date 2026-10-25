@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 
 from _shared_db import db_conn
 
-app = FastAPI(title='tof_local_knowledge_search_api', version='0.2.0')
+app = FastAPI(title='tof_local_knowledge_search_api', version='0.3.0')
 
 
 class SearchRequest(BaseModel):
@@ -34,7 +34,10 @@ def search(payload: SearchRequest):
       ts_rank_cd(to_tsvector('simple', s.text_content), websearch_to_tsquery('simple', %s)) AS score
     FROM document_segments s
     JOIN documents d ON d.document_id = s.document_id
-    WHERE to_tsvector('simple', s.text_content) @@ websearch_to_tsquery('simple', %s)
+    JOIN sources source ON source.source_id = d.source_id
+    WHERE d.extraction_status = 'done'
+      AND source.enabled IS TRUE
+      AND to_tsvector('simple', s.text_content) @@ websearch_to_tsquery('simple', %s)
     '''
     params = [payload.query, payload.query]
     if payload.source_scope:

@@ -5,7 +5,7 @@ import httpx
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 
-app = FastAPI(title='tof_local_knowledge_qa_api', version='0.2.0')
+app = FastAPI(title='tof_local_knowledge_qa_api', version='0.3.0')
 SEARCH_API_URL = os.environ.get('SEARCH_API_URL', 'http://search_api:8105/search')
 
 QUESTION_STOPWORDS = {
@@ -110,9 +110,13 @@ def answer(payload: QaRequest):
         f"- [{hit['citation_label']}] {hit['preview_text']}" for hit in hits
     ]
 
-    uncertainties = [] if len(hits) >= 2 else ['limited_evidence']
+    # Confidence remains a compatibility-only heuristic, never a calibrated
+    # probability of factual correctness.
+    uncertainties = ['confidence_uncalibrated']
+    if len({hit['document_id'] for hit in hits}) < 2:
+        uncertainties.append('limited_independent_sources')
     answer_text = (
-        'Belegbasierte Kurzantwort:\n'
+        'Belegbasierte Kurzantwort (Quellenauszüge, keine unabhängige Verifikation):\n'
         f"Stärkster Treffer aus {primary['relative_path']}: {primary['preview_text']}\n\n"
         'Verwendete Fundstellen:\n' + '\n'.join(evidence_lines)
     )

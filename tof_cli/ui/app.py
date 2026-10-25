@@ -41,6 +41,7 @@ LINKS = {
 API_TARGETS = {
     "search": "http://127.0.0.1:8105/search",
     "answer": "http://127.0.0.1:8106/answer",
+    "sources": "http://127.0.0.1:8102/sources/status",
 }
 
 
@@ -466,6 +467,15 @@ HTML = """<!doctype html>
           <div class="result" id="search-result" role="status" aria-live="polite" data-i18n="noSearchYet">Hier erscheinen passende Fundstellen aus deinen Dokumenten.</div>
         </div>
 
+        <section class="search-panel" aria-labelledby="sources-title">
+          <p class="eyebrow" data-i18n="sourcesEyebrow">QUELLEN & INDEX</p>
+          <h2 id="sources-title" data-i18n="sourcesTitle">Deine Quellen im Überblick</h2>
+          <div class="hint" data-i18n="sourcesHint">Welche Dokumente bereits indexiert sind und welche noch Aufmerksamkeit brauchen.</div>
+          <button class="secondary" onclick="refreshSources()" data-i18n="refreshSources">Quellen aktualisieren</button>
+          <div class="result" id="source-result" aria-live="polite" data-i18n="sourcesEmpty">Hier erscheinen die erfassten Quellen und Indexstände.</div>
+          <div class="hint" data-i18n="sourcesLocalOnly">Nur lokale Quellenübersicht. Es ist keine Mehrbenutzerfreigabe aktiv.</div>
+        </section>
+
         <div class="status" id="next-step" role="status" aria-live="polite" data-i18n="nextStep">Wenn du ToF zum ersten Mal nutzt, öffne unten „Einrichtung & technische Details“ und starte dort die lokale Umgebung.</div>
 
         <details class="tech-panel">
@@ -563,7 +573,7 @@ HTML = """<!doctype html>
         rawSearch: 'Technische Suchdetails anzeigen',
         answerFailed: 'Die Antwort konnte nicht erstellt werden',
         noAnswerText: 'Keine Antwort zurückgegeben.',
-        confidence: 'Sicherheit der Antwort',
+        confidence: 'Heuristischer Trefferwert (keine Wahrscheinlichkeit)',
         uncertainties: 'Was noch unklar ist',
         citations: 'Verwendete Quellen',
         usedDocuments: 'Verwendete Dokumente',
@@ -577,6 +587,21 @@ HTML = """<!doctype html>
         runningAnswer: 'Antwort wird aus deinen Dokumenten erstellt ...',
         answerFinished: 'Antwort ist fertig.',
         uiStarted: 'ToF Knowledge ist bereit.',
+        sourcesEyebrow: 'QUELLEN & INDEX',
+        sourcesTitle: 'Deine Quellen im Überblick',
+        sourcesHint: 'Welche Dokumente indexiert sind und wo noch Arbeit ansteht.',
+        refreshSources: 'Quellen aktualisieren',
+        sourcesEmpty: 'Hier erscheinen die erfassten Quellen und Indexstände.',
+        sourcesLocalOnly: 'Lokale Einzelbenutzer-Ansicht. Keine aktive Mehrbenutzer-Berechtigung.',
+        sourceUnavailable: 'Quellenstatus ist nicht erreichbar. Prüfe die lokale Umgebung.',
+        sourceNoData: 'Noch keine Quellen registriert.',
+        sourceIndexed: 'Indexiert',
+        sourcePending: 'Offen',
+        sourceFailed: 'Fehlgeschlagen',
+        sourceMissing: 'Fehlend',
+        sourceTotal: 'Dokumente',
+        sourceLastScan: 'Letzter Scan',
+        selectSource: 'Diese Quelle durchsuchen',
       },
       en: {
         heroEyebrow: 'YOUR DOCUMENTS · YOUR SOURCES',
@@ -637,7 +662,7 @@ HTML = """<!doctype html>
         rawSearch: 'Show technical search details',
         answerFailed: 'The answer could not be created',
         noAnswerText: 'No answer text returned.',
-        confidence: 'Answer confidence',
+        confidence: 'Heuristic match score (not a probability)',
         uncertainties: 'What is still unclear',
         citations: 'Sources used',
         usedDocuments: 'Used documents',
@@ -651,6 +676,21 @@ HTML = """<!doctype html>
         runningAnswer: 'Building an answer from your documents ...',
         answerFinished: 'Answer is ready.',
         uiStarted: 'ToF Knowledge is ready.',
+        sourcesEyebrow: 'SOURCES & INDEX',
+        sourcesTitle: 'Your sources at a glance',
+        sourcesHint: 'See which documents are indexed and which still need attention.',
+        refreshSources: 'Refresh sources',
+        sourcesEmpty: 'Registered sources and index status will appear here.',
+        sourcesLocalOnly: 'Local single-user view only. Multi-user permissions are not active.',
+        sourceUnavailable: 'Source status is not reachable. Check the local environment.',
+        sourceNoData: 'No sources registered yet.',
+        sourceIndexed: 'Indexed',
+        sourcePending: 'Pending',
+        sourceFailed: 'Failed',
+        sourceMissing: 'Missing',
+        sourceTotal: 'Documents',
+        sourceLastScan: 'Last scan',
+        selectSource: 'Search this source',
       },
     };
 
@@ -817,6 +857,59 @@ HTML = """<!doctype html>
       appendLog(JSON.stringify(data, null, 2));
     }
 
+    async function refreshSources() {
+      const root = document.getElementById('source-result');
+      root.textContent = t('sourcesEmpty');
+      try {
+        const response = await fetch('/api/sources');
+        const data = await response.json();
+        if (!response.ok || data.error) {
+          root.textContent = t('sourceUnavailable');
+          return;
+        }
+        const sources = data.sources || [];
+        if (!sources.length) {
+          root.textContent = t('sourceNoData');
+          return;
+        }
+        root.replaceChildren();
+        for (const source of sources) {
+          const panel = document.createElement('div');
+          panel.className = 'result-card';
+          const title = document.createElement('strong');
+          title.textContent = (source.display_name || source.source_id)
+            + (source.enabled ? '' : ' (disabled)');
+          const stats = document.createElement('div');
+          stats.className = 'muted';
+          const number = value => Number(value || 0);
+          stats.textContent = t('sourceTotal') + ': ' + number(source.documents_total)
+            + ' · ' + t('sourceIndexed') + ': ' + number(source.indexed)
+            + ' · ' + t('sourcePending') + ': ' + number(source.pending)
+            + ' · ' + t('sourceFailed') + ': ' + number(source.failed)
+            + ' · ' + t('sourceMissing') + ': ' + number(source.missing);
+          const scan = document.createElement('div');
+          scan.className = 'muted';
+          scan.textContent = t('sourceLastScan') + ': '
+            + (source.last_scan_at ? new Date(source.last_scan_at).toLocaleString() : '—');
+          const select = document.createElement('button');
+          select.className = 'secondary';
+          select.type = 'button';
+          select.style.marginTop = '10px';
+          select.textContent = t('selectSource');
+          select.disabled = !source.enabled;
+          select.addEventListener('click', () => {
+            document.getElementById('search-scope').value = source.source_id;
+            document.getElementById('qa-scope').value = source.source_id;
+            document.getElementById('search-query').focus();
+          });
+          panel.append(title, stats, scan, select);
+          root.appendChild(panel);
+        }
+      } catch (error) {
+        root.textContent = t('sourceUnavailable');
+      }
+    }
+
     async function runSearch() {
       const payload = {
         query: document.getElementById('search-query').value,
@@ -865,6 +958,7 @@ HTML = """<!doctype html>
     applyLanguage();
     document.getElementById('log').textContent = t('uiStarted');
     refreshSummary();
+    refreshSources();
   </script>
 </body>
 </html>
@@ -897,6 +991,15 @@ def _read_json_body(handler: BaseHTTPRequestHandler) -> dict[str, object]:
     length = int(handler.headers.get("Content-Length", "0"))
     raw = handler.rfile.read(length) if length > 0 else b"{}"
     return json.loads(raw.decode("utf-8")) if raw else {}
+
+
+def _get_json(url: str) -> dict[str, object]:
+    try:
+        with urllib.request.urlopen(url, timeout=8) as response:
+            raw = response.read().decode("utf-8")
+            return json.loads(raw) if raw else {}
+    except (urllib.error.URLError, ValueError, TimeoutError) as exc:
+        return {"error": "source_status_unavailable", "details": str(exc)}
 
 
 def _post_json(url: str, payload: dict[str, object]) -> dict[str, object]:
@@ -948,6 +1051,11 @@ def run_ui(host: str = "127.0.0.1", port: int = 8785, open_browser: bool = True)
                 return
             if parsed.path == "/api/summary":
                 self._send(200, "application/json; charset=utf-8", _json_bytes(_summary_payload()))
+                return
+            if parsed.path == "/api/sources":
+                report = _get_json(API_TARGETS["sources"])
+                code = 503 if report.get("error") else 200
+                self._send(code, "application/json; charset=utf-8", _json_bytes(report))
                 return
             self._send(404, "application/json; charset=utf-8", _json_bytes({"error": "not found"}))
 

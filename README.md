@@ -20,6 +20,14 @@ The public demo uses synthetic documents from `demo/source_1/`. The screenshot b
 
 **Scope:** this repository is the independent **Ground** tool. It is not a cloud sync service, general AI builder, or an automatic source of truth. Retrieved evidence and missing evidence must remain distinguishable. Its outputs can inform other tools, but integration is not implied.
 
+## New in the K1 development branch
+
+A new **Sources & Index** section in the existing local browser UI summarizes registered sources, indexed documents, pending/failed/missing states and the most recent scan. Choosing a source fills the existing search and question filters. This is a **local single-user overview**, not a new authentication or multi-user authorization mechanism.
+
+The scan now preserves successful unchanged documents, identifies changed and missing files, and avoids falsely reconciling unvisited files when scanning is incomplete. Search excludes non-current indexed documents; failed extractions preserve earlier segments for recovery without serving them as current evidence.
+
+The displayed QA score is explicitly described as an *uncalibrated heuristic*, not the probability an answer is true. See the [K1 development pull request](https://github.com/IMaugrenI/tof_local_knowledge/pull/16) and [code-status document](docs/10_build_status.md) for limitations.
+
 ## Use this repo in the simplest way
 
 If you want the shortest safe path, start here:
