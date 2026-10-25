@@ -10,6 +10,8 @@ Local Knowledge hilft bei der Indexierung und Suche lokaler Dokumente sowie beim
 
 **Einstieg:** [Sicherer Schnellstart und Demo](START_HERE_DE.md) · [English README](README.md) · [ToF Systems Übersicht](https://github.com/IMaugrenI/tof-showcase)
 
+**Quellpaket-Kandidat (B8/K8):** Die vorhandenen Windows-/Linux-/macOS-Starter lassen sich über den manuellen GitHub-Workflow **Source distribution candidate** oder `python scripts/build_source_candidate.py --output-dir dist` aus einem Git-Commit bündeln. Enthalten sind eine [Offline-Anleitung](docs/RELEASE_PACKAGE_DE.md) und eine SHA-256-Prüfsumme. **Noch kein freigegebenes Produkt-Release und kein nativer Installer; die Abnahme erfolgt erst nach dem Ausbau.**
+
 ## So sieht eine belegte Antwort aus
 
 Die öffentliche Demo verwendet synthetische Dokumente aus `demo/source_1/`. Der Screenshot zeigt eine echte lokale Ansicht mit Suchtreffern, zitierter Antwort und verwendeten Dokumenten.
