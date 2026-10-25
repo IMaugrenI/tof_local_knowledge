@@ -872,6 +872,7 @@ HTML = """<!doctype html>
           html += '<div class="muted">' + escapeHtml(ref.relative_path || '') + '</div>';
           html += '<div class="muted">' + escapeHtml(ref.citation_label || '') + '</div>';
           html += '<div class="muted">Segment: ' + escapeHtml(ref.segment_id || '') + '</div>';
+          if (ref.segment_id) html += '<button class="secondary" type="button" data-evidence-segment="' + escapeHtml(ref.segment_id) + '">' + t('viewEvidence') + '</button>';
           html += '</div>';
         }
         html += '</div>';
@@ -884,6 +885,7 @@ HTML = """<!doctype html>
       }
       html += `<details><summary>${t('rawAnswer')}</summary><pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre></details>`;
       root.innerHTML = html;
+      bindEvidenceButtons(root);
     }
 
     async function refreshSummary() {
