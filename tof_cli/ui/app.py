@@ -892,7 +892,7 @@ HTML = """<!doctype html>
     function renderSearchResult(data) {
       const root = document.getElementById('search-result');
       if (data.error) {
-        root.innerHTML = `<div class=\"result-card\"><strong>${t('searchFailed')}</strong><div class=\"muted\">${escapeHtml(data.details || data.error)}</div></div>`;
+        root.innerHTML = errorMarkup(data, t('searchFailed'));
         return;
       }
       const hits = data.results || data.hits || [];
@@ -935,7 +935,7 @@ HTML = """<!doctype html>
     function renderAnswerResult(data) {
       const root = document.getElementById('qa-result');
       if (data.error) {
-        root.innerHTML = `<div class=\"result-card\"><strong>${t('answerFailed')}</strong><div class=\"muted\">${escapeHtml(data.details || data.error)}</div></div>`;
+        root.innerHTML = errorMarkup(data, t('answerFailed'));
         return;
       }
       const answer = data.answer_text || data.answer || t('noAnswerText');
