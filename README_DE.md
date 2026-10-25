@@ -54,6 +54,12 @@ Das zusätzliche Feld `evidence_signal` beschreibt lediglich den **Suchbefund** 
 
 Suchergebnisse enthalten außerdem Seitenzahl, Segmenttyp und stabile Sortierung. Der ursprüngliche Quellenfilter und die Sperrung veralteter Indexstände bleiben erhalten. Es wird kein Cloud-Dienst, neuer Indexserver oder Mehrbenutzermodus eingeführt.
 
+## K7 – Einheitliche lokale Adressen und verständliche Fehler
+
+Die vorhandene Browseroberfläche verwendet für Quellen, Suche, Fragen, Belegansicht und Dokumentationslinks die bereits in `.env` definierten lokalen Ports. Ungültige Ports werden abgewiesen; fremde Hosts werden nicht aus Webanfragen übernommen.
+
+Such- und Frageeingaben sind auf JSON-Objekte begrenzter Größe beschränkt. Unerreichbare Dienste, ungültige Anfragen und Verarbeitungsprobleme werden getrennt gemeldet. Die Oberfläche zeigt verständliche Hinweise in Deutsch und Englisch, während technische Details aufklappbar bleiben. Noch nicht indexierte oder fehlgeschlagene Dokumente werden in der vorhandenen Quellenübersicht hervorgehoben. Die standardmäßige lokale Einzelbenutzernutzung und die vorhandene Compose-Struktur bleiben verbindlich.
+
 ## Einfachster Einstieg
 
 Wenn du den kürzesten sicheren Weg willst, starte hier:
