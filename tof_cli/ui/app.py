@@ -797,6 +797,44 @@ HTML = """<!doctype html>
       return `<div class=\"chip-list\">${list.map(item => `<span class=\"chip ${cssClass}\">${escapeHtml(item)}</span>`).join('')}</div>`;
     }
 
+    function bindEvidenceButtons(root) {
+      root.querySelectorAll('button[data-evidence-segment]').forEach(button => {
+        button.addEventListener('click', () => inspectEvidence(button.dataset.evidenceSegment));
+      });
+    }
+
+    async function inspectEvidence(segmentId) {
+      const panel = document.getElementById('evidence-result');
+      panel.textContent = t('evidenceEmpty');
+      try {
+        const query = new URLSearchParams({segment_id: segmentId});
+        const response = await fetch('/api/evidence?' + query.toString());
+        const data = await response.json();
+        if (!response.ok || !data.evidence) {
+          panel.textContent = t('evidenceUnavailable');
+          return;
+        }
+        panel.replaceChildren();
+        const e = data.evidence;
+        const heading = document.createElement('strong');
+        heading.textContent = e.citation_label + ' · ' + e.relative_path;
+        const detail = document.createElement('p');
+        detail.className = 'muted';
+        detail.textContent = e.source_id + ' · ' + e.document_id + ' · ' + e.segment_id;
+        const excerpt = document.createElement('pre');
+        excerpt.className = 'preview';
+        excerpt.style.whiteSpace = 'pre-wrap';
+        excerpt.textContent = e.excerpt || '';
+        const note = document.createElement('p');
+        note.className = 'muted';
+        note.textContent = 'Read-only excerpt · up to ' + data.truncated_to_chars + ' characters.';
+        panel.append(heading, detail, excerpt, note);
+        panel.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+      } catch (error) {
+        panel.textContent = t('evidenceUnavailable');
+      }
+    }
+
     function renderSearchResult(data) {
       const root = document.getElementById('search-result');
       if (data.error) {
