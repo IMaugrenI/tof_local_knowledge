@@ -14,6 +14,7 @@ from urllib.parse import parse_qs, urlparse
 
 from tof_cli.commands import check, doctor, down, setup, status, up
 from tof_cli.knowledge.index_ops import index_configured_source
+from tof_cli.knowledge.source_spaces import discover_source_spaces
 from tof_cli.core.env_ops import read_env
 from tof_cli.ui.service_ops import classify_error, configured_targets, parse_bounded_json
 
@@ -483,6 +484,10 @@ HTML = """<!doctype html>
           <h2 id="sources-title" data-i18n="sourcesTitle">Deine Quellen im Überblick</h2>
           <div class="hint" data-i18n="sourcesHint">Welche Dokumente bereits indexiert sind und welche noch Aufmerksamkeit brauchen.</div>
           <button class="secondary" onclick="refreshSources()" data-i18n="refreshSources">Quellen aktualisieren</button>
+          <label class="hint" for="index-source-select" data-i18n="indexSourceLabel">Zu indexierenden Quellenbereich auswählen</label>
+          <select id="index-source-select" onchange="resetIndexCursor()" style="display:block;width:100%;padding:10px;margin:8px 0 12px"></select>
+          <button class="secondary" type="button" onclick="loadSourceSpaces()">Quellenordner aktualisieren / Refresh source folders</button>
+          <p class="hint" id="index-source-message" aria-live="polite"></p>
           <button class="secondary" id="index-batch-button" onclick="runIndexBatch()" data-i18n="indexBatch">Konfigurierte Quelle indexieren</button>
           <button class="secondary" onclick="resetIndexCursor()" data-i18n="indexReset">Dateidurchlauf neu beginnen</button>
           <p class="hint" data-i18n="indexMissingNote">Bei großen Quellen ist die Fehlbestandserkennung nur für vollständige Einzelscans verfügbar.</p>
@@ -629,6 +634,9 @@ HTML = """<!doctype html>
         sourcesLocalOnly: 'Lokale Einzelbenutzer-Ansicht. Keine aktive Mehrbenutzer-Berechtigung.',
         sourceUnavailable: 'Quellenstatus ist nicht erreichbar. Prüfe die lokale Umgebung.',
         indexBatch: 'Konfigurierte Quelle indexieren',
+        indexSourceLabel: 'Quellenbereich innerhalb des eingestellten Dokumentenordners',
+        indexSourceEmpty: 'Keine Quellenbereiche erreichbar. Dokumentenordner in der Einrichtung prüfen.',
+        indexSourceNote: 'Unterordner werden als getrennte Quellen erfasst; es werden keine fremden Host-Ordner eingebunden.',
         indexHint: 'Nur auf Klick: eine begrenzte Charge der konfigurierten, schreibgeschützten Quelle einlesen.',
         indexFailed: 'Indexierung fehlgeschlagen:',
         indexSuccess: 'Indexiert in dieser Charge',
@@ -747,6 +755,9 @@ HTML = """<!doctype html>
         sourcesLocalOnly: 'Local single-user view only. Multi-user permissions are not active.',
         sourceUnavailable: 'Source status is not reachable. Check the local environment.',
         indexBatch: 'Index configured source',
+        indexSourceLabel: 'Source space inside the configured document folder',
+        indexSourceEmpty: 'No source spaces available. Check the configured document folder.',
+        indexSourceNote: 'Subfolders are separate logical sources; external host folders are never mounted automatically.',
         indexHint: 'Only on click: scan a bounded batch from the configured read-only source.',
         indexFailed: 'Indexing failed:',
         indexSuccess: 'Indexed in this batch',
@@ -770,6 +781,7 @@ HTML = """<!doctype html>
     let currentLanguage = localStorage.getItem('tof_local_knowledge_language') || 'de';
     let currentTheme = localStorage.getItem('tof_local_knowledge_theme') || 'dark';
     let indexCursor = null;
+    let availableSourceSpaces = [];
 
     function t(key) {
       return (I18N[currentLanguage] && I18N[currentLanguage][key]) || I18N.de[key] || key;
@@ -1016,6 +1028,31 @@ HTML = """<!doctype html>
       appendLog(JSON.stringify(data, null, 2));
     }
 
+    async function loadSourceSpaces() {
+      const menu = document.getElementById('index-source-select');
+      const status = document.getElementById('index-source-message');
+      const current = menu.value;
+      try {
+        const response = await fetch('/api/source-spaces');
+        const data = await response.json();
+        availableSourceSpaces = data.spaces || [];
+        menu.replaceChildren();
+        availableSourceSpaces.forEach(space => {
+          if (!space.available) return;
+          const option = document.createElement('option');
+          option.value = space.id;
+          option.textContent = space.label + ' (' + space.id + ')';
+          menu.appendChild(option);
+        });
+        if ([...menu.options].some(option => option.value === current)) menu.value = current;
+        status.textContent = menu.options.length ? t('indexSourceNote') : t('indexSourceEmpty');
+        document.getElementById('index-batch-button').disabled = !menu.options.length;
+      } catch (error) {
+        status.textContent = t('indexSourceEmpty');
+        document.getElementById('index-batch-button').disabled = true;
+      }
+    }
+
     function resetIndexCursor() {
       indexCursor = null;
       document.getElementById('index-batch-result').textContent = t('indexHint');
@@ -1030,7 +1067,10 @@ HTML = """<!doctype html>
         const response = await fetch('/api/index-batch', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({cursor: indexCursor}),
+          body: JSON.stringify({
+            cursor: indexCursor,
+            space_id: document.getElementById('index-source-select').value,
+          }),
         });
         const data = await response.json();
         if (!response.ok || data.status === 'error') {
@@ -1039,6 +1079,10 @@ HTML = """<!doctype html>
             + ' (' + (data.detail || data.error || 'unknown') + ')';
         } else {
           indexCursor = data.next_cursor || null;
+          if (data.source_id) {
+            document.getElementById('search-scope').value = data.source_id;
+            document.getElementById('qa-scope').value = data.source_id;
+          }
           result.textContent = t('indexSuccess') + ': ' + (data.indexed_this_pass || 0)
             + ' / ' + (data.files_scanned || 0) + ' scanned. '
             + (data.failed || []).length + ' failed. '
@@ -1072,7 +1116,8 @@ HTML = """<!doctype html>
           const panel = document.createElement('div');
           panel.className = 'result-card';
           const title = document.createElement('strong');
-          title.textContent = (source.display_name || source.source_id)
+          const matchingSpace = availableSourceSpaces.find(space => space.id === source.source_id);
+          title.textContent = (matchingSpace ? matchingSpace.label : (source.display_name || source.source_id))
             + (source.enabled ? '' : ' (disabled)');
           const stats = document.createElement('div');
           stats.className = 'muted';
@@ -1166,6 +1211,7 @@ HTML = """<!doctype html>
     document.getElementById('log').textContent = t('uiStarted');
     refreshSummary();
     refreshSources();
+    loadSourceSpaces();
   </script>
 </body>
 </html>
@@ -1316,6 +1362,10 @@ def run_ui(host: str = "127.0.0.1", port: int = 8785, open_browser: bool = True)
                 code = 400 if response.get("error") == "invalid_segment_id" else (503 if response.get("error") else 200)
                 self._send(code, "application/json; charset=utf-8", _json_bytes(response))
                 return
+            if parsed.path == "/api/source-spaces":
+                result = discover_source_spaces(read_env())
+                self._send(200, "application/json; charset=utf-8", _json_bytes(result))
+                return
             if parsed.path == "/api/sources":
                 target = _configured_target("sources")
                 report = _get_json(target) if target else {"error": "invalid_configuration"}
@@ -1352,6 +1402,11 @@ def run_ui(host: str = "127.0.0.1", port: int = 8785, open_browser: bool = True)
                     if not isinstance(body, dict):
                         raise ValueError("invalid_request_body")
                     cursor = body.get("cursor")
+                    space_id = body.get("space_id")
+                    if space_id is not None and (
+                        not isinstance(space_id, str) or len(space_id) > 64
+                    ):
+                        raise ValueError("invalid_space_id")
                     if cursor is not None and not isinstance(cursor, str):
                         raise ValueError("invalid_scan_cursor")
                 except (ValueError, TypeError):
@@ -1359,7 +1414,7 @@ def run_ui(host: str = "127.0.0.1", port: int = 8785, open_browser: bool = True)
                                _json_bytes({"error": "invalid_index_request"}))
                     return
                 self._send(200, "application/json; charset=utf-8",
-                           _json_bytes(index_configured_source(start_after=cursor)))
+                           _json_bytes(index_configured_source(start_after=cursor, space_id=space_id)))
                 return
             if action in {'search', 'answer'}:
                 origin = self.headers.get("Origin", "")

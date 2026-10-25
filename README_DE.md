@@ -62,6 +62,14 @@ Die vorhandene Browseroberfläche verwendet für Quellen, Suche, Fragen, Belegan
 
 Such- und Frageeingaben sind auf JSON-Objekte begrenzter Größe beschränkt. Unerreichbare Dienste, ungültige Anfragen und Verarbeitungsprobleme werden getrennt gemeldet. Die Oberfläche zeigt verständliche Hinweise in Deutsch und Englisch, während technische Details aufklappbar bleiben. Noch nicht indexierte oder fehlgeschlagene Dokumente werden in der vorhandenen Quellenübersicht hervorgehoben. Die standardmäßige lokale Einzelbenutzernutzung und die vorhandene Compose-Struktur bleiben verbindlich.
 
+## K9 – mehrere logische Dokumentenquellen
+
+Die vorhandene Browseroberfläche kann den bereits über `LOCAL_SOURCE_ROOT_1` schreibgeschützt gemounteten Dokumentenordner und bis zu **50 unmittelbare Unterordner** als separate logische Quellen anbieten. Die Quellauswahl steuert die vorhandenen Scan- und Extraktionsdienste; für jede Unterquelle wird eine stabile Quellkennung verwendet. Nach der Indexierung wird die gewählte Quelle automatisch als Such-/Fragefilter übernommen.
+
+Es werden **keine** beliebigen zusätzlichen Rechnerordner über die Weboberfläche eingebunden. Neue Dokumente können in einen Unterordner der bereits konfigurierten Quelle gelegt werden. Externe Quellordner erfordern eine ausdrückliche Betreiberentscheidung und eine Änderung der vorhandenen Mount-Konfiguration; das wird nicht heimlich vorgenommen.
+
+Die Quellen bleiben read-only, der Index arbeitet auf lokalen Daten, und ein nicht freigegebener Mehrbenutzer-/LAN-Modus wird nicht eingeführt.
+
 ## Einfachster Einstieg
 
 Wenn du den kürzesten sicheren Weg willst, starte hier:
