@@ -28,12 +28,18 @@ def _local_post(url: str, payload: dict[str, object], *, timeout: float = 30) ->
         return json.loads(response.read().decode("utf-8"))
 
 
-def index_configured_source() -> dict[str, object]:
+def index_configured_source(start_after: str | None = None) -> dict[str, object]:
     """Run one explicit index batch; never deletes or rewrites source files."""
     env = read_env()
     source_id = env.get("LOCAL_SOURCE_ID_1", "demo_source_1").strip()
     if not re.fullmatch(r"[A-Za-z0-9_-]{1,64}", source_id):
         return {"status": "error", "detail": "invalid_local_source_id"}
+    if start_after is not None and (
+        not isinstance(start_after, str) or len(start_after) > 2048
+        or start_after.startswith("/") or "\\x00" in start_after
+        or "\\" in start_after or ".." in start_after.split("/")
+    ):
+        return {"status": "error", "detail": "invalid_scan_cursor"}
     if env.get("BIND_HOST", "127.0.0.1") not in {"127.0.0.1", "localhost", "::1"}:
         return {"status": "error", "detail": "local_only_indexing"}
 
@@ -49,7 +55,8 @@ def index_configured_source() -> dict[str, object]:
         scan = _local_post(
             f"http://127.0.0.1:{ingest_port}/scan/run",
             {"source_id": source_id, "root_path": SOURCE_CONTAINER_PATH,
-             "include_hidden": False, "limit_files": MAX_FILES_SCANNED},
+             "include_hidden": False, "limit_files": MAX_FILES_SCANNED,
+             "start_after": start_after},
         )
         if scan.get("status") != "ok":
             return {"status": "error", "detail": scan.get("detail", "scan_failed")}
@@ -79,6 +86,15 @@ def index_configured_source() -> dict[str, object]:
                     processed += 1
             except (OSError, urllib.error.URLError, ValueError) as exc:
                 failed.append({"path": row["relative_path"], "detail": type(exc).__name__})
+        remaining = max(0, len(candidates) - MAX_EXTRACTED_PER_CLICK)
+        # Keep the same page while newer files remain unfinished. Once a
+        # page contains only failed retries, allow moving on rather than
+        # letting a permanently unreadable file block all later pages.
+        fresh_remaining = any(
+            row.get("scan_status") in {"new", "changed"}
+            for row in candidates[MAX_EXTRACTED_PER_CLICK:]
+        )
+        next_cursor = start_after if fresh_remaining else scan.get("next_cursor")
         return {
             "status": "partial" if failed else "ok",
             "source_id": source_id,
@@ -87,7 +103,10 @@ def index_configured_source() -> dict[str, object]:
             "scan_complete": bool(scan.get("scan_complete")),
             "indexed_this_pass": processed,
             "failed": failed,
-            "remaining_in_sample": max(0, len(candidates) - MAX_EXTRACTED_PER_CLICK),
+            "remaining_in_sample": remaining,
+            "next_cursor": next_cursor,
+            "page_has_more": bool(scan.get("next_cursor") or fresh_remaining),
+            "reconciliation_performed": bool(scan.get("reconciliation_performed", False)),
             "batch_size": MAX_EXTRACTED_PER_CLICK,
             "message": "Run another batch if documents are still pending.",
         }
