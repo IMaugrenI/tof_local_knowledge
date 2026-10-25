@@ -77,7 +77,7 @@ def test_keyword_fallback_preserves_client_source_scope(monkeypatch):
 
 
 def test_broad_fallback_is_explicit_and_not_a_verification(monkeypatch):
-    client = Client({"urlaub OR tarifvertrag": [HIT]})
+    client = Client({"steht OR urlaub OR tarifvertrag": [HIT]})
     monkeypatch.setattr(qa.httpx, "Client", lambda **kwargs: client)
     answer = qa.answer(qa.QaRequest(
         question="Was steht zu Urlaub und Tarifvertrag?"
@@ -85,11 +85,10 @@ def test_broad_fallback_is_explicit_and_not_a_verification(monkeypatch):
     assert [call["query"] for call in client.calls] == [
         "Was steht zu Urlaub und Tarifvertrag?", "steht urlaub tarifvertrag",
         "steht OR urlaub OR tarifvertrag",
-    ] or [call["query"] for call in client.calls] == [
-        "Was steht zu Urlaub und Tarifvertrag?", "steht urlaub tarifvertrag",
-        "steht OR urlaub OR tarifvertrag",
     ]
-    assert "broad_keyword_search" not in answer["uncertainties"]
+    assert "broad_keyword_search" in answer["uncertainties"]
+    assert answer["evidence_signal"]["status"] == "broad_keyword_matches"
+    assert answer["evidence_signal"]["calibrated"] is False
 
 
 def test_search_without_any_evidence_keeps_explicit_no_evidence(monkeypatch):
