@@ -101,7 +101,7 @@ def run_scan(payload: ScanRequest):
                           document_id, source_id, relative_path, file_name, mime_type, size_bytes,
                           content_fingerprint, read_status, extraction_status
                         ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                        ON CONFLICT (source_id, relative_path) DO UPDATE
+                        ON CONFLICT (document_id) DO UPDATE
                         SET file_name = EXCLUDED.file_name,
                             mime_type = EXCLUDED.mime_type,
                             size_bytes = EXCLUDED.size_bytes,
@@ -115,7 +115,8 @@ def run_scan(payload: ScanRequest):
                         ),
                     )
 
-                if len(sample_documents) < 20:
+                # Surface actionable files first, so repeated small batches progress.
+                if change_status != 'unchanged' and len(sample_documents) < 20:
                     sample_documents.append(
                         {
                             'document_id': document_id,
