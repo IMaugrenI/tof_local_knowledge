@@ -11,6 +11,7 @@ import urllib.error
 import urllib.request
 
 from tof_cli.core.env_ops import read_env
+from tof_cli.knowledge.source_spaces import resolve_source_space
 
 SOURCE_CONTAINER_PATH = "/sources/source_1"
 MAX_FILES_SCANNED = 100
@@ -28,10 +29,15 @@ def _local_post(url: str, payload: dict[str, object], *, timeout: float = 30) ->
         return json.loads(response.read().decode("utf-8"))
 
 
-def index_configured_source(start_after: str | None = None) -> dict[str, object]:
+def index_configured_source(start_after: str | None = None, space_id: str | None = None) -> dict[str, object]:
     """Run one explicit index batch; never deletes or rewrites source files."""
     env = read_env()
-    source_id = env.get("LOCAL_SOURCE_ID_1", "demo_source_1").strip()
+    try:
+        space = resolve_source_space(env, space_id)
+    except ValueError as exc:
+        return {"status": "error", "detail": str(exc)}
+    source_id = str(space["id"])
+    container_root = str(space["container_path"])
     if not re.fullmatch(r"[A-Za-z0-9_-]{1,64}", source_id):
         return {"status": "error", "detail": "invalid_local_source_id"}
     if start_after is not None and (
@@ -54,7 +60,7 @@ def index_configured_source(start_after: str | None = None) -> dict[str, object]
         extractor_port = local_port("EXTRACTOR_API_PORT", "8104")
         scan = _local_post(
             f"http://127.0.0.1:{ingest_port}/scan/run",
-            {"source_id": source_id, "root_path": SOURCE_CONTAINER_PATH,
+            {"source_id": source_id, "root_path": container_root,
              "include_hidden": False, "limit_files": MAX_FILES_SCANNED,
              "start_after": start_after},
         )
@@ -76,7 +82,7 @@ def index_configured_source(start_after: str | None = None) -> dict[str, object]
             try:
                 response = _local_post(
                     f"http://127.0.0.1:{extractor_port}/extract/file",
-                    {"source_id": source_id, "root_path": SOURCE_CONTAINER_PATH,
+                    {"source_id": source_id, "root_path": container_root,
                      "document_id": row["document_id"],
                      "relative_path": row["relative_path"], "persist": True},
                 )
@@ -98,6 +104,7 @@ def index_configured_source(start_after: str | None = None) -> dict[str, object]
         return {
             "status": "partial" if failed else "ok",
             "source_id": source_id,
+            "source_label": space["label"],
             "scan_counts": scan.get("counts", {}),
             "files_scanned": scan.get("files_scanned", 0),
             "scan_complete": bool(scan.get("scan_complete")),
