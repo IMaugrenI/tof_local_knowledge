@@ -1,6 +1,6 @@
 # Build-Status — öffentlicher Quellcode
 
-**Stand:** 24. Oktober 2026 · Ausbaubranch `feature/k1-index-state-evidence`
+**Stand:** 25. Oktober 2026 · Hauptentwicklungsstand mit K1; K2 in Arbeit.
 
 Diese Übersicht beschreibt den im Repository vorhandenen Code. Sie ist **kein Nachweis eines auf einem Zielrechner laufenden Systems**.
 
@@ -20,6 +20,14 @@ Diese Übersicht beschreibt den im Repository vorhandenen Code. Sie ist **kein N
 3. Die Suche liefert Segmente nur für `extraction_status = 'done'` und aktivierte Quellen zurück. Alte, fehlende oder in Bearbeitung befindliche Dokumente werden nicht als aktuelle Fundstellen präsentiert.
 4. Fehlgeschlagene Extraktionsversuche löschen vorhandene Segmente nicht. Diese bleiben als Wiederherstellungsgrundlage erhalten, sind aber aufgrund des Dokumentstatus nicht mehr durchsuchbar.
 5. Ein explizites `document_id` muss zur angefragten Quelle und Datei gehören. Extraktionswarnungen werden als valides JSON gespeichert.
+
+## K2: geführte lokale Indexierung
+
+- Die bestehende Browseroberfläche kann nun eine ausdrücklich gestartete, begrenzte Scan-/Extraktionscharge für die bereits über `LOCAL_SOURCE_ROOT_1` eingebundene Quelle auslösen.
+- Keine freie Host-Pfadwahl über diese Aktion: Containerpfad `/sources/source_1`, Quellkennung `LOCAL_SOURCE_ID_1` (Standard `demo_source_1`).
+- Pro Aufruf höchstens 100 gescannte und acht extrahierte Dokumente. Erneute Aufrufe bearbeiten weitere neu/geänderte/pending Dokumente; neue Dateien gehen vor fehlerhaften Wiederholungen.
+- Scanner und Extraktion verwenden beim UPSERT den tatsächlich vorhandenen Primärschlüssel `document_id` statt einen in der bestehenden Schema-Definition nicht vorhandenen Unique-Key `(source_id, relative_path)`.
+- Für eine echte Mehrbenutzerfreigabe fehlt weiterhin eine wirksame Identitäts-/Quellenberechtigungsprüfung. Hier wurde kein Mehrbenutzermodus eingeführt.
 
 ## Grenzen / noch nicht freigegeben
 
