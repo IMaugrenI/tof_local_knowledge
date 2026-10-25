@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import json
+import re
 import urllib.error
 import urllib.request
 import webbrowser
@@ -9,10 +10,11 @@ from contextlib import redirect_stdout
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Callable
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 from tof_cli.commands import check, doctor, down, setup, status, up
 from tof_cli.knowledge.index_ops import index_configured_source
+from tof_cli.core.env_ops import read_env
 
 
 @dataclass(frozen=True)
@@ -1072,6 +1074,22 @@ def _read_json_body(handler: BaseHTTPRequestHandler) -> dict[str, object]:
     return json.loads(raw.decode("utf-8")) if raw else {}
 
 
+def _evidence_lookup(segment_id: str) -> dict[str, object]:
+    # This is a source viewer in the existing local single-user application.
+    if not re.fullmatch(r"[A-Za-z0-9_-]{1,128}", segment_id):
+        return {"error": "invalid_segment_id"}
+    env = read_env()
+    if env.get("BIND_HOST", "127.0.0.1") not in {"localhost", "127.0.0.1", "::1"}:
+        return {"error": "local_only"}
+    try:
+        port = int(env.get("SEARCH_API_PORT", "8105"))
+    except ValueError:
+        return {"error": "invalid_search_port"}
+    if port < 1 or port > 65535:
+        return {"error": "invalid_search_port"}
+    return _get_json(f"http://127.0.0.1:{port}/evidence/{segment_id}")
+
+
 def _get_json(url: str) -> dict[str, object]:
     try:
         with urllib.request.urlopen(url, timeout=8) as response:
@@ -1130,6 +1148,13 @@ def run_ui(host: str = "127.0.0.1", port: int = 8785, open_browser: bool = True)
                 return
             if parsed.path == "/api/summary":
                 self._send(200, "application/json; charset=utf-8", _json_bytes(_summary_payload()))
+                return
+            if parsed.path == "/api/evidence":
+                params = parse_qs(parsed.query)
+                segment_id = params.get("segment_id", [""])[0]
+                response = _evidence_lookup(segment_id)
+                code = 400 if response.get("error") == "invalid_segment_id" else (503 if response.get("error") else 200)
+                self._send(code, "application/json; charset=utf-8", _json_bytes(response))
                 return
             if parsed.path == "/api/sources":
                 report = _get_json(API_TARGETS["sources"])
