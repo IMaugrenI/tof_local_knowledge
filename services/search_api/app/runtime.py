@@ -62,6 +62,9 @@ def search(payload: SearchRequest):
       d.relative_path,
       s.segment_id,
       s.citation_label,
+      s.page_no,
+      s.segment_kind,
+      s.ordinal,
       s.text_content,
       ts_rank_cd(to_tsvector('simple', s.text_content), websearch_to_tsquery('simple', %s)) AS score
     FROM document_segments s
@@ -75,7 +78,7 @@ def search(payload: SearchRequest):
     if payload.source_scope:
         sql += ' AND d.source_id = ANY(%s) '
         params.append(payload.source_scope)
-    sql += ' ORDER BY score DESC, d.relative_path ASC LIMIT %s '
+    sql += ' ORDER BY score DESC, d.relative_path ASC, s.ordinal ASC, s.segment_id ASC LIMIT %s '
     params.append(payload.limit)
 
     with db_conn() as conn:
@@ -93,6 +96,9 @@ def search(payload: SearchRequest):
                 'relative_path': row['relative_path'],
                 'segment_id': row['segment_id'],
                 'citation_label': row['citation_label'],
+                'page_no': row['page_no'],
+                'segment_kind': row['segment_kind'],
+                'ordinal': row['ordinal'],
                 'preview_text': snippet,
                 'score': float(row['score']),
             }

@@ -591,6 +591,11 @@ HTML = """<!doctype html>
         uncertainties: 'Was noch unklar ist',
         citations: 'Verwendete Quellen',
         evidenceRefs: 'Nachvollziehbare Fundstellen',
+        evidenceSignal: 'Suchbelege (keine Prüfung der Richtigkeit)',
+        evidenceStrategy: 'Suchweg',
+        evidenceSegments: 'Gefundene Textabschnitte',
+        evidenceDocuments: 'Unterschiedliche Dokumente',
+        evidenceCaution: 'Breite Stichwortsuche: Ergebnisse können nur einzelne Suchbegriffe enthalten.',
         viewEvidence: 'Textstelle ansehen',
         evidenceEyebrow: 'BELEG PRÜFEN',
         evidenceTitle: 'Textstelle nachvollziehen',
@@ -697,6 +702,11 @@ HTML = """<!doctype html>
         uncertainties: 'What is still unclear',
         citations: 'Sources used',
         evidenceRefs: 'Traceable evidence references',
+        evidenceSignal: 'Retrieved evidence (not factual verification)',
+        evidenceStrategy: 'Search method',
+        evidenceSegments: 'Matching excerpts',
+        evidenceDocuments: 'Distinct documents',
+        evidenceCaution: 'Broad keyword search: results may match only one search term.',
         viewEvidence: 'View excerpt',
         evidenceEyebrow: 'INSPECT EVIDENCE',
         evidenceTitle: 'Trace an excerpt',
@@ -902,8 +912,21 @@ HTML = """<!doctype html>
       const usedDocuments = asList(data.used_documents);
       const uncertainties = asList(data.uncertainties);
       const searchQueries = asList(data.search_queries);
+      const signal = data.evidence_signal || null;
 
       let html = `<div class=\"result-card\"><div class=\"answer-main\">${escapeHtml(answer)}</div><div class=\"muted\" style=\"margin-top:10px;\">${t('confidence')}: ${escapeHtml(confidence)}</div>`;
+      if (signal) {
+        html += '<div class="muted" style="margin-top:10px"><strong>'
+          + t('evidenceSignal') + '</strong><br>'
+          + t('evidenceStrategy') + ': ' + escapeHtml(signal.search_strategy || 'unknown')
+          + ' · ' + t('evidenceSegments') + ': ' + escapeHtml(signal.matching_segments || 0)
+          + ' · ' + t('evidenceDocuments') + ': ' + escapeHtml(signal.distinct_documents || 0)
+          + '</div>';
+        if (signal.status === 'broad_keyword_matches') {
+          html += '<div class="muted" style="margin-top:10px">'
+            + t('evidenceCaution') + '</div>';
+        }
+      }
       if (uncertainties.length) {
         html += `<div style=\"margin-top:10px;\"><strong>${t('uncertainties')}</strong>${renderChips(uncertainties, 'warn')}</div>`;
       }

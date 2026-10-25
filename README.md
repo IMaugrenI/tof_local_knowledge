@@ -46,6 +46,14 @@ The explicit **Index configured source** action can now advance through more tha
 
 **Important limitation:** The existing missing-file reconciliation is safe only for a complete, unpaginated scan. Paginated passes do not mark unvisited files as missing. This is an intentional safety restriction, not a claim that all stale paths have been reconciled. No background service, new source mount or multi-user authorization was introduced.
 
+## K6 — German-language QA and clear evidence coverage
+
+The local question-answering service improves keyword fallback for German questions, including umlauts. If strict searches return nothing, the last-resort OR search is explicitly marked as broad.
+
+The additional `evidence_signal` response reports matched segments, distinct documents and search strategy. This is a retrieval description, not independent factual verification or calibrated probability. Existing confidence remains an uncalibrated compatibility field.
+
+Search hits now include page and segment metadata with stable ordering. The same local, read-only source rules apply, with no cloud requirement or new stack.
+
 ## Use this repo in the simplest way
 
 If you want the shortest safe path, start here:

@@ -5,7 +5,7 @@ import httpx
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 
-app = FastAPI(title='tof_local_knowledge_qa_api', version='0.3.0')
+app = FastAPI(title='tof_local_knowledge_qa_api', version='0.4.0')
 SEARCH_API_URL = os.environ.get('SEARCH_API_URL', 'http://search_api:8105/search')
 
 QUESTION_STOPWORDS = {
@@ -39,6 +39,16 @@ QUESTION_STOPWORDS = {
     'who',
     'why',
     'with',
+    # German question / function words, but not content-bearing domain terms.
+    'ab', 'alle', 'als', 'am', 'an', 'auf', 'aus', 'bei', 'bin',
+    'das', 'dass', 'dem', 'den', 'der', 'des', 'die', 'dies',
+    'diese', 'dieser', 'ein', 'eine', 'einen', 'einer', 'eines',
+    'er', 'es', 'für', 'hat', 'haben', 'ich', 'im', 'in', 'ist',
+    'kann', 'können', 'man', 'mit', 'mir', 'nach',
+    'noch', 'oder', 'sich', 'sie', 'sind', 'über', 'um', 'und',
+    'uns', 'von', 'vor', 'war', 'was', 'welche', 'welcher',
+    'welches', 'wenn', 'wer', 'wie', 'wieso', 'wird', 'wo',
+    'wobei', 'womit', 'wurde', 'wurden', 'zu', 'zum', 'zur',
 }
 
 
@@ -61,9 +71,13 @@ def fallback_search_query(question: str) -> str:
     required terms. The fallback keeps content-bearing terms only.
     """
 
-    tokens = re.findall(r"[A-Za-z0-9_]+", question.lower())
-    keywords = [token for token in tokens if token not in QUESTION_STOPWORDS and len(token) > 1]
-    return ' '.join(keywords).strip()
+    # Unicode word matching preserves umlauts, accents and compound terms.
+    tokens = re.findall(r"[^\W_]+(?:_[^\W_]+)*", question.casefold(), flags=re.UNICODE)
+    unique = dict.fromkeys(
+        token for token in tokens
+        if token not in QUESTION_STOPWORDS and len(token) > 1
+    )
+    return ' '.join(list(unique)[:8])
 
 
 def run_search(client: httpx.Client, query: str, payload: QaRequest) -> dict:
@@ -79,9 +93,30 @@ def run_search(client: httpx.Client, query: str, payload: QaRequest) -> dict:
     return response.json()
 
 
+def evidence_signal(hits: list[dict], strategy: str) -> dict[str, object]:
+    """Describe retrieval coverage, not factual correctness."""
+    documents = len({hit['document_id'] for hit in hits})
+    if not hits:
+        status = 'no_evidence'
+    elif strategy == 'broad':
+        status = 'broad_keyword_matches'
+    elif documents >= 2:
+        status = 'multiple_document_matches'
+    else:
+        status = 'single_document_matches'
+    return {
+        'status': status,
+        'matching_segments': len(hits),
+        'distinct_documents': documents,
+        'search_strategy': strategy,
+        'calibrated': False,
+    }
+
+
 @app.post('/answer')
 def answer(payload: QaRequest):
     attempted_queries = [payload.question]
+    strategy = 'original_question'
 
     with httpx.Client(timeout=20.0) as client:
         data = run_search(client, payload.question, payload)
@@ -92,6 +127,19 @@ def answer(payload: QaRequest):
             attempted_queries.append(fallback_query)
             data = run_search(client, fallback_query, payload)
             hits = data.get('hits', [])
+            if hits:
+                strategy = 'keywords'
+        if not hits and fallback_query:
+            terms = fallback_query.split()
+            if len(terms) >= 2:
+                # PostgreSQL websearch_to_tsquery interprets OR as disjunction.
+                # Only try this broad last resort if stricter queries failed.
+                broad_query = ' OR '.join(terms[:6])
+                attempted_queries.append(broad_query)
+                data = run_search(client, broad_query, payload)
+                hits = data.get('hits', [])
+                if hits:
+                    strategy = 'broad'
 
     if not hits:
         return {
@@ -102,6 +150,7 @@ def answer(payload: QaRequest):
             'evidence_refs': [],
             'uncertainties': ['no_evidence'],
             'search_queries': attempted_queries,
+            'evidence_signal': evidence_signal([], 'none'),
         }
 
     primary = hits[0]
@@ -112,9 +161,12 @@ def answer(payload: QaRequest):
         f"- [{hit['citation_label']}] {hit['preview_text']}" for hit in hits
     ]
 
+    if strategy == 'broad':
+        uncertainties = ['broad_keyword_search', 'confidence_uncalibrated']
+    else:
+        uncertainties = ['confidence_uncalibrated']
     # Confidence remains a compatibility-only heuristic, never a calibrated
     # probability of factual correctness.
-    uncertainties = ['confidence_uncalibrated']
     if len({hit['document_id'] for hit in hits}) < 2:
         uncertainties.append('limited_independent_sources')
     answer_text = (
@@ -131,4 +183,5 @@ def answer(payload: QaRequest):
         'evidence_refs': evidence_refs,
         'uncertainties': uncertainties,
         'search_queries': attempted_queries,
+        'evidence_signal': evidence_signal(hits, strategy),
     }
