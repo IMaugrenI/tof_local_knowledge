@@ -10,6 +10,8 @@ Local Knowledge helps you index documents, search their contents, and generate e
 
 **Get started:** [First run and safe demo](START_HERE.md) · [German README](README_DE.md) · [ToF Systems overview](https://github.com/IMaugrenI/tof-showcase)
 
+**Source distribution candidate (B8/K8):** Existing Windows/Linux/macOS starters can now be packaged from a committed Git snapshot using the manual **Source distribution candidate** workflow or `python scripts/build_source_candidate.py --output-dir dist`. The ZIP includes [offline instructions](docs/RELEASE_PACKAGE.md) and a SHA-256 checksum. **Not an approved release or native installer; target-system acceptance comes after development.**
+
 ## See a grounded answer
 
 The public demo uses synthetic documents from `demo/source_1/`. The screenshot below is a real local UI view of a retrieved result, an answer with citations, and the documents used.
