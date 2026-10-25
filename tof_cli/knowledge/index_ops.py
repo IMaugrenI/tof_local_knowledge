@@ -53,10 +53,16 @@ def index_configured_source() -> dict[str, object]:
         )
         if scan.get("status") != "ok":
             return {"status": "error", "detail": scan.get("detail", "scan_failed")}
-        candidates = [
-            row for row in scan.get("sample_documents", [])
-            if row.get("scan_status") in {"new", "changed", "retry"}
-        ]
+        candidates = sorted(
+            (
+                row for row in scan.get("sample_documents", [])
+                if row.get("scan_status") in {"new", "changed", "retry"}
+            ),
+            key=lambda row: (
+                {"new": 0, "changed": 0, "retry": 1}[row["scan_status"]],
+                row["relative_path"],
+            ),
+        )
         processed = 0
         failed = []
         for row in candidates[:MAX_EXTRACTED_PER_CLICK]:
