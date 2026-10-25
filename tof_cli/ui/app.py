@@ -1181,13 +1181,25 @@ def _evidence_lookup(segment_id: str) -> dict[str, object]:
     return _get_json(f"{endpoint}/{segment_id}")
 
 
+def _configured_target(name: str) -> str | None:
+    try:
+        return _configured_api_targets()[name]
+    except ValueError:
+        return None
+
+
 def _get_json(url: str) -> dict[str, object]:
     try:
         with urllib.request.urlopen(url, timeout=8) as response:
             raw = response.read().decode("utf-8")
             return json.loads(raw) if raw else {}
-    except (urllib.error.URLError, ValueError, TimeoutError) as exc:
-        return {"error": "source_status_unavailable", "details": str(exc)}
+    except urllib.error.HTTPError as exc:
+        return {"error": "service_unavailable" if exc.code >= 500 else "invalid_request",
+                "details": f"upstream_http_{exc.code}"}
+    except (urllib.error.URLError, OSError, TimeoutError):
+        return {"error": "service_unavailable"}
+    except (ValueError, UnicodeError):
+        return {"error": "processing_error"}
 
 
 def _post_json(url: str, payload: dict[str, object]) -> dict[str, object]:
@@ -1202,10 +1214,12 @@ def _post_json(url: str, payload: dict[str, object]) -> dict[str, object]:
             raw = response.read().decode("utf-8")
             return json.loads(raw) if raw else {}
     except urllib.error.HTTPError as exc:
-        body = exc.read().decode("utf-8", errors="ignore")
-        return {"error": f"http_error_{exc.code}", "details": body or str(exc)}
-    except Exception as exc:
-        return {"error": "request_failed", "details": str(exc)}
+        return {"error": "invalid_request" if 400 <= exc.code < 500 else "processing_error",
+                "details": f"upstream_http_{exc.code}"}
+    except (urllib.error.URLError, OSError, TimeoutError):
+        return {"error": "service_unavailable"}
+    except (ValueError, UnicodeError):
+        return {"error": "processing_error"}
 
 
 def _ports_valid() -> bool:
