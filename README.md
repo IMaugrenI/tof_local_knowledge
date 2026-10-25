@@ -40,6 +40,12 @@ Search hits and QA evidence references now offer **View excerpt**. The existing 
 
 This is a bounded **read-only local single-user** inspection, not a new login, ACL system, full document viewer, or LAN access grant. The existing `citations` and `evidence_refs` response fields remain unchanged.
 
+## K5 — Continue indexing large sources
+
+The explicit **Index configured source** action can now advance through more than the first 100 files. Scanning uses a bounded 100-file page and returns a continuation cursor. The browser presents the next manual batch and lets the operator restart from the beginning; extraction remains limited to eight files per click. Files previously scanned successfully are skipped when unchanged. Failed retries do not indefinitely prevent progress to later file pages.
+
+**Important limitation:** The existing missing-file reconciliation is safe only for a complete, unpaginated scan. Paginated passes do not mark unvisited files as missing. This is an intentional safety restriction, not a claim that all stale paths have been reconciled. No background service, new source mount or multi-user authorization was introduced.
+
 ## Use this repo in the simplest way
 
 If you want the shortest safe path, start here:
