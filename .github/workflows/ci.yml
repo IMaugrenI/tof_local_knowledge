@@ -38,4 +38,4 @@ jobs:
           docker compose -f compose.full.yml config > /dev/null
 
       - name: Run tests
-        run: pytest -q
+        run: python -m pytest -q
