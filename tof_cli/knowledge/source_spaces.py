@@ -8,6 +8,8 @@ from __future__ import annotations
 import hashlib
 from pathlib import Path
 
+from tof_cli.knowledge.source_ops import source_root_from_env
+
 MAX_SPACES = 50
 
 
@@ -24,7 +26,7 @@ def discover_source_spaces(env: dict[str, str]) -> dict[str, object]:
     if not configured:
         return {"status": "unavailable", "reason": "source_root_not_configured",
                 "spaces": spaces, "truncated": False}
-    root = Path(configured).expanduser().resolve()
+    root = source_root_from_env(env).resolve()
     if not root.is_dir():
         return {"status": "unavailable", "reason": "source_root_not_available",
                 "spaces": spaces, "truncated": False}
@@ -69,7 +71,7 @@ def resolve_source_space(env: dict[str, str], source_id: str | None) -> dict[str
     for space in available["spaces"][1:]:
         if source_id == space["id"]:
             # Revalidate after discovery; a directory may have been replaced.
-            root = Path(env["LOCAL_SOURCE_ROOT_1"]).expanduser().resolve()
+            root = source_root_from_env(env).resolve()
             child = root / str(space["relative_dir"])
             if (child.is_symlink() or not child.is_dir()
                     or not child.resolve().is_relative_to(root)):
