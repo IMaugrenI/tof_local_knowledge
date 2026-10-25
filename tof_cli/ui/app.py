@@ -573,7 +573,7 @@ HTML = """<!doctype html>
         rawSearch: 'Technische Suchdetails anzeigen',
         answerFailed: 'Die Antwort konnte nicht erstellt werden',
         noAnswerText: 'Keine Antwort zurückgegeben.',
-        confidence: 'Sicherheit der Antwort',
+        confidence: 'Heuristischer Trefferwert (keine Wahrscheinlichkeit)',
         uncertainties: 'Was noch unklar ist',
         citations: 'Verwendete Quellen',
         usedDocuments: 'Verwendete Dokumente',
@@ -601,6 +601,7 @@ HTML = """<!doctype html>
         sourceMissing: 'Fehlend',
         sourceTotal: 'Dokumente',
         sourceLastScan: 'Letzter Scan',
+        selectSource: 'Diese Quelle durchsuchen',
       },
       en: {
         heroEyebrow: 'YOUR DOCUMENTS · YOUR SOURCES',
@@ -661,7 +662,7 @@ HTML = """<!doctype html>
         rawSearch: 'Show technical search details',
         answerFailed: 'The answer could not be created',
         noAnswerText: 'No answer text returned.',
-        confidence: 'Answer confidence',
+        confidence: 'Heuristic match score (not a probability)',
         uncertainties: 'What is still unclear',
         citations: 'Sources used',
         usedDocuments: 'Used documents',
@@ -689,6 +690,7 @@ HTML = """<!doctype html>
         sourceMissing: 'Missing',
         sourceTotal: 'Documents',
         sourceLastScan: 'Last scan',
+        selectSource: 'Search this source',
       },
     };
 
@@ -889,7 +891,18 @@ HTML = """<!doctype html>
           scan.className = 'muted';
           scan.textContent = t('sourceLastScan') + ': '
             + (source.last_scan_at ? new Date(source.last_scan_at).toLocaleString() : '—');
-          panel.append(title, stats, scan);
+          const select = document.createElement('button');
+          select.className = 'secondary';
+          select.type = 'button';
+          select.style.marginTop = '10px';
+          select.textContent = t('selectSource');
+          select.disabled = !source.enabled;
+          select.addEventListener('click', () => {
+            document.getElementById('search-scope').value = source.source_id;
+            document.getElementById('qa-scope').value = source.source_id;
+            document.getElementById('search-query').focus();
+          });
+          panel.append(title, stats, scan, select);
           root.appendChild(panel);
         }
       } catch (error) {
