@@ -34,6 +34,12 @@ The existing browser control page now has an **Index configured source** action.
 
 A click scans up to 100 files and extracts up to eight new, changed or retry-eligible documents. The UI reports indexed documents and failures; further batches can be started manually. **No background scanning, new service, multi-user authentication or public network exposure is added.** This is a local single-user workflow.
 
+## K4 — Inspect the cited excerpt
+
+Search hits and QA evidence references now offer **View excerpt**. The existing local browser UI retrieves the exact segment by its ID and displays the cataloged source, document, citation and up to 2,000 characters of the source excerpt. Only currently indexed documents from enabled sources are eligible; missing, disabled, failed and pending sources do not yield current evidence.
+
+This is a bounded **read-only local single-user** inspection, not a new login, ACL system, full document viewer, or LAN access grant. The existing `citations` and `evidence_refs` response fields remain unchanged.
+
 ## Use this repo in the simplest way
 
 If you want the shortest safe path, start here:

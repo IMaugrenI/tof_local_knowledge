@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import json
+import re
 import urllib.error
 import urllib.request
 import webbrowser
@@ -9,10 +10,11 @@ from contextlib import redirect_stdout
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Callable
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 from tof_cli.commands import check, doctor, down, setup, status, up
 from tof_cli.knowledge.index_ops import index_configured_source
+from tof_cli.core.env_ops import read_env
 
 
 @dataclass(frozen=True)
@@ -468,6 +470,13 @@ HTML = """<!doctype html>
           <div class="result" id="search-result" role="status" aria-live="polite" data-i18n="noSearchYet">Hier erscheinen passende Fundstellen aus deinen Dokumenten.</div>
         </div>
 
+        <section class="search-panel" aria-labelledby="evidence-title">
+          <p class="eyebrow" data-i18n="evidenceEyebrow">BELEG PRÜFEN</p>
+          <h2 id="evidence-title" data-i18n="evidenceTitle">Textstelle nachvollziehen</h2>
+          <p class="hint" data-i18n="evidenceHint">Öffne einen Beleg aus Suche oder Antwort. Nur aktuell indexierte Fundstellen werden angezeigt.</p>
+          <div class="result" id="evidence-result" aria-live="polite" data-i18n="evidenceEmpty">Wähle eine Fundstelle.</div>
+        </section>
+
         <section class="search-panel" aria-labelledby="sources-title">
           <p class="eyebrow" data-i18n="sourcesEyebrow">QUELLEN & INDEX</p>
           <h2 id="sources-title" data-i18n="sourcesTitle">Deine Quellen im Überblick</h2>
@@ -580,6 +589,12 @@ HTML = """<!doctype html>
         uncertainties: 'Was noch unklar ist',
         citations: 'Verwendete Quellen',
         evidenceRefs: 'Nachvollziehbare Fundstellen',
+        viewEvidence: 'Textstelle ansehen',
+        evidenceEyebrow: 'BELEG PRÜFEN',
+        evidenceTitle: 'Textstelle nachvollziehen',
+        evidenceHint: 'Öffne einen Beleg aus Suche oder Antwort. Nur aktuell indexierte Fundstellen werden angezeigt.',
+        evidenceEmpty: 'Wähle eine Fundstelle.',
+        evidenceUnavailable: 'Diese Fundstelle ist nicht mehr verfügbar oder wurde noch nicht indexiert.',
         usedDocuments: 'Verwendete Dokumente',
         searchQueries: 'Verwendete Suchbegriffe',
         rawAnswer: 'Technische Antwortdetails anzeigen',
@@ -676,6 +691,12 @@ HTML = """<!doctype html>
         uncertainties: 'What is still unclear',
         citations: 'Sources used',
         evidenceRefs: 'Traceable evidence references',
+        viewEvidence: 'View excerpt',
+        evidenceEyebrow: 'INSPECT EVIDENCE',
+        evidenceTitle: 'Trace an excerpt',
+        evidenceHint: 'Open an excerpt from a search or answer. Only current indexed evidence is shown.',
+        evidenceEmpty: 'Choose an evidence reference.',
+        evidenceUnavailable: 'This excerpt is unavailable or no longer indexed.',
         usedDocuments: 'Used documents',
         searchQueries: 'Search terms used',
         rawAnswer: 'Show technical answer details',
@@ -776,6 +797,44 @@ HTML = """<!doctype html>
       return `<div class=\"chip-list\">${list.map(item => `<span class=\"chip ${cssClass}\">${escapeHtml(item)}</span>`).join('')}</div>`;
     }
 
+    function bindEvidenceButtons(root) {
+      root.querySelectorAll('button[data-evidence-segment]').forEach(button => {
+        button.addEventListener('click', () => inspectEvidence(button.dataset.evidenceSegment));
+      });
+    }
+
+    async function inspectEvidence(segmentId) {
+      const panel = document.getElementById('evidence-result');
+      panel.textContent = t('evidenceEmpty');
+      try {
+        const query = new URLSearchParams({segment_id: segmentId});
+        const response = await fetch('/api/evidence?' + query.toString());
+        const data = await response.json();
+        if (!response.ok || !data.evidence) {
+          panel.textContent = t('evidenceUnavailable');
+          return;
+        }
+        panel.replaceChildren();
+        const e = data.evidence;
+        const heading = document.createElement('strong');
+        heading.textContent = e.citation_label + ' · ' + e.relative_path;
+        const detail = document.createElement('p');
+        detail.className = 'muted';
+        detail.textContent = e.source_id + ' · ' + e.document_id + ' · ' + e.segment_id;
+        const excerpt = document.createElement('pre');
+        excerpt.className = 'preview';
+        excerpt.style.whiteSpace = 'pre-wrap';
+        excerpt.textContent = e.excerpt || '';
+        const note = document.createElement('p');
+        note.className = 'muted';
+        note.textContent = 'Read-only excerpt · up to ' + data.truncated_to_chars + ' characters.';
+        panel.append(heading, detail, excerpt, note);
+        panel.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+      } catch (error) {
+        panel.textContent = t('evidenceUnavailable');
+      }
+    }
+
     function renderSearchResult(data) {
       const root = document.getElementById('search-result');
       if (data.error) {
@@ -799,10 +858,12 @@ HTML = """<!doctype html>
         if (hit.score !== undefined && hit.score !== null) html += `<div class=\"muted\">${t('score')}: ${escapeHtml(hit.score)}</div>`;
         html += '</div>';
         if (preview) html += `<div class=\"preview\">${escapeHtml(preview)}</div>`;
+        if (hit.segment_id) html += `<button class=\"secondary\" type=\"button\" data-evidence-segment=\"${escapeHtml(hit.segment_id)}\">${t('viewEvidence')}</button>`;
         html += `</div>`;
       }
       html += `<details><summary>${t('rawSearch')}</summary><pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre></details>`;
       root.innerHTML = html;
+      bindEvidenceButtons(root);
     }
 
     function renderCitation(citation) {
@@ -851,6 +912,7 @@ HTML = """<!doctype html>
           html += '<div class="muted">' + escapeHtml(ref.relative_path || '') + '</div>';
           html += '<div class="muted">' + escapeHtml(ref.citation_label || '') + '</div>';
           html += '<div class="muted">Segment: ' + escapeHtml(ref.segment_id || '') + '</div>';
+          if (ref.segment_id) html += '<button class="secondary" type="button" data-evidence-segment="' + escapeHtml(ref.segment_id) + '">' + t('viewEvidence') + '</button>';
           html += '</div>';
         }
         html += '</div>';
@@ -863,6 +925,7 @@ HTML = """<!doctype html>
       }
       html += `<details><summary>${t('rawAnswer')}</summary><pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre></details>`;
       root.innerHTML = html;
+      bindEvidenceButtons(root);
     }
 
     async function refreshSummary() {
@@ -1049,6 +1112,22 @@ def _read_json_body(handler: BaseHTTPRequestHandler) -> dict[str, object]:
     return json.loads(raw.decode("utf-8")) if raw else {}
 
 
+def _evidence_lookup(segment_id: str) -> dict[str, object]:
+    # This is a source viewer in the existing local single-user application.
+    if not re.fullmatch(r"[A-Za-z0-9_-]{1,128}", segment_id):
+        return {"error": "invalid_segment_id"}
+    env = read_env()
+    if env.get("BIND_HOST", "127.0.0.1") not in {"localhost", "127.0.0.1", "::1"}:
+        return {"error": "local_only"}
+    try:
+        port = int(env.get("SEARCH_API_PORT", "8105"))
+    except ValueError:
+        return {"error": "invalid_search_port"}
+    if port < 1 or port > 65535:
+        return {"error": "invalid_search_port"}
+    return _get_json(f"http://127.0.0.1:{port}/evidence/{segment_id}")
+
+
 def _get_json(url: str) -> dict[str, object]:
     try:
         with urllib.request.urlopen(url, timeout=8) as response:
@@ -1107,6 +1186,13 @@ def run_ui(host: str = "127.0.0.1", port: int = 8785, open_browser: bool = True)
                 return
             if parsed.path == "/api/summary":
                 self._send(200, "application/json; charset=utf-8", _json_bytes(_summary_payload()))
+                return
+            if parsed.path == "/api/evidence":
+                params = parse_qs(parsed.query)
+                segment_id = params.get("segment_id", [""])[0]
+                response = _evidence_lookup(segment_id)
+                code = 400 if response.get("error") == "invalid_segment_id" else (503 if response.get("error") else 200)
+                self._send(code, "application/json; charset=utf-8", _json_bytes(response))
                 return
             if parsed.path == "/api/sources":
                 report = _get_json(API_TARGETS["sources"])

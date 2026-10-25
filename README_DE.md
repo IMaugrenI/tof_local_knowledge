@@ -34,6 +34,12 @@ Die vorhandene lokale Browseroberfläche bietet nun **„Konfigurierte Quelle in
 
 Pro Klick werden höchstens 100 Dateien gescannt und höchstens acht neue/geänderte/erneut zu verarbeitende Dokumente extrahiert. Ergebnis, fehlgeschlagene Extraktionen und verbleibende Arbeit werden angezeigt; weitere Chargen können manuell gestartet werden. **Keine Hintergrundindexierung, keine neuen Dienste und keine Mehrbenutzerfreigabe.** Die Funktion ist für die bestehende lokale Einzelbenutzer-Nutzung vorgesehen.
 
+## Ausbau K4 — Belegte Textstelle direkt ansehen
+
+Suchtreffer und konkrete Belegreferenzen in Antworten bieten nun **„Textstelle ansehen“**. Die bestehende lokale Browseroberfläche liest das exakt referenzierte Segment und zeigt Quelle, Dokumentkennung, Zitierlabel sowie bis zu 2.000 Zeichen des Textausschnitts. Nur aktuell indexierte Dokumente aus aktivierten Quellen dürfen angezeigt werden. Fehlende, deaktivierte, fehlgeschlagene und noch offene Dokumente liefern keine aktuellen Belege.
+
+Die Funktion ist ausschließlich **lesend und lokal für Einzelbenutzer**. Sie schafft weder einen neuen Login, eine Quellenberechtigungsprüfung noch eine allgemeine Freigabe für das Netzwerk. Bestehende `citations`- und `evidence_refs`-Felder bleiben erhalten.
+
 ## Einfachster Einstieg
 
 Wenn du den kürzesten sicheren Weg willst, starte hier:
