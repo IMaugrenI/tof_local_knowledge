@@ -44,7 +44,7 @@ QUESTION_STOPWORDS = {
     'das', 'dass', 'dem', 'den', 'der', 'des', 'die', 'dies',
     'diese', 'dieser', 'ein', 'eine', 'einen', 'einer', 'eines',
     'er', 'es', 'für', 'hat', 'haben', 'ich', 'im', 'in', 'ist',
-    'kann', 'können', 'man', 'mit', 'mir', 'nach', 'nicht',
+    'kann', 'können', 'man', 'mit', 'mir', 'nach',
     'noch', 'oder', 'sich', 'sie', 'sind', 'über', 'um', 'und',
     'uns', 'von', 'vor', 'war', 'was', 'welche', 'welcher',
     'welches', 'wenn', 'wer', 'wie', 'wieso', 'wird', 'wo',
