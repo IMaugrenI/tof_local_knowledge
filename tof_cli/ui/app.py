@@ -15,6 +15,7 @@ from urllib.parse import parse_qs, urlparse
 from tof_cli.commands import check, doctor, down, setup, status, up
 from tof_cli.knowledge.index_ops import index_configured_source
 from tof_cli.core.env_ops import read_env
+from tof_cli.ui.service_ops import classify_error, configured_targets, parse_bounded_json
 
 
 @dataclass(frozen=True)
@@ -1141,8 +1142,23 @@ def _run_action(name: str) -> dict[str, object]:
     }
 
 
+def _configured_api_targets() -> dict[str, str]:
+    return configured_targets(read_env())
+
+
+def _configured_links() -> dict[str, dict[str, str]]:
+    targets = _configured_api_targets()
+    return {
+        name: {"label": item["label"], "url": targets[name]}
+        for name, item in LINKS.items()
+    }
+
+
 def _open_link(name: str) -> dict[str, object]:
-    link = LINKS[name]
+    try:
+        link = _configured_links()[name]
+    except ValueError as exc:
+        return {"opened": None, "error": classify_error(str(exc))}
     webbrowser.open(link["url"])
     return {"opened": link["url"], "label": link["label"]}
 
@@ -1196,6 +1212,14 @@ def _post_json(url: str, payload: dict[str, object]) -> dict[str, object]:
         return {"error": "request_failed", "details": str(exc)}
 
 
+def _ports_valid() -> bool:
+    try:
+        _configured_api_targets()
+    except ValueError:
+        return False
+    return True
+
+
 def _summary_payload() -> dict[str, object]:
     return {
         "next_step": "Prepare the local environment once, then ask questions or search your documents from this page.",
@@ -1203,7 +1227,8 @@ def _summary_payload() -> dict[str, object]:
             {"name": key, "label": spec.label, "safe_level": spec.safe_level}
             for key, spec in ACTIONS.items()
         ],
-        "links": LINKS,
+        "links": _configured_links() if _ports_valid() else {},
+        "configuration_error": None if _ports_valid() else "invalid_configuration",
     }
 
 
