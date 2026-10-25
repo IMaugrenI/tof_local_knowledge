@@ -818,10 +818,12 @@ HTML = """<!doctype html>
         if (hit.score !== undefined && hit.score !== null) html += `<div class=\"muted\">${t('score')}: ${escapeHtml(hit.score)}</div>`;
         html += '</div>';
         if (preview) html += `<div class=\"preview\">${escapeHtml(preview)}</div>`;
+        if (hit.segment_id) html += `<button class=\"secondary\" type=\"button\" data-evidence-segment=\"${escapeHtml(hit.segment_id)}\">${t('viewEvidence')}</button>`;
         html += `</div>`;
       }
       html += `<details><summary>${t('rawSearch')}</summary><pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre></details>`;
       root.innerHTML = html;
+      bindEvidenceButtons(root);
     }
 
     function renderCitation(citation) {
