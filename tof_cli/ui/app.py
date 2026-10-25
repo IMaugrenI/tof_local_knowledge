@@ -1239,8 +1239,22 @@ def run_ui(host: str = "127.0.0.1", port: int = 8785, open_browser: bool = True)
                     self._send(403, "application/json; charset=utf-8",
                                _json_bytes({"error": "same_origin_json_required"}))
                     return
+                try:
+                    length = int(self.headers.get("Content-Length", "0"))
+                    if length < 0 or length > 4096:
+                        raise ValueError("invalid_request_size")
+                    body = json.loads(self.rfile.read(length) or b"{}")
+                    if not isinstance(body, dict):
+                        raise ValueError("invalid_request_body")
+                    cursor = body.get("cursor")
+                    if cursor is not None and not isinstance(cursor, str):
+                        raise ValueError("invalid_scan_cursor")
+                except (ValueError, TypeError):
+                    self._send(400, "application/json; charset=utf-8",
+                               _json_bytes({"error": "invalid_index_request"}))
+                    return
                 self._send(200, "application/json; charset=utf-8",
-                           _json_bytes(index_configured_source()))
+                           _json_bytes(index_configured_source(start_after=cursor)))
                 return
             if action == 'search':
                 payload = _read_json_body(self)
