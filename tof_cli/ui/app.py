@@ -826,6 +826,7 @@ HTML = """<!doctype html>
       const answer = data.answer_text || data.answer || t('noAnswerText');
       const confidence = data.confidence ?? 'unknown';
       const citations = asList(data.citations);
+      const evidenceRefs = asList(data.evidence_refs);
       const usedDocuments = asList(data.used_documents);
       const uncertainties = asList(data.uncertainties);
       const searchQueries = asList(data.search_queries);
