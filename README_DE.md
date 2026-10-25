@@ -46,6 +46,14 @@ Die Aktion **„Konfigurierte Quelle indexieren“** kann jetzt auch Dokumente h
 
 **Wichtige Grenze:** Ein nicht mehr vorhandenes Dokument darf nur bei einem vollständig ausgeführten Scan ohne Seitenteilung als fehlend markiert werden. Bei aufgeteilten Durchläufen erfolgt bewusst kein solcher Abgleich. Es wurden weder neue Dienste noch weitere Quell-Mounts oder Mehrbenutzerrechte eingeführt.
 
+## Ausbau K6 — Deutschsprachige Wissensfragen und Belegbewertung
+
+Die bestehende QA-Suche verarbeitet deutsche Fragewörter und Umlaute bei einer **gezielten Stichwortersatzsuche** besser. Bleiben Frage und Stichwörter ohne Treffer, erfolgt zuletzt eine ausdrücklich markierte, breitere OR-Suche. Diese kann auch dann Fundstellen zeigen, wenn nur einzelne Begriffe passen. Der jeweilige Suchweg bleibt im Antwortpaket sichtbar.
+
+Das zusätzliche Feld `evidence_signal` beschreibt lediglich den **Suchbefund** (Anzahl gefundener Textsegmente, unterschiedliche Dokumente, Suchstrategie). Es ist **keine Qualitätsprüfung des Inhalts und keine Wahrscheinlichkeit, dass eine Aussage wahr ist**. Die bestehende numerische `confidence` bleibt nur aus Kompatibilitätsgründen erhalten und ist weiterhin nicht kalibriert.
+
+Suchergebnisse enthalten außerdem Seitenzahl, Segmenttyp und stabile Sortierung. Der ursprüngliche Quellenfilter und die Sperrung veralteter Indexstände bleiben erhalten. Es wird kein Cloud-Dienst, neuer Indexserver oder Mehrbenutzermodus eingeführt.
+
 ## Einfachster Einstieg
 
 Wenn du den kürzesten sicheren Weg willst, starte hier:
