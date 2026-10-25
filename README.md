@@ -28,6 +28,12 @@ The scan now preserves successful unchanged documents, identifies changed and mi
 
 The displayed QA score is explicitly described as an *uncalibrated heuristic*, not the probability an answer is true. See the [K1 development pull request](https://github.com/IMaugrenI/tof_local_knowledge/pull/16) and [code-status document](docs/10_build_status.md) for limitations.
 
+## K2: explicitly index the configured source
+
+The existing browser control page now has an **Index configured source** action. It only scans the source already mounted read-only from `LOCAL_SOURCE_ROOT_1` (`/sources/source_1` inside existing services), using `LOCAL_SOURCE_ID_1` or the default `demo_source_1`.
+
+A click scans up to 100 files and extracts up to eight new, changed or retry-eligible documents. The UI reports indexed documents and failures; further batches can be started manually. **No background scanning, new service, multi-user authentication or public network exposure is added.** This is a local single-user workflow.
+
 ## Use this repo in the simplest way
 
 If you want the shortest safe path, start here:

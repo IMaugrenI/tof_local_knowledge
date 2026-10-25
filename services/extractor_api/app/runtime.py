@@ -77,7 +77,7 @@ def extract_file(payload: ExtractRequest):
                     INSERT INTO documents (
                       document_id, source_id, relative_path, file_name, read_status, extraction_status
                     ) VALUES (%s, %s, %s, %s, %s, %s)
-                    ON CONFLICT (source_id, relative_path) DO UPDATE
+                    ON CONFLICT (document_id) DO UPDATE
                     SET read_status = EXCLUDED.read_status,
                         extraction_status = EXCLUDED.extraction_status
                     ''',

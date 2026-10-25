@@ -12,6 +12,7 @@ from typing import Callable
 from urllib.parse import urlparse
 
 from tof_cli.commands import check, doctor, down, setup, status, up
+from tof_cli.knowledge.index_ops import index_configured_source
 
 
 @dataclass(frozen=True)
@@ -472,6 +473,8 @@ HTML = """<!doctype html>
           <h2 id="sources-title" data-i18n="sourcesTitle">Deine Quellen im Überblick</h2>
           <div class="hint" data-i18n="sourcesHint">Welche Dokumente bereits indexiert sind und welche noch Aufmerksamkeit brauchen.</div>
           <button class="secondary" onclick="refreshSources()" data-i18n="refreshSources">Quellen aktualisieren</button>
+          <button class="secondary" id="index-batch-button" onclick="runIndexBatch()" data-i18n="indexBatch">Konfigurierte Quelle indexieren</button>
+          <div class="hint" id="index-batch-result" aria-live="polite" data-i18n="indexHint">Manuell: eine begrenzte Charge der konfigurierten, schreibgeschützten Quelle einlesen.</div>
           <div class="result" id="source-result" aria-live="polite" data-i18n="sourcesEmpty">Hier erscheinen die erfassten Quellen und Indexstände.</div>
           <div class="hint" data-i18n="sourcesLocalOnly">Nur lokale Quellenübersicht. Es ist keine Mehrbenutzerfreigabe aktiv.</div>
         </section>
@@ -594,6 +597,12 @@ HTML = """<!doctype html>
         sourcesEmpty: 'Hier erscheinen die erfassten Quellen und Indexstände.',
         sourcesLocalOnly: 'Lokale Einzelbenutzer-Ansicht. Keine aktive Mehrbenutzer-Berechtigung.',
         sourceUnavailable: 'Quellenstatus ist nicht erreichbar. Prüfe die lokale Umgebung.',
+        indexBatch: 'Konfigurierte Quelle indexieren',
+        indexHint: 'Nur auf Klick: eine begrenzte Charge der konfigurierten, schreibgeschützten Quelle einlesen.',
+        indexFailed: 'Indexierung fehlgeschlagen:',
+        indexSuccess: 'Indexiert in dieser Charge',
+        indexAgain: 'Für weitere offene Dokumente erneut starten.',
+        indexRunning: 'Indexierung läuft…',
         sourceNoData: 'Noch keine Quellen registriert.',
         sourceIndexed: 'Indexiert',
         sourcePending: 'Offen',
@@ -683,6 +692,12 @@ HTML = """<!doctype html>
         sourcesEmpty: 'Registered sources and index status will appear here.',
         sourcesLocalOnly: 'Local single-user view only. Multi-user permissions are not active.',
         sourceUnavailable: 'Source status is not reachable. Check the local environment.',
+        indexBatch: 'Index configured source',
+        indexHint: 'Only on click: scan a bounded batch from the configured read-only source.',
+        indexFailed: 'Indexing failed:',
+        indexSuccess: 'Indexed in this batch',
+        indexAgain: 'Run again for any remaining pending documents.',
+        indexRunning: 'Indexing in progress…',
         sourceNoData: 'No sources registered yet.',
         sourceIndexed: 'Indexed',
         sourcePending: 'Pending',
@@ -855,6 +870,33 @@ HTML = """<!doctype html>
       const response = await fetch(`/api/open/${name}`, { method: 'POST' });
       const data = await response.json();
       appendLog(JSON.stringify(data, null, 2));
+    }
+
+    async function runIndexBatch() {
+      const button = document.getElementById('index-batch-button');
+      const result = document.getElementById('index-batch-result');
+      button.disabled = true;
+      result.textContent = t('indexRunning');
+      try {
+        const response = await fetch('/api/index-batch', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: '{}',
+        });
+        const data = await response.json();
+        if (!response.ok || data.status === 'error') {
+          result.textContent = t('indexFailed') + ' ' + (data.detail || data.error || '');
+        } else {
+          result.textContent = t('indexSuccess') + ': ' + (data.indexed_this_pass || 0)
+            + ' / ' + (data.files_scanned || 0) + ' scanned. '
+            + (data.failed || []).length + ' failed. ' + t('indexAgain');
+          await refreshSources();
+        }
+      } catch (error) {
+        result.textContent = t('indexFailed') + ' ' + String(error);
+      } finally {
+        button.disabled = false;
+      }
     }
 
     async function refreshSources() {
@@ -1070,6 +1112,18 @@ def run_ui(host: str = "127.0.0.1", port: int = 8785, open_browser: bool = True)
                 if name in LINKS:
                     self._send(200, "application/json; charset=utf-8", _json_bytes(_open_link(name)))
                     return
+            if action == 'index-batch':
+                # JSON-only and same-origin: never allow a cross-site form to
+                # trigger processing, even on a loopback-bound local server.
+                origin = self.headers.get('Origin', '')
+                expected = f"http://{host}:{port}"
+                if (origin and origin != expected) or 'application/json' not in self.headers.get('Content-Type', ''):
+                    self._send(403, "application/json; charset=utf-8",
+                               _json_bytes({"error": "same_origin_json_required"}))
+                    return
+                self._send(200, "application/json; charset=utf-8",
+                           _json_bytes(index_configured_source()))
+                return
             if action == 'search':
                 payload = _read_json_body(self)
                 self._send(200, "application/json; charset=utf-8", _json_bytes(_post_json(API_TARGETS['search'], payload)))
