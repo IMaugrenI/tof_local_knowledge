@@ -579,6 +579,7 @@ HTML = """<!doctype html>
         confidence: 'Heuristischer Trefferwert (keine Wahrscheinlichkeit)',
         uncertainties: 'Was noch unklar ist',
         citations: 'Verwendete Quellen',
+        evidenceRefs: 'Nachvollziehbare Fundstellen',
         usedDocuments: 'Verwendete Dokumente',
         searchQueries: 'Verwendete Suchbegriffe',
         rawAnswer: 'Technische Antwortdetails anzeigen',
