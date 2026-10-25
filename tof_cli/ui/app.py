@@ -579,6 +579,7 @@ HTML = """<!doctype html>
         confidence: 'Heuristischer Trefferwert (keine Wahrscheinlichkeit)',
         uncertainties: 'Was noch unklar ist',
         citations: 'Verwendete Quellen',
+        evidenceRefs: 'Nachvollziehbare Fundstellen',
         usedDocuments: 'Verwendete Dokumente',
         searchQueries: 'Verwendete Suchbegriffe',
         rawAnswer: 'Technische Antwortdetails anzeigen',
@@ -674,6 +675,7 @@ HTML = """<!doctype html>
         confidence: 'Heuristic match score (not a probability)',
         uncertainties: 'What is still unclear',
         citations: 'Sources used',
+        evidenceRefs: 'Traceable evidence references',
         usedDocuments: 'Used documents',
         searchQueries: 'Search terms used',
         rawAnswer: 'Show technical answer details',
@@ -824,6 +826,7 @@ HTML = """<!doctype html>
       const answer = data.answer_text || data.answer || t('noAnswerText');
       const confidence = data.confidence ?? 'unknown';
       const citations = asList(data.citations);
+      const evidenceRefs = asList(data.evidence_refs);
       const usedDocuments = asList(data.used_documents);
       const uncertainties = asList(data.uncertainties);
       const searchQueries = asList(data.search_queries);
@@ -840,6 +843,17 @@ HTML = """<!doctype html>
           html += renderCitation(citation);
         }
         html += `</div>`;
+      }
+      if (evidenceRefs.length) {
+        html += '<div class="result-card"><strong>' + t('evidenceRefs') + '</strong>';
+        for (const ref of evidenceRefs) {
+          html += '<div class="meta-grid" style="margin-top:8px">';
+          html += '<div class="muted">' + escapeHtml(ref.relative_path || '') + '</div>';
+          html += '<div class="muted">' + escapeHtml(ref.citation_label || '') + '</div>';
+          html += '<div class="muted">Segment: ' + escapeHtml(ref.segment_id || '') + '</div>';
+          html += '</div>';
+        }
+        html += '</div>';
       }
       if (usedDocuments.length) {
         html += `<div class=\"result-card\"><strong>${t('usedDocuments')}</strong>${renderChips(usedDocuments)}</div>`;

@@ -99,6 +99,7 @@ def answer(payload: QaRequest):
             'confidence': 0.0,
             'citations': [],
             'used_documents': [],
+            'evidence_refs': [],
             'uncertainties': ['no_evidence'],
             'search_queries': attempted_queries,
         }
@@ -106,6 +107,7 @@ def answer(payload: QaRequest):
     primary = hits[0]
     citations = [hit['citation_label'] for hit in hits]
     used_documents = sorted({hit['document_id'] for hit in hits})
+    evidence_refs = [{'segment_id': hit['segment_id'], 'document_id': hit['document_id'], 'source_id': hit['source_id'], 'relative_path': hit['relative_path'], 'citation_label': hit['citation_label']} for hit in hits]
     evidence_lines = [
         f"- [{hit['citation_label']}] {hit['preview_text']}" for hit in hits
     ]
@@ -126,6 +128,7 @@ def answer(payload: QaRequest):
         'confidence': min(0.95, 0.35 + 0.1 * len(hits)),
         'citations': citations,
         'used_documents': used_documents,
+        'evidence_refs': evidence_refs,
         'uncertainties': uncertainties,
         'search_queries': attempted_queries,
     }
