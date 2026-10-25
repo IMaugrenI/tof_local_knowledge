@@ -20,6 +20,14 @@ Die öffentliche Demo verwendet synthetische Dokumente aus `demo/source_1/`. Der
 
 **Einordnung:** Dieses Repository ist das eigenständige **Ground**-Werkzeug. Es ist weder ein Cloud-Synchronisierungsdienst noch ein allgemeiner KI-Builder oder eine automatische Wahrheitsinstanz. Belegte Informationen und fehlende Evidenz bleiben unterscheidbar. Eine Verbindung mit anderen Werkzeugen ist möglich, wird aber nicht als bereits integriert vorausgesetzt.
 
+## Neu im K1-Entwicklungsbranch
+
+Die vorhandene lokale Browseroberfläche bietet jetzt einen Bereich **Quellen & Index** mit den registrierten Quellen, indexierten Dokumenten, offenen/fehlgeschlagenen/fehlenden Zuständen und dem letzten Scan. Eine Quellenauswahl übernimmt den Filter in die vorhandene Suche und Frageseite. Dies ist eine **lokale Einzelbenutzerübersicht**, keine neue Anmeldung oder durchgesetzte Mehrbenutzerberechtigung.
+
+Der Scan bewahrt erfolgreiche Zustände unveränderter Dokumente, erkennt geänderte und fehlende Dateien und markiert bei unvollständigen Scans unbesuchte Dateien nicht fälschlich als fehlend. Die Suche schließt veraltete Indexzustände aus. Bei einem Extraktionsfehler bleiben frühere Segmente zur Wiederherstellung erhalten, werden aber nicht als aktuelle Belege ausgegeben.
+
+Der angezeigte QA-Wert wird ausdrücklich als **unkalibrierte Heuristik** bezeichnet, nicht als Wahrscheinlichkeit einer richtigen Antwort. Grenzen stehen im [K1-Entwicklungs-PR](https://github.com/IMaugrenI/tof_local_knowledge/pull/16) und im [Code-Status](docs/10_build_status.md).
+
 ## Einfachster Einstieg
 
 Wenn du den kürzesten sicheren Weg willst, starte hier:
