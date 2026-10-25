@@ -62,6 +62,12 @@ The existing browser UI now resolves source, search, QA, evidence and documentat
 
 Search and question requests require bounded JSON objects. Connection problems, invalid requests, and processing errors are distinguished with bilingual guidance and expandable technical details. Sources with pending or failed indexing receive contextual hints. The local single-user security boundary and existing Compose startup mechanism remain unchanged.
 
+## K9 – Multiple logical document source spaces
+
+The existing local browser control now offers the configured read-only source root and up to **50 immediate subfolders** as separately indexed logical sources. Operators select a folder, index through the existing ingest/extractor APIs, and search or ask questions with the selected source filter. Stable source IDs distinguish each subfolder.
+
+This reuses the existing `LOCAL_SOURCE_ROOT_1` mount; **no arbitrary host directories are mounted from the browser**. To include documents from elsewhere, the operator must explicitly adjust the existing mount configuration. There is no new Compose stack, cloud upload, multi-user authorization, or LAN permission.
+
 ## Use this repo in the simplest way
 
 If you want the shortest safe path, start here:
