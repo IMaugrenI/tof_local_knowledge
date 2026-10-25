@@ -115,8 +115,9 @@ def run_scan(payload: ScanRequest):
                         ),
                     )
 
-                # Surface actionable files first, so repeated small batches progress.
-                if change_status != 'unchanged' and len(sample_documents) < 20:
+                # Collect bounded actionable candidates; callers can prioritize new files
+                # over previously failed retries, preventing one bad file from starving others.
+                if change_status != 'unchanged' and len(sample_documents) < 100:
                     sample_documents.append(
                         {
                             'document_id': document_id,
