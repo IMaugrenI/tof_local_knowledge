@@ -486,6 +486,7 @@ HTML = """<!doctype html>
           <button class="secondary" onclick="refreshSources()" data-i18n="refreshSources">Quellen aktualisieren</button>
           <label class="hint" for="index-source-select" data-i18n="indexSourceLabel">Zu indexierenden Quellenbereich auswählen</label>
           <select id="index-source-select" onchange="resetIndexCursor()" style="display:block;width:100%;padding:10px;margin:8px 0 12px"></select>
+          <button class="secondary" type="button" onclick="loadSourceSpaces()">Quellenordner aktualisieren / Refresh source folders</button>
           <p class="hint" id="index-source-message" aria-live="polite"></p>
           <button class="secondary" id="index-batch-button" onclick="runIndexBatch()" data-i18n="indexBatch">Konfigurierte Quelle indexieren</button>
           <button class="secondary" onclick="resetIndexCursor()" data-i18n="indexReset">Dateidurchlauf neu beginnen</button>
@@ -1078,6 +1079,10 @@ HTML = """<!doctype html>
             + ' (' + (data.detail || data.error || 'unknown') + ')';
         } else {
           indexCursor = data.next_cursor || null;
+          if (data.source_id) {
+            document.getElementById('search-scope').value = data.source_id;
+            document.getElementById('qa-scope').value = data.source_id;
+          }
           result.textContent = t('indexSuccess') + ': ' + (data.indexed_this_pass || 0)
             + ' / ' + (data.files_scanned || 0) + ' scanned. '
             + (data.failed || []).length + ' failed. '
@@ -1111,7 +1116,8 @@ HTML = """<!doctype html>
           const panel = document.createElement('div');
           panel.className = 'result-card';
           const title = document.createElement('strong');
-          title.textContent = (source.display_name || source.source_id)
+          const matchingSpace = availableSourceSpaces.find(space => space.id === source.source_id);
+          title.textContent = (matchingSpace ? matchingSpace.label : (source.display_name || source.source_id))
             + (source.enabled ? '' : ' (disabled)');
           const stats = document.createElement('div');
           stats.className = 'muted';
