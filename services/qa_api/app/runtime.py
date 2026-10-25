@@ -99,6 +99,7 @@ def answer(payload: QaRequest):
             'confidence': 0.0,
             'citations': [],
             'used_documents': [],
+            'evidence_refs': [],
             'uncertainties': ['no_evidence'],
             'search_queries': attempted_queries,
         }
@@ -127,6 +128,7 @@ def answer(payload: QaRequest):
         'confidence': min(0.95, 0.35 + 0.1 * len(hits)),
         'citations': citations,
         'used_documents': used_documents,
+        'evidence_refs': evidence_refs,
         'uncertainties': uncertainties,
         'search_queries': attempted_queries,
     }
