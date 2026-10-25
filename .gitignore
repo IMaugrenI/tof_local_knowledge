@@ -31,3 +31,5 @@ __pycache__/
 Thumbs.db
 .vscode/
 .idea/
+# Generated locally by source-candidate packaging
+/dist/
