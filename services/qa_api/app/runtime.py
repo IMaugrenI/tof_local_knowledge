@@ -106,6 +106,7 @@ def answer(payload: QaRequest):
     primary = hits[0]
     citations = [hit['citation_label'] for hit in hits]
     used_documents = sorted({hit['document_id'] for hit in hits})
+    evidence_refs = [{'segment_id': hit['segment_id'], 'document_id': hit['document_id'], 'source_id': hit['source_id'], 'relative_path': hit['relative_path'], 'citation_label': hit['citation_label']} for hit in hits]
     evidence_lines = [
         f"- [{hit['citation_label']}] {hit['preview_text']}" for hit in hits
     ]
