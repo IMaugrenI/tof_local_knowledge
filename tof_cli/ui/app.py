@@ -577,6 +577,13 @@ HTML = """<!doctype html>
         themeButtonLight: 'Hell',
         themeButtonDark: 'Dunkel',
         searchFailed: 'Suche fehlgeschlagen',
+        issueInvalid: 'Bitte prüfe die Eingabe und versuche es erneut.',
+        issueService: 'Ein lokaler Dienst ist nicht erreichbar. Öffne Einrichtung & technische Details und wähle Probleme finden.',
+        issueConfig: 'Die eingestellten lokalen Ports sind ungültig. Prüfe die .env-Konfiguration.',
+        issueProcess: 'Die Anfrage konnte nicht verarbeitet werden. Technische Details sind unten verfügbar.',
+        issueDetails: 'Technische Fehlerdetails',
+        issuePending: 'Diese Quelle enthält noch nicht indexierte Dokumente. Die Indexierung kann über die vorhandene Schaltfläche fortgesetzt werden.',
+        issueFailedDocs: 'Einige Dokumente konnten nicht indexiert werden. Details stehen im Indexierungsbericht.',
         noHits: 'Dazu wurde in deinen Dokumenten nichts Passendes gefunden.',
         query: 'Suche',
         returned: 'Gefunden',
@@ -688,6 +695,13 @@ HTML = """<!doctype html>
         themeButtonLight: 'Light',
         themeButtonDark: 'Dark',
         searchFailed: 'Search failed',
+        issueInvalid: 'Check your input and try again.',
+        issueService: 'A local service is unavailable. Open Setup & technical details and choose Find problems.',
+        issueConfig: 'The configured local ports are invalid. Check your .env configuration.',
+        issueProcess: 'The request could not be processed. Technical details remain available below.',
+        issueDetails: 'Technical error details',
+        issuePending: 'Some documents in this source have not been indexed. Continue indexing using the existing button.',
+        issueFailedDocs: 'Some documents could not be indexed. See the indexing report for details.',
         noHits: 'Nothing relevant was found in your documents.',
         query: 'Search',
         returned: 'Found',
@@ -855,6 +869,24 @@ HTML = """<!doctype html>
       } catch (error) {
         panel.textContent = t('evidenceUnavailable');
       }
+    }
+
+    function friendlyIssue(error) {
+      const code = String(error || '');
+      if (code === 'service_unavailable' || code === 'source_status_unavailable'
+          || code === 'request_failed') return t('issueService');
+      if (code === 'invalid_configuration' || code.startsWith('invalid_local_port'))
+        return t('issueConfig');
+      if (code === 'invalid_request' || code.startsWith('http_error_4')
+          || code === 'same_origin_json_required') return t('issueInvalid');
+      return t('issueProcess');
+    }
+
+    function errorMarkup(data, title) {
+      return '<div class="result-card"><strong>' + escapeHtml(title) + '</strong>'
+        + '<p class="muted">' + escapeHtml(friendlyIssue(data.error)) + '</p>'
+        + '<details><summary>' + escapeHtml(t('issueDetails')) + '</summary><pre>'
+        + escapeHtml(JSON.stringify(data, null, 2)) + '</pre></details></div>';
     }
 
     function renderSearchResult(data) {
