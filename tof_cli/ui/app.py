@@ -675,6 +675,7 @@ HTML = """<!doctype html>
         confidence: 'Heuristic match score (not a probability)',
         uncertainties: 'What is still unclear',
         citations: 'Sources used',
+        evidenceRefs: 'Traceable evidence references',
         usedDocuments: 'Used documents',
         searchQueries: 'Search terms used',
         rawAnswer: 'Show technical answer details',
