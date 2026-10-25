@@ -468,6 +468,13 @@ HTML = """<!doctype html>
           <div class="result" id="search-result" role="status" aria-live="polite" data-i18n="noSearchYet">Hier erscheinen passende Fundstellen aus deinen Dokumenten.</div>
         </div>
 
+        <section class="search-panel" aria-labelledby="evidence-title">
+          <p class="eyebrow" data-i18n="evidenceEyebrow">BELEG PRÜFEN</p>
+          <h2 id="evidence-title" data-i18n="evidenceTitle">Textstelle nachvollziehen</h2>
+          <p class="hint" data-i18n="evidenceHint">Öffne einen Beleg aus Suche oder Antwort. Nur aktuell indexierte Fundstellen werden angezeigt.</p>
+          <div class="result" id="evidence-result" aria-live="polite" data-i18n="evidenceEmpty">Wähle eine Fundstelle.</div>
+        </section>
+
         <section class="search-panel" aria-labelledby="sources-title">
           <p class="eyebrow" data-i18n="sourcesEyebrow">QUELLEN & INDEX</p>
           <h2 id="sources-title" data-i18n="sourcesTitle">Deine Quellen im Überblick</h2>
@@ -580,6 +587,12 @@ HTML = """<!doctype html>
         uncertainties: 'Was noch unklar ist',
         citations: 'Verwendete Quellen',
         evidenceRefs: 'Nachvollziehbare Fundstellen',
+        viewEvidence: 'Textstelle ansehen',
+        evidenceEyebrow: 'BELEG PRÜFEN',
+        evidenceTitle: 'Textstelle nachvollziehen',
+        evidenceHint: 'Öffne einen Beleg aus Suche oder Antwort. Nur aktuell indexierte Fundstellen werden angezeigt.',
+        evidenceEmpty: 'Wähle eine Fundstelle.',
+        evidenceUnavailable: 'Diese Fundstelle ist nicht mehr verfügbar oder wurde noch nicht indexiert.',
         usedDocuments: 'Verwendete Dokumente',
         searchQueries: 'Verwendete Suchbegriffe',
         rawAnswer: 'Technische Antwortdetails anzeigen',
@@ -676,6 +689,12 @@ HTML = """<!doctype html>
         uncertainties: 'What is still unclear',
         citations: 'Sources used',
         evidenceRefs: 'Traceable evidence references',
+        viewEvidence: 'View excerpt',
+        evidenceEyebrow: 'INSPECT EVIDENCE',
+        evidenceTitle: 'Trace an excerpt',
+        evidenceHint: 'Open an excerpt from a search or answer. Only current indexed evidence is shown.',
+        evidenceEmpty: 'Choose an evidence reference.',
+        evidenceUnavailable: 'This excerpt is unavailable or no longer indexed.',
         usedDocuments: 'Used documents',
         searchQueries: 'Search terms used',
         rawAnswer: 'Show technical answer details',
