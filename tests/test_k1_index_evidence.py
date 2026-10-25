@@ -247,3 +247,52 @@ def test_extraction_rejects_document_id_for_different_source(fake_services, tmp_
     ))
     assert response['detail'] == 'document_source_mismatch'
     assert not any(sql.startswith('insert into extractions') for sql, _ in db.queries)
+
+
+def test_cursor_scan_reaches_files_beyond_limit_without_false_missing(fake_services, tmp_path, monkeypatch):
+    db, load = fake_services
+    ingest = load('services/ingest_api/app/runtime.py', 'k5_ingest')
+    root = tmp_path / 'sources'
+    source = root / 'source_1'
+    source.mkdir(parents=True)
+    for index in range(205):
+        (source / f'file-{index:03d}.txt').write_text(str(index), encoding='utf-8')
+    monkeypatch.setattr(ingest, 'SOURCE_ROOT', root.resolve())
+    all_pages = []
+    cursor = None
+    for _ in range(4):
+        result = ingest.run_scan(ingest.ScanRequest(
+            source_id='demo', root_path=str(source), limit_files=100,
+            start_after=cursor,
+        ))
+        all_pages.append(result)
+        cursor = result['next_cursor']
+        if cursor is None:
+            break
+    assert [p['files_scanned'] for p in all_pages] == [100, 100, 5]
+    assert all_pages[0]['scan_complete'] is False
+    assert all_pages[-1]['scan_complete'] is True
+    assert all_pages[-1]['reconciliation_performed'] is False
+    assert all(p['counts']['missing'] == 0 for p in all_pages)
+    assert len(db.documents) == 205
+    assert ('demo', 'file-204.txt') in db.documents
+
+
+def test_completed_small_scan_still_reconciles_missing(fake_services, tmp_path, monkeypatch):
+    db, load = fake_services
+    ingest = load('services/ingest_api/app/runtime.py', 'k5_small')
+    root = tmp_path / 'sources'
+    source = root / 'source_1'
+    source.mkdir(parents=True)
+    doc = source / 'only.md'
+    doc.write_text('text', encoding='utf-8')
+    monkeypatch.setattr(ingest, 'SOURCE_ROOT', root.resolve())
+    first = ingest.run_scan(ingest.ScanRequest(
+        source_id='demo', root_path=str(source), limit_files=100,
+    ))
+    assert first['reconciliation_performed'] is True
+    doc.unlink()
+    second = ingest.run_scan(ingest.ScanRequest(
+        source_id='demo', root_path=str(source), limit_files=100,
+    ))
+    assert second['counts']['missing'] == 1
