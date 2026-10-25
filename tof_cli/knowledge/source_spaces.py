@@ -59,6 +59,8 @@ def discover_source_spaces(env: dict[str, str]) -> dict[str, object]:
 
 def resolve_source_space(env: dict[str, str], source_id: str | None) -> dict[str, object]:
     available = discover_source_spaces(env)
+    if not available["spaces"]:
+        raise ValueError(available.get("reason", "invalid_local_source_id"))
     default = available["spaces"][0]
     if source_id is None or source_id == default["id"]:
         return default
