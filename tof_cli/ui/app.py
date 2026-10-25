@@ -483,6 +483,8 @@ HTML = """<!doctype html>
           <div class="hint" data-i18n="sourcesHint">Welche Dokumente bereits indexiert sind und welche noch Aufmerksamkeit brauchen.</div>
           <button class="secondary" onclick="refreshSources()" data-i18n="refreshSources">Quellen aktualisieren</button>
           <button class="secondary" id="index-batch-button" onclick="runIndexBatch()" data-i18n="indexBatch">Konfigurierte Quelle indexieren</button>
+          <button class="secondary" onclick="resetIndexCursor()" data-i18n="indexReset">Dateidurchlauf neu beginnen</button>
+          <p class="hint" data-i18n="indexMissingNote">Bei großen Quellen ist die Fehlbestandserkennung nur für vollständige Einzelscans verfügbar.</p>
           <div class="hint" id="index-batch-result" aria-live="polite" data-i18n="indexHint">Manuell: eine begrenzte Charge der konfigurierten, schreibgeschützten Quelle einlesen.</div>
           <div class="result" id="source-result" aria-live="polite" data-i18n="sourcesEmpty">Hier erscheinen die erfassten Quellen und Indexstände.</div>
           <div class="hint" data-i18n="sourcesLocalOnly">Nur lokale Quellenübersicht. Es ist keine Mehrbenutzerfreigabe aktiv.</div>
@@ -619,6 +621,10 @@ HTML = """<!doctype html>
         indexSuccess: 'Indexiert in dieser Charge',
         indexAgain: 'Für weitere offene Dokumente erneut starten.',
         indexRunning: 'Indexierung läuft…',
+        indexPage: 'Weitere Dateien folgen; nächste Charge fortsetzen.',
+        indexFinished: 'Dateiliste bis zum Ende durchlaufen.',
+        indexReset: 'Dateidurchlauf neu beginnen',
+        indexMissingNote: 'Bei großen Quellen ist die Fehlbestandserkennung nur für vollständige Einzelscans verfügbar.',
         sourceNoData: 'Noch keine Quellen registriert.',
         sourceIndexed: 'Indexiert',
         sourcePending: 'Offen',
@@ -721,6 +727,10 @@ HTML = """<!doctype html>
         indexSuccess: 'Indexed in this batch',
         indexAgain: 'Run again for any remaining pending documents.',
         indexRunning: 'Indexing in progress…',
+        indexPage: 'More files remain; continue with the next batch.',
+        indexFinished: 'Reached the end of the file list.',
+        indexReset: 'Start scanning from beginning',
+        indexMissingNote: 'For large sources, missing-file reconciliation requires a complete single-pass scan.',
         sourceNoData: 'No sources registered yet.',
         sourceIndexed: 'Indexed',
         sourcePending: 'Pending',
@@ -734,6 +744,7 @@ HTML = """<!doctype html>
 
     let currentLanguage = localStorage.getItem('tof_local_knowledge_language') || 'de';
     let currentTheme = localStorage.getItem('tof_local_knowledge_theme') || 'dark';
+    let indexCursor = null;
 
     function t(key) {
       return (I18N[currentLanguage] && I18N[currentLanguage][key]) || I18N.de[key] || key;
@@ -949,6 +960,11 @@ HTML = """<!doctype html>
       appendLog(JSON.stringify(data, null, 2));
     }
 
+    function resetIndexCursor() {
+      indexCursor = null;
+      document.getElementById('index-batch-result').textContent = t('indexHint');
+    }
+
     async function runIndexBatch() {
       const button = document.getElementById('index-batch-button');
       const result = document.getElementById('index-batch-result');
@@ -958,15 +974,17 @@ HTML = """<!doctype html>
         const response = await fetch('/api/index-batch', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: '{}',
+          body: JSON.stringify({cursor: indexCursor}),
         });
         const data = await response.json();
         if (!response.ok || data.status === 'error') {
           result.textContent = t('indexFailed') + ' ' + (data.detail || data.error || '');
         } else {
+          indexCursor = data.next_cursor || null;
           result.textContent = t('indexSuccess') + ': ' + (data.indexed_this_pass || 0)
             + ' / ' + (data.files_scanned || 0) + ' scanned. '
-            + (data.failed || []).length + ' failed. ' + t('indexAgain');
+            + (data.failed || []).length + ' failed. '
+            + (data.page_has_more ? t('indexPage') : t('indexFinished'));
           await refreshSources();
         }
       } catch (error) {
