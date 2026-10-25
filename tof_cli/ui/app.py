@@ -1164,9 +1164,7 @@ def _open_link(name: str) -> dict[str, object]:
 
 
 def _read_json_body(handler: BaseHTTPRequestHandler) -> dict[str, object]:
-    length = int(handler.headers.get("Content-Length", "0"))
-    raw = handler.rfile.read(length) if length > 0 else b"{}"
-    return json.loads(raw.decode("utf-8")) if raw else {}
+    return parse_bounded_json(handler.rfile, handler.headers.get("Content-Length", ""))
 
 
 def _evidence_lookup(segment_id: str) -> dict[str, object]:
@@ -1177,12 +1175,10 @@ def _evidence_lookup(segment_id: str) -> dict[str, object]:
     if env.get("BIND_HOST", "127.0.0.1") not in {"localhost", "127.0.0.1", "::1"}:
         return {"error": "local_only"}
     try:
-        port = int(env.get("SEARCH_API_PORT", "8105"))
+        endpoint = _configured_api_targets()["evidence"]
     except ValueError:
-        return {"error": "invalid_search_port"}
-    if port < 1 or port > 65535:
-        return {"error": "invalid_search_port"}
-    return _get_json(f"http://127.0.0.1:{port}/evidence/{segment_id}")
+        return {"error": "invalid_configuration"}
+    return _get_json(f"{endpoint}/{segment_id}")
 
 
 def _get_json(url: str) -> dict[str, object]:
