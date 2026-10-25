@@ -844,6 +844,17 @@ HTML = """<!doctype html>
         }
         html += `</div>`;
       }
+      if (evidenceRefs.length) {
+        html += '<div class="result-card"><strong>' + t('evidenceRefs') + '</strong>';
+        for (const ref of evidenceRefs) {
+          html += '<div class="meta-grid" style="margin-top:8px">';
+          html += '<div class="muted">' + escapeHtml(ref.relative_path || '') + '</div>';
+          html += '<div class="muted">' + escapeHtml(ref.citation_label || '') + '</div>';
+          html += '<div class="muted">Segment: ' + escapeHtml(ref.segment_id || '') + '</div>';
+          html += '</div>';
+        }
+        html += '</div>';
+      }
       if (usedDocuments.length) {
         html += `<div class=\"result-card\"><strong>${t('usedDocuments')}</strong>${renderChips(usedDocuments)}</div>`;
       }
