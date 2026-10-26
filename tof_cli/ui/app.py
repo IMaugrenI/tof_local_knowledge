@@ -1522,6 +1522,174 @@ HTML = """<!doctype html>
       document.getElementById('index-batch-result').textContent = t('indexHint');
     }
 
+    // Folder handles are retained only by the browser, after the person has
+    // approved access. The Python service never receives a host folder path.
+    function folderStore() {
+      return new Promise((resolve, reject) => {
+        if (!window.indexedDB) { reject(new Error('storage_unavailable')); return; }
+        const request = indexedDB.open('tof_knowledge_folder_permission', 1);
+        request.onupgradeneeded = () => {
+          request.result.createObjectStore('permissions');
+        };
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve(request.result);
+      });
+    }
+
+    async function saveFolderHandle(handle) {
+      try {
+        const db = await folderStore();
+        await new Promise((resolve, reject) => {
+          const tx = db.transaction('permissions', 'readwrite');
+          tx.objectStore('permissions').put(handle, 'sourceFolder');
+          tx.oncomplete = resolve;
+          tx.onerror = () => reject(tx.error);
+        });
+        db.close();
+      } catch (_) { /* Private browsing: session-only connection. */ }
+    }
+
+    async function restoreFolderHandle() {
+      if (connectedFolderHandle) return connectedFolderHandle;
+      try {
+        const db = await folderStore();
+        const handle = await new Promise((resolve, reject) => {
+          const tx = db.transaction('permissions', 'readonly');
+          const req = tx.objectStore('permissions').get('sourceFolder');
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => reject(req.error);
+        });
+        db.close();
+        if (handle && handle.kind === 'directory') connectedFolderHandle = handle;
+      } catch (_) { /* Browser does not support persisted folder handles. */ }
+      return connectedFolderHandle;
+    }
+
+    async function chooseFolder() {
+      if (!window.showDirectoryPicker) {
+        document.getElementById('source-folder').click();
+        return;
+      }
+      try {
+        connectedFolderHandle = await window.showDirectoryPicker({mode: 'read'});
+        await saveFolderHandle(connectedFolderHandle);
+        await syncFolder();
+      } catch (_) {
+        document.getElementById('source-import-status').textContent =
+          t('sourcePermissionDenied');
+      }
+    }
+
+    async function walkFolder(handle, prefix, output, state, depth = 0) {
+      if (depth > 9 || state.scanned >= 300) { state.skipped += 1; return; }
+      for await (const [name, entry] of handle.entries()) {
+        if (state.scanned++ >= 300) { state.skipped += 1; break; }
+        if (name.startsWith('.')) { state.skipped += 1; continue; }
+        const rel = prefix + '/' + name;
+        if (entry.kind === 'directory') {
+          await walkFolder(entry, rel, output, state, depth + 1);
+        } else if (entry.kind === 'file') {
+          const file = await entry.getFile();
+          output.push({file, name: rel});
+        }
+      }
+    }
+
+    async function syncFolder() {
+      const output = document.getElementById('source-import-status');
+      const handle = await restoreFolderHandle();
+      if (!handle) {
+        // File picker fallback for Firefox and non-Chromium browsers.
+        document.getElementById('source-folder').click();
+        return;
+      }
+      try {
+        const permission = await handle.queryPermission({mode: 'read'});
+        if (permission !== 'granted' &&
+            await handle.requestPermission({mode: 'read'}) !== 'granted') {
+          output.textContent = t('sourcePermissionDenied');
+          return;
+        }
+        output.textContent = t('sourceImportRunning');
+        const files = [];
+        const state = {scanned: 0, skipped: 0};
+        await walkFolder(handle, handle.name, files, state);
+        await importSelectedFiles(files, true, state.skipped);
+      } catch (_) {
+        output.textContent = t('sourcePermissionDenied');
+      }
+    }
+
+    function fileAsBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = reject;
+        reader.onload = () => resolve(String(reader.result).split(',', 2)[1]);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function importSelectedFiles(selection, isFolder, previousSkipped = 0) {
+      const output = document.getElementById('source-import-status');
+      const files = Array.from(selection || [], item =>
+        item.file ? item : {file: item, name: isFolder ?
+          (item.webkitRelativePath || item.name) : item.name});
+      if (!files.length) { output.textContent = t('sourceIdle'); return; }
+      const supported = /\.(txt|md|log|py|rst|ini|cfg|yaml|yml|json|htm|html|csv|eml|pdf|docx|xlsx)$/i;
+      const candidates = files.filter(x =>
+        supported.test(x.name) && x.file.size <= 12 * 1024 * 1024);
+      let skipped = previousSkipped + files.length - candidates.length;
+      let imported = 0;
+      let sourceId = null;
+      output.textContent = t('sourceImportRunning');
+      try {
+        let batch = [];
+        let bytes = 0;
+        async function send() {
+          if (!batch.length) return;
+          const payload = [];
+          for (const item of batch) {
+            payload.push({name: item.name, data: await fileAsBase64(item.file)});
+          }
+          const response = await fetch('/api/import-files', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json',
+                      'X-ToF-UI-Action': 'source-import'},
+            body: JSON.stringify({files: payload}),
+          });
+          const data = await response.json();
+          if (!response.ok || data.status !== 'ok') {
+            throw new Error(data.error || data.status || 'import_failed');
+          }
+          imported += data.copied || 0;
+          sourceId = data.source_id;
+          batch = [];
+          bytes = 0;
+        }
+        for (const item of candidates.slice(0, 300)) {
+          if (batch.length >= 4 || bytes + item.file.size > 15 * 1024 * 1024) {
+            await send();
+          }
+          batch.push(item);
+          bytes += item.file.size;
+        }
+        if (candidates.length > 300) skipped += candidates.length - 300;
+        await send();
+        output.textContent = imported + ' · ' + t('sourceImportDone') +
+          (skipped ? ' ' + t('sourceImportSkipped') + ': ' + skipped : '');
+        if (imported && sourceId) {
+          await loadSourceSpaces();
+          const menu = document.getElementById('index-source-select');
+          if ([...menu.options].some(opt => opt.value === sourceId)) menu.value = sourceId;
+          document.getElementById('index-advanced').open = true;
+          document.getElementById('index-batch-button').focus();
+        }
+      } catch (error) {
+        output.textContent = t('sourceImportFailed') +
+          (imported ? ' (' + imported + ' ' + t('sourceTotal') + ')' : '');
+      }
+    }
+
     function renderIndexBatchResult(outcome) {
       const result = document.getElementById('index-batch-result');
       if (outcome.failed) {
