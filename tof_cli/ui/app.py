@@ -15,6 +15,7 @@ from urllib.parse import parse_qs, urlparse
 from tof_cli.commands import check, doctor, down, setup, status, up
 from tof_cli.knowledge.index_ops import index_configured_source
 from tof_cli.knowledge.source_spaces import discover_source_spaces
+from tof_cli.knowledge.source_imports import import_selected_files
 from tof_cli.core.env_ops import read_env
 from tof_cli.ui.service_ops import classify_error, configured_targets, parse_bounded_json
 
@@ -251,6 +252,13 @@ HTML = """<!doctype html>
     }
 
 
+    .source-onboarding {
+      border: 1px solid var(--border-strong); border-radius: 17px;
+      padding: 23px; background: var(--surface);
+      margin: 18px 0 22px;
+    }
+    .source-onboarding h3 { margin-bottom: 7px; }
+    .source-onboarding .actions { margin: 14px 0; }
     .overview-hero { max-width: 850px; margin-bottom: 22px; }
     .overview-hero h1 { font-size: clamp(2.4rem, 5vw, 4.2rem); }
     .overview-hero .lead { max-width: 740px; }
@@ -650,7 +658,20 @@ HTML = """<!doctype html>
           <div class="hint" data-i18n="sourcesHint">Welche Dokumente bereits indexiert sind und welche noch Aufmerksamkeit brauchen.</div>
           <button class="secondary" onclick="refreshSources()" data-i18n="refreshSources">Quellen aktualisieren</button>
           <div class="result" id="source-result" aria-live="polite" data-i18n="sourcesEmpty">Hier erscheinen die erfassten Quellen und Indexstände.</div>
-          <details class="advanced-options">
+          <div class="source-onboarding">
+            <h3 data-i18n="sourceAddTitle">Eigene Dokumente hinzufügen</h3>
+            <p class="hint" data-i18n="sourceAddHelp">Wähle Dateien oder einen Ordner aus. ToF erstellt eine lokale Kopie im freigegebenen Dokumentenbereich. Originale werden nicht verändert.</p>
+            <div class="actions">
+              <button type="button" class="secondary" onclick="document.getElementById('source-files').click()" data-i18n="sourcePickFiles">Dateien auswählen</button>
+              <button type="button" class="secondary" onclick="chooseFolder()" data-i18n="sourcePickFolder">Ordner verbinden</button>
+              <button type="button" class="ghost" onclick="syncFolder()" data-i18n="sourceResyncFolder">Ordner erneut abgleichen</button>
+            </div>
+            <input type="file" multiple id="source-files" style="display:none" onchange="importSelectedFiles(this.files, false)">
+            <input type="file" multiple webkitdirectory directory id="source-folder" style="display:none" onchange="importSelectedFiles(this.files, true)">
+            <p class="hint" id="source-import-status" role="status" aria-live="polite" data-i18n="sourceIdle">Noch keine eigenen Dateien ausgewählt.</p>
+            <p class="hint" data-i18n="sourcePrivacyHelp">Ordnerzugriff erfolgt nur mit deiner Freigabe. Abgleich und Indexierung starten ausschließlich auf Klick. Bei Browsern ohne dauerhafte Ordnerfreigabe den Ordner erneut auswählen.</p>
+          </div>
+          <details class="advanced-options" id="index-advanced">
           <summary data-i18n="manualIndexOptions">Dokumente manuell einlesen (optional)</summary>
           <label class="hint" for="index-source-select" data-i18n="indexSourceLabel">Zu indexierenden Quellenbereich auswählen</label>
           <select id="index-source-select" onchange="resetIndexCursor()" style="display:block;width:100%;padding:10px;margin:8px 0 12px"></select>
@@ -703,6 +724,20 @@ HTML = """<!doctype html>
     const I18N = {
       de: {
         navigationLabel: 'Seitennavigation',
+        sourceAddTitle: 'Eigene Dokumente hinzufügen',
+        sourceAddHelp: 'Wähle Dateien oder einen Ordner. ToF kopiert sie in den bereits freigegebenen Dokumentenbereich; deine Originaldateien bleiben unverändert.',
+        sourcePickFiles: 'Dateien auswählen',
+        sourcePickFolder: 'Ordner verbinden',
+        sourceResyncFolder: 'Ordner erneut abgleichen',
+        sourceIdle: 'Noch keine eigenen Dateien ausgewählt.',
+        sourcePrivacyHelp: 'Ordner werden nur mit deiner Freigabe eingelesen. Abgleich und Indexierung erfolgen ausschließlich auf Klick. Falls dein Browser die Freigabe nicht speichern kann, wähle den Ordner erneut.',
+        sourceImportRunning: 'Dateien werden lokal importiert …',
+        sourceImportDone: 'Dateien lokal kopiert. Bitte anschließend „Konfigurierte Quelle indexieren“ anklicken.',
+        sourceImportFailed: 'Import fehlgeschlagen. Bitte kleinere Dateien auswählen (maximal 4 MB je Datei).',
+        sourceImportSkipped: 'Übersprungene Dateien',
+        sourcePermissionDenied: 'Ordnerzugriff nicht erlaubt oder abgebrochen.',
+        sourceNoConnectedFolder: 'Noch kein Ordner verbunden. Bitte zunächst einen Ordner auswählen.',
+        sourceConnected: 'Ausgewählter Ordner',
         navOverview: 'Übersicht',
         overviewEyebrow: 'DEIN WISSEN IM ÜBERBLICK',
         overviewTitle: 'Was möchtest du heute tun?',
@@ -896,6 +931,20 @@ HTML = """<!doctype html>
       },
       en: {
         navigationLabel: 'Page navigation',
+        sourceAddTitle: 'Add your own documents',
+        sourceAddHelp: 'Select files or a folder. ToF copies them into the already approved document area; original files are unchanged.',
+        sourcePickFiles: 'Select files',
+        sourcePickFolder: 'Connect folder',
+        sourceResyncFolder: 'Sync folder again',
+        sourceIdle: 'No personal files selected yet.',
+        sourcePrivacyHelp: 'Folders are read only with your permission. Sync and indexing happen only when clicked. If your browser cannot save the permission, select the folder again.',
+        sourceImportRunning: 'Importing files locally …',
+        sourceImportDone: 'Files copied locally. Next click “Index configured source”.',
+        sourceImportFailed: 'Import failed. Try smaller files (up to 4 MB per file).',
+        sourceImportSkipped: 'Files skipped',
+        sourcePermissionDenied: 'Folder access denied or cancelled.',
+        sourceNoConnectedFolder: 'No folder connected yet. Select a folder first.',
+        sourceConnected: 'Selected folder',
         navOverview: 'Overview',
         overviewEyebrow: 'YOUR KNOWLEDGE AT A GLANCE',
         overviewTitle: 'What would you like to do?',
@@ -1098,6 +1147,8 @@ HTML = """<!doctype html>
     let lastIndexData = null;
     let lastEvidenceSegment = null;
     let lastOverviewData = null;
+    let connectedFolderHandle = null;
+    let folderFilesFallback = null;
 
     function t(key) {
       return (I18N[currentLanguage] && I18N[currentLanguage][key]) || I18N.de[key] || key;
