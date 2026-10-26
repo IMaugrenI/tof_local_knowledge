@@ -915,9 +915,39 @@ HTML = """<!doctype html>
     let currentTheme = localStorage.getItem('tof_local_knowledge_theme') || 'dark';
     let indexCursor = null;
     let availableSourceSpaces = [];
+    let lastSearchData = null;
+    let lastAnswerData = null;
+    let lastIndexData = null;
+    let lastEvidenceSegment = null;
 
     function t(key) {
       return (I18N[currentLanguage] && I18N[currentLanguage][key]) || I18N.de[key] || key;
+    }
+
+    function translatedCode(prefix, code) {
+      const key = prefix + '_' + String(code || '');
+      return (I18N[currentLanguage] && I18N[currentLanguage][key]) ||
+        I18N.de[key] || String(code || t('unknownLabel'));
+    }
+
+    function localizeAnswerText(raw) {
+      const value = String(raw || '');
+      if (value.startsWith('Keine belastbare Antwort gefunden. Eine breite Stichwortsuche')) {
+        return t('noEvidenceBroadText');
+      }
+      if (value.startsWith('Keine belastbare Antwort gefunden. Es wurden keine passenden Fundstellen')) {
+        return t('noEvidenceText');
+      }
+      if (!value.startsWith('Belegbasierte Kurzantwort (Quellenauszüge, keine unabhängige Verifikation):')) {
+        // User-authored document excerpts and arbitrary backend messages must
+        // never be machine-translated or silently rewritten.
+        return value;
+      }
+      return value
+        .replace('Belegbasierte Kurzantwort (Quellenauszüge, keine unabhängige Verifikation):',
+                 t('answerExcerptIntro'))
+        .replace('Stärkster Treffer aus ', t('strongestHitIntro') + ' ')
+        .replace('Verwendete Fundstellen:', t('evidenceUsedIntro'));
     }
 
     function applyLanguage() {
@@ -928,6 +958,14 @@ HTML = """<!doctype html>
       document.querySelectorAll('[data-i18n-placeholder]').forEach((element) => {
         element.placeholder = t(element.dataset.i18nPlaceholder);
       });
+      document.querySelectorAll('[data-i18n-aria-label]').forEach((element) => {
+        element.setAttribute('aria-label', t(element.dataset.i18nAriaLabel));
+      });
+      const active = document.querySelector('.page-nav a[aria-current="page"]');
+      document.title = 'ToF Knowledge · ' + (active ? active.textContent : t('navAsk'));
+      if (lastSearchData) renderSearchResult(lastSearchData);
+      if (lastAnswerData) renderAnswerResult(lastAnswerData);
+      if (lastIndexData) renderIndexBatchResult(lastIndexData);
       document.getElementById('language-toggle').textContent = t('languageButton');
       document.getElementById('theme-toggle').textContent = currentTheme === 'dark' ? t('themeButtonLight') : t('themeButtonDark');
       localStorage.setItem('tof_local_knowledge_language', currentLanguage);
@@ -942,6 +980,12 @@ HTML = """<!doctype html>
     function toggleLanguage() {
       currentLanguage = currentLanguage === 'de' ? 'en' : 'de';
       applyLanguage();
+      if (document.getElementById('source-result')) {
+        loadSourceSpaces().then(refreshSources);
+      }
+      if (lastEvidenceSegment && document.getElementById('evidence-result')) {
+        inspectEvidence(lastEvidenceSegment);
+      }
     }
 
     function toggleTheme() {
@@ -991,6 +1035,7 @@ HTML = """<!doctype html>
         return;
       }
       const panel = document.getElementById('evidence-result');
+      lastEvidenceSegment = segmentId;
       panel.textContent = t('evidenceEmpty');
       try {
         const query = new URLSearchParams({segment_id: segmentId});
@@ -1013,7 +1058,7 @@ HTML = """<!doctype html>
         excerpt.textContent = e.excerpt || '';
         const note = document.createElement('p');
         note.className = 'muted';
-        note.textContent = 'Read-only excerpt · up to ' + data.truncated_to_chars + ' characters.';
+        note.textContent = t('readOnlyExcerpt') + ' ' + data.truncated_to_chars + ' ' + t('characters') + '.';
         panel.append(heading, detail, excerpt, note);
         panel.scrollIntoView({behavior: 'smooth', block: 'nearest'});
       } catch (error) {
@@ -1040,6 +1085,7 @@ HTML = """<!doctype html>
     }
 
     function renderSearchResult(data) {
+      lastSearchData = data;
       const root = document.getElementById('search-result');
       if (data.error) {
         root.innerHTML = errorMarkup(data, t('searchFailed'));
@@ -1052,7 +1098,7 @@ HTML = """<!doctype html>
       }
       let html = `<div class=\"muted\">${t('query')}: ${escapeHtml(data.query || '')} · ${t('returned')} ${hits.length} ${t('hits')}.</div>`;
       for (const hit of hits) {
-        const title = hit.relative_path || hit.title || hit.document_title || hit.document_id || 'Search hit';
+        const title = hit.relative_path || hit.title || hit.document_title || hit.document_id || t('searchHitLabel');
         const preview = hit.preview_text || hit.snippet || hit.text || hit.chunk_text || '';
         html += `<div class=\"result-card\"><strong>${escapeHtml(title)}</strong>`;
         html += '<div class=\"meta-grid\">';
@@ -1083,13 +1129,14 @@ HTML = """<!doctype html>
     }
 
     function renderAnswerResult(data) {
+      lastAnswerData = data;
       const root = document.getElementById('qa-result');
       if (data.error) {
         root.innerHTML = errorMarkup(data, t('answerFailed'));
         return;
       }
-      const answer = data.answer_text || data.answer || t('noAnswerText');
-      const confidence = data.confidence ?? 'unknown';
+      const answer = localizeAnswerText(data.answer_text || data.answer || t('noAnswerText'));
+      const confidence = data.confidence ?? t('unknownLabel');
       const citations = asList(data.citations);
       const evidenceRefs = asList(data.evidence_refs);
       const usedDocuments = asList(data.used_documents);
@@ -1101,17 +1148,21 @@ HTML = """<!doctype html>
       if (signal) {
         html += '<div class="muted" style="margin-top:10px"><strong>'
           + t('evidenceSignal') + '</strong><br>'
-          + t('evidenceStrategy') + ': ' + escapeHtml(signal.search_strategy || 'unknown')
+          + t('evidenceStrategy') + ': ' + escapeHtml(translatedCode('searchStrategy', signal.search_strategy))
           + ' · ' + t('evidenceSegments') + ': ' + escapeHtml(signal.matching_segments || 0)
           + ' · ' + t('evidenceDocuments') + ': ' + escapeHtml(signal.distinct_documents || 0)
           + '</div>';
-        if (signal.status === 'broad_keyword_matches') {
+        if (signal.unverified_candidates) {
+          html += '<div class="muted">' + t('unverifiedCandidates') + ': ' +
+            escapeHtml(signal.unverified_candidates) + '</div>';
+        }
+        if (signal.status === 'broad_keyword_matches' || signal.search_strategy === 'broad') {
           html += '<div class="muted" style="margin-top:10px">'
             + t('evidenceCaution') + '</div>';
         }
       }
       if (uncertainties.length) {
-        html += `<div style=\"margin-top:10px;\"><strong>${t('uncertainties')}</strong>${renderChips(uncertainties, 'warn')}</div>`;
+        html += `<div style=\"margin-top:10px;\"><strong>${t('uncertainties')}</strong>${renderChips(uncertainties.map(code => translatedCode('uncertainty', code)), 'warn')}</div>`;
       }
       html += '</div>';
 
@@ -1128,7 +1179,7 @@ HTML = """<!doctype html>
           html += '<div class="meta-grid" style="margin-top:8px">';
           html += '<div class="muted">' + escapeHtml(ref.relative_path || '') + '</div>';
           html += '<div class="muted">' + escapeHtml(ref.citation_label || '') + '</div>';
-          html += '<div class="muted">Segment: ' + escapeHtml(ref.segment_id || '') + '</div>';
+          html += '<div class="muted">' + t('segmentLabel') + ': ' + escapeHtml(ref.segment_id || '') + '</div>';
           if (ref.segment_id) html += '<button class="secondary" type="button" data-evidence-segment="' + escapeHtml(ref.segment_id) + '">' + t('viewEvidence') + '</button>';
           html += '</div>';
         }
