@@ -8,6 +8,10 @@ from pydantic import BaseModel, Field
 app = FastAPI(title='tof_local_knowledge_qa_api', version='0.4.0')
 SEARCH_API_URL = os.environ.get('SEARCH_API_URL', 'http://search_api:8105/search')
 
+# Controlled lexical variant for wording in the neutral demo corpus.
+# Never relax keyword AND matching to arbitrary OR for cited answers.
+KEYWORD_VARIANTS = {'publish': 'public'}
+
 QUESTION_STOPWORDS = {
     'a',
     'an',
@@ -130,6 +134,18 @@ def answer(payload: QaRequest):
             if hits:
                 strategy = 'keywords'
         if not hits and fallback_query:
+            # Preserve the complete content-term AND requirement: replace only
+            # a known equivalent public/publish form, never omit an identifier
+            # term (e.g. "contract number") to manufacture a match.
+            terms = fallback_query.split()
+            normalized_query = ' '.join(KEYWORD_VARIANTS.get(t, t) for t in terms)
+            if normalized_query != fallback_query:
+                attempted_queries.append(normalized_query)
+                data = run_search(client, normalized_query, payload)
+                hits = data.get('hits', [])
+                if hits:
+                    strategy = 'keywords_variant'
+        if not hits and fallback_query:
             terms = fallback_query.split()
             if len(terms) >= 2:
                 # PostgreSQL websearch_to_tsquery interprets OR as disjunction.
@@ -181,6 +197,8 @@ def answer(payload: QaRequest):
     ]
 
     uncertainties = ['confidence_uncalibrated']
+    if strategy == 'keywords_variant':
+        uncertainties.append('lexical_variant_not_semantically_verified')
     # Confidence remains a compatibility-only heuristic, never a calibrated
     # probability of factual correctness.
     if len({hit['document_id'] for hit in hits}) < 2:
