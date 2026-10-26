@@ -669,6 +669,7 @@ HTML = """<!doctype html>
             <input type="file" multiple id="source-files" style="display:none" onchange="importSelectedFiles(this.files, false)">
             <input type="file" multiple webkitdirectory directory id="source-folder" style="display:none" onchange="importSelectedFiles(this.files, true)">
             <p class="hint" id="source-import-status" role="status" aria-live="polite" data-i18n="sourceIdle">Noch keine eigenen Dateien ausgewählt.</p>
+            <button type="button" class="secondary" id="source-index-now" disabled onclick="indexImportedSource()" data-i18n="sourceIndexNow">Importierte Dateien jetzt einlesen</button>
             <p class="hint" data-i18n="sourcePrivacyHelp">Ordnerzugriff erfolgt nur mit deiner Freigabe. Abgleich und Indexierung starten ausschließlich auf Klick. Bei Browsern ohne dauerhafte Ordnerfreigabe den Ordner erneut auswählen.</p>
           </div>
           <details class="advanced-options" id="index-advanced">
@@ -724,6 +725,10 @@ HTML = """<!doctype html>
     const I18N = {
       de: {
         navigationLabel: 'Seitennavigation',
+        sourceIndexNow: 'Importierte Dateien jetzt einlesen',
+        sourceIndexProgress: 'Dokumente verarbeitet',
+        sourceIndexDone: 'Einlesen abgeschlossen. Die Dokumente können jetzt durchsucht werden.',
+        sourceIndexIncomplete: 'Einlesen teilweise abgeschlossen. Bitte offene Dokumente prüfen.',
         sourceAddTitle: 'Eigene Dokumente hinzufügen',
         sourceAddHelp: 'Wähle Dateien oder einen Ordner. ToF kopiert sie in den bereits freigegebenen Dokumentenbereich; deine Originaldateien bleiben unverändert.',
         sourcePickFiles: 'Dateien auswählen',
@@ -931,6 +936,10 @@ HTML = """<!doctype html>
       },
       en: {
         navigationLabel: 'Page navigation',
+        sourceIndexNow: 'Index imported documents now',
+        sourceIndexProgress: 'Documents processed',
+        sourceIndexDone: 'Indexing complete. Your documents are now searchable.',
+        sourceIndexIncomplete: 'Indexing only partially finished. Check pending documents.',
         sourceAddTitle: 'Add your own documents',
         sourceAddHelp: 'Select files or a folder. ToF copies them into the already approved document area; original files are unchanged.',
         sourcePickFiles: 'Select files',
@@ -1663,6 +1672,8 @@ HTML = """<!doctype html>
           }
           imported += data.copied || 0;
           sourceId = data.source_id;
+          output.textContent = t('sourceIndexProgress') + ': ' + imported +
+            (skipped ? ' · ' + t('sourceImportSkipped') + ': ' + skipped : '');
           batch = [];
           bytes = 0;
         }
@@ -1681,12 +1692,52 @@ HTML = """<!doctype html>
           await loadSourceSpaces();
           const menu = document.getElementById('index-source-select');
           if ([...menu.options].some(opt => opt.value === sourceId)) menu.value = sourceId;
-          document.getElementById('index-advanced').open = true;
-          document.getElementById('index-batch-button').focus();
+          document.getElementById('source-index-now').disabled = false;
         }
       } catch (error) {
         output.textContent = t('sourceImportFailed') +
           (imported ? ' (' + imported + ' ' + t('sourceTotal') + ')' : '');
+      }
+    }
+
+    async function indexImportedSource() {
+      const button = document.getElementById('source-index-now');
+      const status = document.getElementById('source-import-status');
+      const source = document.getElementById('index-source-select').value;
+      if (!source || button.disabled) return;
+      button.disabled = true;
+      let cursor = null;
+      let processed = 0;
+      let complete = false;
+      try {
+        // Reuse the existing manual, bounded eight-document index endpoint.
+        for (let batch = 0; batch < 45; batch++) {
+          const response = await fetch('/api/index-batch', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({space_id: source, cursor}),
+          });
+          const data = await response.json();
+          if (!response.ok || !['ok', 'partial'].includes(data.status)) {
+            throw new Error('index_failed');
+          }
+          processed += Number(data.indexed_this_pass || 0);
+          status.textContent = t('sourceIndexProgress') + ': ' + processed;
+          if ((data.failed || []).length) break;
+          if (!data.page_has_more && !data.remaining_in_sample) {
+            complete = true;
+            break;
+          }
+          cursor = data.next_cursor || null;
+        }
+        status.textContent = (complete ? t('sourceIndexDone') :
+          t('sourceIndexIncomplete')) + ' ' + t('sourceIndexProgress') + ': ' + processed;
+        await refreshSources();
+      } catch (_) {
+        status.textContent = t('sourceIndexIncomplete') + ' ' +
+          t('sourceIndexProgress') + ': ' + processed;
+      } finally {
+        button.disabled = false;
       }
     }
 
