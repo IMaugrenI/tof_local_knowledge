@@ -1816,6 +1816,8 @@ HTML = """<!doctype html>
       let cursor = null;
       let processed = 0;
       let complete = false;
+      let failures = 0;
+      let stalled = 0;
       try {
         // Reuse the existing manual, bounded eight-document index endpoint.
         for (let batch = 0; batch < 45; batch++) {
@@ -1828,17 +1830,24 @@ HTML = """<!doctype html>
           if (!response.ok || !['ok', 'partial'].includes(data.status)) {
             throw new Error('index_failed');
           }
-          processed += Number(data.indexed_this_pass || 0);
+          const indexed = Number(data.indexed_this_pass || 0);
+          processed += indexed;
+          failures += (data.failed || []).length;
           status.textContent = t('sourceIndexProgress') + ': ' + processed;
-          if ((data.failed || []).length) break;
+          // A broken document must not block the remaining valid documents.
+          // Stop safely if successive passes make no progress (e.g. only
+          // permanently failing retry candidates remain).
+          stalled = indexed > 0 ? 0 : stalled + 1;
           if (!data.page_has_more && !data.remaining_in_sample) {
             complete = true;
             break;
           }
+          if (stalled >= 2) break;
           cursor = data.next_cursor || null;
         }
-        status.textContent = (complete ? t('simpleFilesReady') :
-          t('sourceIndexIncomplete')) + ' ' + t('sourceIndexProgress') + ': ' + processed;
+        status.textContent = (complete && !failures ? t('simpleFilesReady') :
+          t('sourceIndexIncomplete')) + ' ' + t('sourceIndexProgress') + ': ' + processed +
+          (failures ? ' · ' + t('failedCountLabel') + ': ' + failures : '');
         if (document.getElementById('source-result')) await refreshSources();
         await refreshOverview();
       } catch (_) {
