@@ -742,6 +742,7 @@ HTML = """<!doctype html>
         sourceImportSkipped: 'Übersprungene Dateien',
         sourcePermissionDenied: 'Ordnerzugriff nicht erlaubt oder abgebrochen.',
         sourceNoConnectedFolder: 'Noch kein Ordner verbunden. Bitte zunächst einen Ordner auswählen.',
+        sourceNotInSpaces: 'Importiert, aber der Quellenbereich ist nicht verfügbar. Quellenübersicht prüfen, bevor du indexierst.',
         sourceConnected: 'Ausgewählter Ordner',
         navOverview: 'Übersicht',
         overviewEyebrow: 'DEIN WISSEN IM ÜBERBLICK',
@@ -953,6 +954,7 @@ HTML = """<!doctype html>
         sourceImportSkipped: 'Files skipped',
         sourcePermissionDenied: 'Folder access denied or cancelled.',
         sourceNoConnectedFolder: 'No folder connected yet. Select a folder first.',
+        sourceNotInSpaces: 'Imported, but this source is not available in the sources list. Check source settings before indexing.',
         sourceConnected: 'Selected folder',
         navOverview: 'Overview',
         overviewEyebrow: 'YOUR KNOWLEDGE AT A GLANCE',
@@ -1646,7 +1648,11 @@ HTML = """<!doctype html>
       if (!files.length) { output.textContent = t('sourceIdle'); return; }
       const supported = /\.(txt|md|log|py|rst|ini|cfg|yaml|yml|json|htm|html|csv|eml|pdf|docx|xlsx)$/i;
       const candidates = files.filter(x =>
-        supported.test(x.name) && x.file.size <= 12 * 1024 * 1024);
+        supported.test(x.name) && x.file.size <= 12 * 1024 * 1024 &&
+        x.name.length <= 600 && x.name.split('/').length <= 12 &&
+        !x.name.includes('\\\\') &&
+        x.name.split('/').every(part => part && !part.startsWith('.') &&
+          !part.includes(':')));
       let skipped = previousSkipped + files.length - candidates.length;
       let imported = 0;
       let sourceId = null;
@@ -1691,8 +1697,13 @@ HTML = """<!doctype html>
         if (imported && sourceId) {
           await loadSourceSpaces();
           const menu = document.getElementById('index-source-select');
-          if ([...menu.options].some(opt => opt.value === sourceId)) menu.value = sourceId;
-          document.getElementById('source-index-now').disabled = false;
+          if ([...menu.options].some(opt => opt.value === sourceId)) {
+            menu.value = sourceId;
+            document.getElementById('source-index-now').disabled = false;
+          } else {
+            output.textContent = t('sourceNotInSpaces');
+            document.getElementById('source-index-now').disabled = true;
+          }
         }
       } catch (error) {
         output.textContent = t('sourceImportFailed') +
