@@ -250,6 +250,55 @@ HTML = """<!doctype html>
       background: var(--gold-bright);
     }
 
+
+    .overview-hero { max-width: 850px; margin-bottom: 22px; }
+    .overview-hero h1 { font-size: clamp(2.4rem, 5vw, 4.2rem); }
+    .overview-hero .lead { max-width: 740px; }
+    .overview-status {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px; padding: 18px 20px;
+      border: 1px solid var(--border-strong); border-radius: 16px;
+      background: var(--chip-bg); margin: 20px 0 28px;
+    }
+    .overview-status strong { display: block; }
+    .overview-status p { margin: 4px 0 0; color: var(--muted); font-size: .9rem; }
+    .guide-grid {
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .guide-card {
+      display: flex; flex-direction: column; gap: 12px;
+      padding: 24px; min-height: 215px; border: 1px solid var(--border);
+      border-radius: 18px; background: var(--surface);
+      color: var(--text); text-decoration: none;
+      transition: border-color .16s ease, transform .16s ease;
+    }
+    .guide-card:hover, .guide-card:focus-visible {
+      border-color: var(--gold); transform: translateY(-2px);
+    }
+    .guide-card .step { color: var(--gold); font-weight: 800; font-size: .83rem; }
+    .guide-card h2 { margin: 0; font-size: 1.4rem; }
+    .guide-card p { margin: 0; color: var(--muted); font-size: .95rem; }
+    .guide-card .forward { margin-top: auto; color: var(--gold-bright); font-weight: 750; }
+    .page-intro {
+      display: flex; justify-content: space-between; flex-wrap: wrap;
+      gap: 18px; align-items: center; margin: 0 0 22px;
+      border-bottom: 1px solid var(--border); padding-bottom: 22px;
+    }
+    .page-intro h1 { margin: 0 0 8px; font-size: clamp(1.8rem, 4vw, 3rem); }
+    .page-intro p { margin: 0; max-width: 670px; color: var(--muted); }
+    .page-intro a, .inline-link {
+      color: var(--gold-bright); font-weight: 700; text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+    .advanced-options {
+      border: 1px solid var(--border); border-radius: 12px;
+      padding: 2px 12px 12px; margin: 10px 0;
+    }
+    .advanced-options summary { padding: 9px 2px; font-weight: 650; color: var(--muted); }
+    .advanced-options summary::after { font-size: 1rem; }
+    .advanced-options .options-row { margin-top: 8px; }
+    .related-link { display: inline-flex; margin-top: 16px; }
     .hero {
       display: grid;
       grid-template-columns: minmax(0,1.05fr) minmax(340px,.95fr);
@@ -420,6 +469,7 @@ HTML = """<!doctype html>
     @media (max-width: 820px) {
       .hero { grid-template-columns: 1fr; gap: 32px; }
       .topbar { margin-bottom: 38px; align-items: flex-start; }
+      .guide-grid { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 560px) {
@@ -427,6 +477,8 @@ HTML = """<!doctype html>
       .topbar { flex-direction: column; }
       .page-nav { padding: 7px; gap: 5px; }
       .page-nav a { min-height: 44px; padding: 9px 12px; }
+      .guide-card { min-height: 165px; }
+      .page-intro { flex-direction: column; align-items: flex-start; }
       h1 { font-size: clamp(2.5rem,13vw,3.65rem); }
       .answer-panel, .search-panel { padding: 21px; }
       .options-row { grid-template-columns: 1fr; }
@@ -471,38 +523,74 @@ HTML = """<!doctype html>
     </header>
 
     <nav class="page-nav" aria-label="Navigation" data-i18n-aria-label="navigationLabel">
+      <a href="/uebersicht" data-page-link="overview" data-i18n="navOverview">Übersicht</a>
+      <a href="/frage-stellen" data-page-link="question" data-i18n="navAsk">Frage stellen</a>
+      <a href="/dokumente-durchsuchen" data-page-link="search" data-i18n="navSearch">Dokumente durchsuchen</a>
       <a href="/quellen-index" data-page-link="sources" data-i18n="navSources">Quellen & Index</a>
       <a href="/beleg-pruefen" data-page-link="evidence" data-i18n="navEvidence">Beleg prüfen</a>
-      <a href="/dokumente-durchsuchen" data-page-link="search" data-i18n="navSearch">Dokumente durchsuchen</a>
-      <a href="/frage-stellen" data-page-link="question" data-i18n="navAsk">Frage stellen</a>
     </nav>
 
     <main id="main-content">
       <div class="section">
-        <!-- PAGE_START:question -->
-        <section class="hero">
-        <div>
-          <p class="eyebrow" data-i18n="heroEyebrow">DEINE DOKUMENTE · DEINE QUELLEN</p>
-          <h1 data-i18n="heroTitle">Frag deine Dokumente.</h1>
-          <p class="lead" data-i18n="heroLead">Durchsuche deine lokalen Unterlagen oder stelle eine Frage. Antworten zeigen dir, auf welche Dokumente sie sich stützen.</p>
-          <p class="note" data-i18n="heroNote">Deine Unterlagen und Anfragen bleiben auf diesem Computer.</p>
-        </div>
-        <div class="hero-points">
-          <div class="hero-point"><span>01</span><div data-i18n="heroPointOne">Suche direkt in deinen eigenen Unterlagen.</div></div>
-          <div class="hero-point"><span>02</span><div data-i18n="heroPointTwo">Antworten zeigen die verwendeten Quellen.</div></div>
-          <div class="hero-point"><span>03</span><div data-i18n="heroPointThree">Wenn keine passende Grundlage gefunden wird, bleibt das sichtbar.</div></div>
-        </div>
+        <!-- PAGE_START:overview -->
+        <section class="overview-hero">
+          <p class="eyebrow" data-i18n="overviewEyebrow">DEIN WISSEN IM ÜBERBLICK</p>
+          <h1 data-i18n="overviewTitle">Was möchtest du heute tun?</h1>
+          <p class="lead" data-i18n="overviewLead">Du kannst Fragen stellen, Dokumente durchsuchen und jede verwendete Textstelle prüfen. Hier findest du den richtigen Einstieg.</p>
         </section>
+        <section class="overview-status" aria-live="polite">
+          <div>
+            <strong id="overview-status-title" data-i18n="overviewLoading">Dokumentenstatus wird geladen …</strong>
+            <p id="overview-status-detail" data-i18n="overviewLoadingHelp">Die vorhandenen lokalen Quellen werden geprüft.</p>
+          </div>
+          <a href="/quellen-index" class="inline-link" data-i18n="overviewManageSources">Quellen verwalten</a>
+        </section>
+        <div class="guide-grid">
+          <a class="guide-card" href="/frage-stellen">
+            <span class="step" data-i18n="overviewStepAsk">SCHRITT 1 · FRAGEN</span>
+            <h2 data-i18n="navAsk">Frage stellen</h2>
+            <p data-i18n="overviewAskHelp">Du hast eine konkrete Frage? Suche eine Antwort mit sichtbaren Quellen.</p>
+            <span class="forward" data-i18n="overviewOpenAsk">Zur Frage →</span>
+          </a>
+          <a class="guide-card" href="/dokumente-durchsuchen">
+            <span class="step" data-i18n="overviewStepSearch">ALTERNATIV · SUCHEN</span>
+            <h2 data-i18n="navSearch">Dokumente durchsuchen</h2>
+            <p data-i18n="overviewSearchHelp">Du suchst eine Datei oder Textstelle? Durchsuche deine indexierten Dokumente.</p>
+            <span class="forward" data-i18n="overviewOpenSearch">Zur Suche →</span>
+          </a>
+          <a class="guide-card" href="/quellen-index">
+            <span class="step" data-i18n="overviewStepSources">VORBEREITUNG · QUELLEN</span>
+            <h2 data-i18n="navSources">Quellen & Index</h2>
+            <p data-i18n="overviewSourcesHelp">Sieh nach, welche Dokumente bereitstehen, oder starte die Indexierung manuell.</p>
+            <span class="forward" data-i18n="overviewOpenSources">Zu den Quellen →</span>
+          </a>
+          <a class="guide-card" href="/beleg-pruefen">
+            <span class="step" data-i18n="overviewStepEvidence">DANACH · PRÜFEN</span>
+            <h2 data-i18n="navEvidence">Beleg prüfen</h2>
+            <p data-i18n="overviewEvidenceHelp">Öffne aus einer Antwort oder einem Suchtreffer die Originaltextstelle.</p>
+            <span class="forward" data-i18n="overviewOpenEvidence">Zur Belegprüfung →</span>
+          </a>
+        </div>
+        <!-- PAGE_END:overview -->
+        <!-- PAGE_START:question -->
+        <div class="page-intro">
+          <div><h1 data-i18n="navAsk">Frage stellen</h1>
+          <p data-i18n="questionGuide">Gib deine Frage ein. Du siehst, welche Dokumente die Antwort belegen – oder dass Belege fehlen.</p></div>
+          <a href="/uebersicht" data-i18n="backOverview">← Zur Übersicht</a>
+        </div>
 
         <div class="answer-panel">
           <p class="eyebrow" data-i18n="answerEyebrow">FRAGE STELLEN</p>
           <h2 data-i18n="answerTitle">Was möchtest du aus deinen Dokumenten wissen?</h2>
           <div class="form-grid">
             <textarea id="qa-question" aria-label="Frage an deine Dokumente" data-i18n-aria-label="questionLabel" data-i18n-placeholder="questionPlaceholder" placeholder="Zum Beispiel: Was steht in meinen Unterlagen zur Urlaubsregelung?"></textarea>
-            <div class="options-row">
+            <details class="advanced-options">
+              <summary data-i18n="optionalFilters">Erweiterte Optionen (optional)</summary>
+              <div class="options-row">
               <input id="qa-scope" type="text" aria-label="Suche optional auf bestimmte Quellen begrenzen" data-i18n-aria-label="scopeLabel" data-i18n-placeholder="scopePlaceholder" placeholder="Optional: Suche auf bestimmte Quellen begrenzen">
               <input id="qa-limit" type="number" min="1" max="10" value="5" aria-label="Maximale Anzahl berücksichtigter Treffer" data-i18n-aria-label="qaLimitLabel">
-            </div>
+              </div>
+            </details>
             <button onclick="runAnswer()" data-i18n="runAnswer">Antwort aus meinen Dokumenten holen</button>
           </div>
           <div class="hint" data-i18n="answerHint">ToF sucht passende Stellen und zeigt die verwendeten Quellen zusammen mit der Antwort.</div>
@@ -511,15 +599,23 @@ HTML = """<!doctype html>
 
         <!-- PAGE_END:question -->
         <!-- PAGE_START:search -->
+        <div class="page-intro">
+          <div><h1 data-i18n="navSearch">Dokumente durchsuchen</h1>
+          <p data-i18n="searchGuide">Suche nach einem Begriff. Öffne anschließend eine Fundstelle, um den Originaltext zu lesen.</p></div>
+          <a href="/uebersicht" data-i18n="backOverview">← Zur Übersicht</a>
+        </div>
         <div class="search-panel">
           <p class="eyebrow" data-i18n="searchEyebrow">DOKUMENTE DURCHSUCHEN</p>
           <h2 data-i18n="searchTitle">Finde passende Stellen direkt.</h2>
           <div class="form-grid">
             <input id="search-query" type="text" aria-label="Dokumente durchsuchen" data-i18n-aria-label="searchLabel" data-i18n-placeholder="searchPlaceholder" placeholder="Wonach möchtest du suchen?">
-            <div class="options-row">
+            <details class="advanced-options">
+              <summary data-i18n="optionalFilters">Erweiterte Optionen (optional)</summary>
+              <div class="options-row">
               <input id="search-scope" type="text" aria-label="Suche optional auf bestimmte Quellen begrenzen" data-i18n-aria-label="scopeLabel" data-i18n-placeholder="scopePlaceholder" placeholder="Optional: Suche auf bestimmte Quellen begrenzen">
               <input id="search-limit" type="number" min="1" max="20" value="5" aria-label="Maximale Anzahl Suchtreffer" data-i18n-aria-label="searchLimitLabel">
-            </div>
+              </div>
+            </details>
             <button class="secondary" onclick="runSearch()" data-i18n="runSearch">Dokumente durchsuchen</button>
           </div>
           <div class="hint" data-i18n="searchHint">Du bekommst die passendsten Fundstellen mit Dokument und Textausschnitt.</div>
@@ -528,20 +624,34 @@ HTML = """<!doctype html>
 
         <!-- PAGE_END:search -->
         <!-- PAGE_START:evidence -->
+        <div class="page-intro">
+          <div><h1 data-i18n="navEvidence">Beleg prüfen</h1>
+          <p data-i18n="evidenceGuide">Hier erscheint eine Originaltextstelle, wenn du zuvor in der Suche oder Antwort auf „Textstelle ansehen“ geklickt hast.</p></div>
+          <a href="/dokumente-durchsuchen" data-i18n="backSearch">← Zur Suche</a>
+        </div>
         <section class="search-panel" aria-labelledby="evidence-title">
           <p class="eyebrow" data-i18n="evidenceEyebrow">BELEG PRÜFEN</p>
           <h2 id="evidence-title" data-i18n="evidenceTitle">Textstelle nachvollziehen</h2>
           <p class="hint" data-i18n="evidenceHint">Öffne einen Beleg aus Suche oder Antwort. Nur aktuell indexierte Fundstellen werden angezeigt.</p>
           <div class="result" id="evidence-result" aria-live="polite" data-i18n="evidenceEmpty">Wähle eine Fundstelle.</div>
+          <a class="inline-link related-link" href="/dokumente-durchsuchen" data-i18n="findEvidence">Fundstelle suchen →</a>
         </section>
 
         <!-- PAGE_END:evidence -->
         <!-- PAGE_START:sources -->
+        <div class="page-intro">
+          <div><h1 data-i18n="navSources">Quellen & Index</h1>
+          <p data-i18n="sourcesGuide">Prüfe zuerst, wie viele Dokumente schon bereitstehen. Nur bei Bedarf kannst du eine Quelle manuell indexieren.</p></div>
+          <a href="/uebersicht" data-i18n="backOverview">← Zur Übersicht</a>
+        </div>
         <section class="search-panel" aria-labelledby="sources-title">
           <p class="eyebrow" data-i18n="sourcesEyebrow">QUELLEN & INDEX</p>
           <h2 id="sources-title" data-i18n="sourcesTitle">Deine Quellen im Überblick</h2>
           <div class="hint" data-i18n="sourcesHint">Welche Dokumente bereits indexiert sind und welche noch Aufmerksamkeit brauchen.</div>
           <button class="secondary" onclick="refreshSources()" data-i18n="refreshSources">Quellen aktualisieren</button>
+          <div class="result" id="source-result" aria-live="polite" data-i18n="sourcesEmpty">Hier erscheinen die erfassten Quellen und Indexstände.</div>
+          <details class="advanced-options">
+          <summary data-i18n="manualIndexOptions">Dokumente manuell einlesen (optional)</summary>
           <label class="hint" for="index-source-select" data-i18n="indexSourceLabel">Zu indexierenden Quellenbereich auswählen</label>
           <select id="index-source-select" onchange="resetIndexCursor()" style="display:block;width:100%;padding:10px;margin:8px 0 12px"></select>
           <button class="secondary" type="button" onclick="loadSourceSpaces()" data-i18n="refreshSourceFolders">Quellenordner aktualisieren</button>
@@ -550,13 +660,11 @@ HTML = """<!doctype html>
           <button class="secondary" onclick="resetIndexCursor()" data-i18n="indexReset">Dateidurchlauf neu beginnen</button>
           <p class="hint" data-i18n="indexMissingNote">Bei großen Quellen ist die Fehlbestandserkennung nur für vollständige Einzelscans verfügbar.</p>
           <div class="hint" id="index-batch-result" aria-live="polite" data-i18n="indexHint">Manuell: eine begrenzte Charge der konfigurierten, schreibgeschützten Quelle einlesen.</div>
-          <div class="result" id="source-result" aria-live="polite" data-i18n="sourcesEmpty">Hier erscheinen die erfassten Quellen und Indexstände.</div>
+          </details>
           <div class="hint" data-i18n="sourcesLocalOnly">Nur lokale Quellenübersicht. Es ist keine Mehrbenutzerfreigabe aktiv.</div>
         </section>
 
         <!-- PAGE_END:sources -->
-        <div class="status" id="next-step" role="status" aria-live="polite" data-i18n="nextStep">Wenn du ToF zum ersten Mal nutzt, öffne unten „Einrichtung & technische Details“ und starte dort die lokale Umgebung.</div>
-
         <details class="tech-panel">
           <summary data-i18n="techTitle">Einrichtung & technische Details</summary>
           <div class="tech-body">
@@ -1440,7 +1548,8 @@ HTML = """<!doctype html>
 
 
 PAGE_ROUTES = {
-    "/": "question",  # Keep the documented root URL working.
+    "/": "overview",  # Existing root remains valid; now a guided landing page.
+    "/uebersicht": "overview",
     "/frage-stellen": "question",
     "/dokumente-durchsuchen": "search",
     "/beleg-pruefen": "evidence",
@@ -1456,7 +1565,7 @@ def _render_page(path: str) -> str:
     """
     page = PAGE_ROUTES[path]
     html = HTML
-    for name in ("question", "search", "evidence", "sources"):
+    for name in ("overview", "question", "search", "evidence", "sources"):
         start = f"<!-- PAGE_START:{name} -->"
         end = f"<!-- PAGE_END:{name} -->"
         pattern = re.escape(start) + r"(.*?)" + re.escape(end)
