@@ -35,3 +35,11 @@ This UI is a local Python process, **not** a Docker container. After updating th
 For acceptance, verify the four page routes, one sample search with a viewable evidence segment, a sourced answer, and the negative no-evidence question. Do not repeat already accepted Docker and indexing tests.
 
 Do not share screenshots with private document content, personal paths or secrets.
+
+## Complete German / English UI text
+
+The existing **English / Deutsch** toolbar button updates the whole four-page browser interface, including the navigation, captions, form accessibility labels, placeholders, source/index states, counts, help text, document evidence notices, QA uncertainty chips, no-evidence notices and the default mounted-source label. Selected language stays in the browser's existing local storage across all page URLs.
+
+Dynamic results are rerendered in the new language when toggled. The app also localizes the **fixed German framing text** emitted by the existing QA API when it displays a sourced excerpt or a no-evidence response. This affects presentation only: the QA API response contract, original citations, document excerpts, source names and machine-readable diagnostics are deliberately preserved verbatim. A source document is **not silently translated**, and technical identifiers in expandable raw JSON remain unchanged.
+
+To see changes after updating the repository, restart **only** the foreground Python UI process (`Ctrl+C` followed by `python3 run.py ui`). Do not rebuild or restart the existing Compose services.

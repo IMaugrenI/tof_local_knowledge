@@ -470,7 +470,7 @@ HTML = """<!doctype html>
       </div>
     </header>
 
-    <nav class="page-nav" aria-label="Navigation">
+    <nav class="page-nav" aria-label="Navigation" data-i18n-aria-label="navigationLabel">
       <a href="/quellen-index" data-page-link="sources" data-i18n="navSources">Quellen & Index</a>
       <a href="/beleg-pruefen" data-page-link="evidence" data-i18n="navEvidence">Beleg prüfen</a>
       <a href="/dokumente-durchsuchen" data-page-link="search" data-i18n="navSearch">Dokumente durchsuchen</a>
@@ -501,7 +501,7 @@ HTML = """<!doctype html>
             <textarea id="qa-question" aria-label="Frage an deine Dokumente" data-i18n-aria-label="questionLabel" data-i18n-placeholder="questionPlaceholder" placeholder="Zum Beispiel: Was steht in meinen Unterlagen zur Urlaubsregelung?"></textarea>
             <div class="options-row">
               <input id="qa-scope" type="text" aria-label="Suche optional auf bestimmte Quellen begrenzen" data-i18n-aria-label="scopeLabel" data-i18n-placeholder="scopePlaceholder" placeholder="Optional: Suche auf bestimmte Quellen begrenzen">
-              <input id="qa-limit" type="number" min="1" max="10" value="5" aria-label="Maximale Anzahl berücksichtigter Treffer">
+              <input id="qa-limit" type="number" min="1" max="10" value="5" aria-label="Maximale Anzahl berücksichtigter Treffer" data-i18n-aria-label="qaLimitLabel">
             </div>
             <button onclick="runAnswer()" data-i18n="runAnswer">Antwort aus meinen Dokumenten holen</button>
           </div>
@@ -518,7 +518,7 @@ HTML = """<!doctype html>
             <input id="search-query" type="text" aria-label="Dokumente durchsuchen" data-i18n-aria-label="searchLabel" data-i18n-placeholder="searchPlaceholder" placeholder="Wonach möchtest du suchen?">
             <div class="options-row">
               <input id="search-scope" type="text" aria-label="Suche optional auf bestimmte Quellen begrenzen" data-i18n-aria-label="scopeLabel" data-i18n-placeholder="scopePlaceholder" placeholder="Optional: Suche auf bestimmte Quellen begrenzen">
-              <input id="search-limit" type="number" min="1" max="20" value="5" aria-label="Maximale Anzahl Suchtreffer">
+              <input id="search-limit" type="number" min="1" max="20" value="5" aria-label="Maximale Anzahl Suchtreffer" data-i18n-aria-label="searchLimitLabel">
             </div>
             <button class="secondary" onclick="runSearch()" data-i18n="runSearch">Dokumente durchsuchen</button>
           </div>
@@ -544,7 +544,7 @@ HTML = """<!doctype html>
           <button class="secondary" onclick="refreshSources()" data-i18n="refreshSources">Quellen aktualisieren</button>
           <label class="hint" for="index-source-select" data-i18n="indexSourceLabel">Zu indexierenden Quellenbereich auswählen</label>
           <select id="index-source-select" onchange="resetIndexCursor()" style="display:block;width:100%;padding:10px;margin:8px 0 12px"></select>
-          <button class="secondary" type="button" onclick="loadSourceSpaces()">Quellenordner aktualisieren / Refresh source folders</button>
+          <button class="secondary" type="button" onclick="loadSourceSpaces()" data-i18n="refreshSourceFolders">Quellenordner aktualisieren</button>
           <p class="hint" id="index-source-message" aria-live="polite"></p>
           <button class="secondary" id="index-batch-button" onclick="runIndexBatch()" data-i18n="indexBatch">Konfigurierte Quelle indexieren</button>
           <button class="secondary" onclick="resetIndexCursor()" data-i18n="indexReset">Dateidurchlauf neu beginnen</button>
@@ -579,7 +579,7 @@ HTML = """<!doctype html>
 
             <details>
               <summary data-i18n="activityLog">Technisches Protokoll</summary>
-              <div class="log"><pre id="log">ToF Knowledge ist bereit.</pre></div>
+              <div class="log"><pre id="log" data-i18n="uiStarted">ToF Knowledge ist bereit.</pre></div>
             </details>
           </div>
         </details>
@@ -594,6 +594,39 @@ HTML = """<!doctype html>
   <script>
     const I18N = {
       de: {
+        navigationLabel: 'Seitennavigation',
+        qaLimitLabel: 'Maximale Anzahl berücksichtigter Treffer',
+        searchLimitLabel: 'Maximale Anzahl Suchtreffer',
+        refreshSourceFolders: 'Quellenordner aktualisieren',
+        readOnlyExcerpt: 'Schreibgeschützter Textauszug · bis zu',
+        characters: 'Zeichen',
+        segmentLabel: 'Segment',
+        disabledLabel: 'deaktiviert',
+        sourceDefaultLabel: 'Alle eingebundenen Dokumente',
+        searchHitLabel: 'Suchtreffer',
+        unknownLabel: 'unbekannt',
+        scannedLabel: 'eingelesen',
+        failedCountLabel: 'fehlgeschlagen',
+        noEvidenceBroadText: 'Keine belastbare Antwort gefunden. Eine breite Stichwortsuche lieferte nur ungeprüfte Treffer, keine ausreichenden Antwortbelege.',
+        noEvidenceText: 'Keine belastbare Antwort gefunden. Es wurden keine passenden Fundstellen im erlaubten Scope gefunden.',
+        answerExcerptIntro: 'Belegbasierte Kurzantwort (Quellenauszüge, keine unabhängige Verifikation):',
+        strongestHitIntro: 'Stärkster Treffer aus',
+        evidenceUsedIntro: 'Verwendete Fundstellen:',
+        searchStrategy_original_question: 'Originalfrage',
+        searchStrategy_keywords: 'Suchbegriffe',
+        searchStrategy_keywords_variant: 'Suchbegriffe (Wortvariante)',
+        searchStrategy_broad: 'Breite Stichwortsuche (nicht als Beleg verwendet)',
+        searchStrategy_none: 'Kein Suchtreffer',
+        status_no_evidence: 'Keine ausreichenden Belege',
+        status_single_document_matches: 'Treffer aus einem Dokument',
+        status_multiple_document_matches: 'Treffer aus mehreren Dokumenten',
+        status_broad_keyword_matches: 'Breite Stichworttreffer (ungeprüft)',
+        uncertainty_no_evidence: 'Keine ausreichenden Belege',
+        uncertainty_broad_keyword_search: 'Nur breite Stichworttreffer',
+        uncertainty_confidence_uncalibrated: 'Trefferwert ist keine geprüfte Wahrscheinlichkeit',
+        uncertainty_limited_independent_sources: 'Nur wenige unabhängige Quellen',
+        uncertainty_lexical_variant_not_semantically_verified: 'Wortvariante ohne eigenständige Bedeutungsprüfung',
+        unverifiedCandidates: 'Nicht überprüfte Treffer',
         navSources: 'Quellen & Index',
         navEvidence: 'Beleg prüfen',
         navSearch: 'Dokumente durchsuchen',
@@ -668,6 +701,7 @@ HTML = """<!doctype html>
         citations: 'Verwendete Quellen',
         evidenceRefs: 'Nachvollziehbare Fundstellen',
         evidenceSignal: 'Suchbelege (keine Prüfung der Richtigkeit)',
+        evidenceStatus: 'Belegstatus',
         evidenceStrategy: 'Suchweg',
         evidenceSegments: 'Gefundene Textabschnitte',
         evidenceDocuments: 'Unterschiedliche Dokumente',
@@ -719,6 +753,39 @@ HTML = """<!doctype html>
         selectSource: 'Diese Quelle durchsuchen',
       },
       en: {
+        navigationLabel: 'Page navigation',
+        qaLimitLabel: 'Maximum number of considered matches',
+        searchLimitLabel: 'Maximum number of search results',
+        refreshSourceFolders: 'Refresh source folders',
+        readOnlyExcerpt: 'Read-only excerpt · up to',
+        characters: 'characters',
+        segmentLabel: 'Segment',
+        disabledLabel: 'disabled',
+        sourceDefaultLabel: 'All mounted documents',
+        searchHitLabel: 'Search hit',
+        unknownLabel: 'unknown',
+        scannedLabel: 'scanned',
+        failedCountLabel: 'failed',
+        noEvidenceBroadText: 'No reliable answer found. A broad keyword search returned unverified matches, not sufficient evidence to answer.',
+        noEvidenceText: 'No reliable answer found. No matching evidence was found within the permitted source scope.',
+        answerExcerptIntro: 'Evidence-based excerpt answer (source passages, not independently verified):',
+        strongestHitIntro: 'Strongest match from',
+        evidenceUsedIntro: 'Evidence passages used:',
+        searchStrategy_original_question: 'Original question',
+        searchStrategy_keywords: 'Keywords',
+        searchStrategy_keywords_variant: 'Keywords (word variant)',
+        searchStrategy_broad: 'Broad keyword search (not used as evidence)',
+        searchStrategy_none: 'No matching evidence',
+        status_no_evidence: 'Insufficient evidence',
+        status_single_document_matches: 'Matches from one document',
+        status_multiple_document_matches: 'Matches from multiple documents',
+        status_broad_keyword_matches: 'Broad keyword matches (unverified)',
+        uncertainty_no_evidence: 'Insufficient evidence',
+        uncertainty_broad_keyword_search: 'Broad keyword matches only',
+        uncertainty_confidence_uncalibrated: 'Match score is not a calibrated probability',
+        uncertainty_limited_independent_sources: 'Limited independent sources',
+        uncertainty_lexical_variant_not_semantically_verified: 'Word variant without independent semantic verification',
+        unverifiedCandidates: 'Unverified candidate matches',
         navSources: 'Sources & Index',
         navEvidence: 'Inspect evidence',
         navSearch: 'Search documents',
@@ -793,6 +860,7 @@ HTML = """<!doctype html>
         citations: 'Sources used',
         evidenceRefs: 'Traceable evidence references',
         evidenceSignal: 'Retrieved evidence (not factual verification)',
+        evidenceStatus: 'Evidence status',
         evidenceStrategy: 'Search method',
         evidenceSegments: 'Matching excerpts',
         evidenceDocuments: 'Distinct documents',
@@ -845,13 +913,43 @@ HTML = """<!doctype html>
       },
     };
 
-    let currentLanguage = localStorage.getItem('tof_local_knowledge_language') || 'de';
+    let currentLanguage = localStorage.getItem('tof_local_knowledge_language') === 'en' ? 'en' : 'de';
     let currentTheme = localStorage.getItem('tof_local_knowledge_theme') || 'dark';
     let indexCursor = null;
     let availableSourceSpaces = [];
+    let lastSearchData = null;
+    let lastAnswerData = null;
+    let lastIndexData = null;
+    let lastEvidenceSegment = null;
 
     function t(key) {
       return (I18N[currentLanguage] && I18N[currentLanguage][key]) || I18N.de[key] || key;
+    }
+
+    function translatedCode(prefix, code) {
+      const key = prefix + '_' + String(code || '');
+      return (I18N[currentLanguage] && I18N[currentLanguage][key]) ||
+        I18N.de[key] || String(code || t('unknownLabel'));
+    }
+
+    function localizeAnswerText(raw) {
+      const value = String(raw || '');
+      if (value.startsWith('Keine belastbare Antwort gefunden. Eine breite Stichwortsuche')) {
+        return t('noEvidenceBroadText');
+      }
+      if (value.startsWith('Keine belastbare Antwort gefunden. Es wurden keine passenden Fundstellen')) {
+        return t('noEvidenceText');
+      }
+      if (!value.startsWith('Belegbasierte Kurzantwort (Quellenauszüge, keine unabhängige Verifikation):')) {
+        // User-authored document excerpts and arbitrary backend messages must
+        // never be machine-translated or silently rewritten.
+        return value;
+      }
+      return value
+        .replace('Belegbasierte Kurzantwort (Quellenauszüge, keine unabhängige Verifikation):',
+                 t('answerExcerptIntro'))
+        .replace('Stärkster Treffer aus ', t('strongestHitIntro') + ' ')
+        .replace('Verwendete Fundstellen:', t('evidenceUsedIntro'));
     }
 
     function applyLanguage() {
@@ -862,6 +960,14 @@ HTML = """<!doctype html>
       document.querySelectorAll('[data-i18n-placeholder]').forEach((element) => {
         element.placeholder = t(element.dataset.i18nPlaceholder);
       });
+      document.querySelectorAll('[data-i18n-aria-label]').forEach((element) => {
+        element.setAttribute('aria-label', t(element.dataset.i18nAriaLabel));
+      });
+      const active = document.querySelector('.page-nav a[aria-current="page"]');
+      document.title = 'ToF Knowledge · ' + (active ? active.textContent : t('navAsk'));
+      if (lastSearchData) renderSearchResult(lastSearchData);
+      if (lastAnswerData) renderAnswerResult(lastAnswerData);
+      if (lastIndexData) renderIndexBatchResult(lastIndexData);
       document.getElementById('language-toggle').textContent = t('languageButton');
       document.getElementById('theme-toggle').textContent = currentTheme === 'dark' ? t('themeButtonLight') : t('themeButtonDark');
       localStorage.setItem('tof_local_knowledge_language', currentLanguage);
@@ -876,6 +982,12 @@ HTML = """<!doctype html>
     function toggleLanguage() {
       currentLanguage = currentLanguage === 'de' ? 'en' : 'de';
       applyLanguage();
+      if (document.getElementById('source-result')) {
+        loadSourceSpaces().then(refreshSources);
+      }
+      if (lastEvidenceSegment && document.getElementById('evidence-result')) {
+        inspectEvidence(lastEvidenceSegment);
+      }
     }
 
     function toggleTheme() {
@@ -925,6 +1037,7 @@ HTML = """<!doctype html>
         return;
       }
       const panel = document.getElementById('evidence-result');
+      lastEvidenceSegment = segmentId;
       panel.textContent = t('evidenceEmpty');
       try {
         const query = new URLSearchParams({segment_id: segmentId});
@@ -947,7 +1060,7 @@ HTML = """<!doctype html>
         excerpt.textContent = e.excerpt || '';
         const note = document.createElement('p');
         note.className = 'muted';
-        note.textContent = 'Read-only excerpt · up to ' + data.truncated_to_chars + ' characters.';
+        note.textContent = t('readOnlyExcerpt') + ' ' + data.truncated_to_chars + ' ' + t('characters') + '.';
         panel.append(heading, detail, excerpt, note);
         panel.scrollIntoView({behavior: 'smooth', block: 'nearest'});
       } catch (error) {
@@ -974,6 +1087,7 @@ HTML = """<!doctype html>
     }
 
     function renderSearchResult(data) {
+      lastSearchData = data;
       const root = document.getElementById('search-result');
       if (data.error) {
         root.innerHTML = errorMarkup(data, t('searchFailed'));
@@ -986,7 +1100,7 @@ HTML = """<!doctype html>
       }
       let html = `<div class=\"muted\">${t('query')}: ${escapeHtml(data.query || '')} · ${t('returned')} ${hits.length} ${t('hits')}.</div>`;
       for (const hit of hits) {
-        const title = hit.relative_path || hit.title || hit.document_title || hit.document_id || 'Search hit';
+        const title = hit.relative_path || hit.title || hit.document_title || hit.document_id || t('searchHitLabel');
         const preview = hit.preview_text || hit.snippet || hit.text || hit.chunk_text || '';
         html += `<div class=\"result-card\"><strong>${escapeHtml(title)}</strong>`;
         html += '<div class=\"meta-grid\">';
@@ -1017,13 +1131,14 @@ HTML = """<!doctype html>
     }
 
     function renderAnswerResult(data) {
+      lastAnswerData = data;
       const root = document.getElementById('qa-result');
       if (data.error) {
         root.innerHTML = errorMarkup(data, t('answerFailed'));
         return;
       }
-      const answer = data.answer_text || data.answer || t('noAnswerText');
-      const confidence = data.confidence ?? 'unknown';
+      const answer = localizeAnswerText(data.answer_text || data.answer || t('noAnswerText'));
+      const confidence = data.confidence ?? t('unknownLabel');
       const citations = asList(data.citations);
       const evidenceRefs = asList(data.evidence_refs);
       const usedDocuments = asList(data.used_documents);
@@ -1035,17 +1150,22 @@ HTML = """<!doctype html>
       if (signal) {
         html += '<div class="muted" style="margin-top:10px"><strong>'
           + t('evidenceSignal') + '</strong><br>'
-          + t('evidenceStrategy') + ': ' + escapeHtml(signal.search_strategy || 'unknown')
+          + t('evidenceStatus') + ': ' + escapeHtml(translatedCode('status', signal.status))
+          + ' · ' + t('evidenceStrategy') + ': ' + escapeHtml(translatedCode('searchStrategy', signal.search_strategy))
           + ' · ' + t('evidenceSegments') + ': ' + escapeHtml(signal.matching_segments || 0)
           + ' · ' + t('evidenceDocuments') + ': ' + escapeHtml(signal.distinct_documents || 0)
           + '</div>';
-        if (signal.status === 'broad_keyword_matches') {
+        if (signal.unverified_candidates) {
+          html += '<div class="muted">' + t('unverifiedCandidates') + ': ' +
+            escapeHtml(signal.unverified_candidates) + '</div>';
+        }
+        if (signal.status === 'broad_keyword_matches' || signal.search_strategy === 'broad') {
           html += '<div class="muted" style="margin-top:10px">'
             + t('evidenceCaution') + '</div>';
         }
       }
       if (uncertainties.length) {
-        html += `<div style=\"margin-top:10px;\"><strong>${t('uncertainties')}</strong>${renderChips(uncertainties, 'warn')}</div>`;
+        html += `<div style=\"margin-top:10px;\"><strong>${t('uncertainties')}</strong>${renderChips(uncertainties.map(code => translatedCode('uncertainty', code)), 'warn')}</div>`;
       }
       html += '</div>';
 
@@ -1062,7 +1182,7 @@ HTML = """<!doctype html>
           html += '<div class="meta-grid" style="margin-top:8px">';
           html += '<div class="muted">' + escapeHtml(ref.relative_path || '') + '</div>';
           html += '<div class="muted">' + escapeHtml(ref.citation_label || '') + '</div>';
-          html += '<div class="muted">Segment: ' + escapeHtml(ref.segment_id || '') + '</div>';
+          html += '<div class="muted">' + t('segmentLabel') + ': ' + escapeHtml(ref.segment_id || '') + '</div>';
           if (ref.segment_id) html += '<button class="secondary" type="button" data-evidence-segment="' + escapeHtml(ref.segment_id) + '">' + t('viewEvidence') + '</button>';
           html += '</div>';
         }
@@ -1086,7 +1206,11 @@ HTML = """<!doctype html>
     }
 
     async function runAction(action) {
-      appendLog(`${t('runningAction')}: ${action} ...`);
+      const actionLabels = {
+        setup: 'setupButton', up: 'upButton', check: 'checkButton',
+        status: 'statusButton', doctor: 'doctorButton', down: 'downButton',
+      };
+      appendLog(`${t('runningAction')}: ${t(actionLabels[action] || action)} ...`);
       const response = await fetch(`/api/${action}`, { method: 'POST' });
       const data = await response.json();
       appendLog(JSON.stringify(data, null, 2));
@@ -1094,7 +1218,11 @@ HTML = """<!doctype html>
     }
 
     async function openLink(name) {
-      appendLog(`${t('opening')}: ${name} ...`);
+      const linkLabels = {
+        openwebui: 'openWebui', search_docs: 'openSearchDocs',
+        qa_docs: 'openQaDocs', catalog_docs: 'openCatalogDocs',
+      };
+      appendLog(`${t('opening')}: ${t(linkLabels[name] || name)} ...`);
       const response = await fetch(`/api/open/${name}`, { method: 'POST' });
       const data = await response.json();
       appendLog(JSON.stringify(data, null, 2));
@@ -1113,7 +1241,8 @@ HTML = """<!doctype html>
           if (!space.available) return;
           const option = document.createElement('option');
           option.value = space.id;
-          option.textContent = space.label + ' (' + space.id + ')';
+          option.textContent = (space.label === 'All mounted documents' ?
+            t('sourceDefaultLabel') : space.label) + ' (' + space.id + ')';
           menu.appendChild(option);
         });
         if ([...menu.options].some(option => option.value === current)) menu.value = current;
@@ -1127,7 +1256,23 @@ HTML = """<!doctype html>
 
     function resetIndexCursor() {
       indexCursor = null;
+      lastIndexData = null;
       document.getElementById('index-batch-result').textContent = t('indexHint');
+    }
+
+    function renderIndexBatchResult(outcome) {
+      const result = document.getElementById('index-batch-result');
+      if (outcome.failed) {
+        const data = outcome.data;
+        result.textContent = t('indexFailed') + ' ' +
+          friendlyIssue(data.error || data.detail);
+        return;
+      }
+      const data = outcome.data;
+      result.textContent = t('indexSuccess') + ': ' + (data.indexed_this_pass || 0) +
+        ' / ' + (data.files_scanned || 0) + ' ' + t('scannedLabel') + '. ' +
+        (data.failed || []).length + ' ' + t('failedCountLabel') + '. ' +
+        (data.page_has_more ? t('indexPage') : t('indexFinished'));
     }
 
     async function runIndexBatch() {
@@ -1145,18 +1290,11 @@ HTML = """<!doctype html>
           }),
         });
         const data = await response.json();
-        if (!response.ok || data.status === 'error') {
-          result.textContent = t('indexFailed') + ' '
-            + friendlyIssue(data.error || data.detail)
-            + ' (' + (data.detail || data.error || 'unknown') + ')';
-        } else {
+        const failed = !response.ok || data.status === 'error';
+        lastIndexData = { data, failed };
+        renderIndexBatchResult(lastIndexData);
+        if (!failed) {
           indexCursor = data.next_cursor || null;
-          // The selected source remains available through the source card's
-          // search link; do not access inputs belonging to another page.
-          result.textContent = t('indexSuccess') + ': ' + (data.indexed_this_pass || 0)
-            + ' / ' + (data.files_scanned || 0) + ' scanned. '
-            + (data.failed || []).length + ' failed. '
-            + (data.page_has_more ? t('indexPage') : t('indexFinished'));
           await refreshSources();
         }
       } catch (error) {
@@ -1187,8 +1325,10 @@ HTML = """<!doctype html>
           panel.className = 'result-card';
           const title = document.createElement('strong');
           const matchingSpace = availableSourceSpaces.find(space => space.id === source.source_id);
-          title.textContent = (matchingSpace ? matchingSpace.label : (source.display_name || source.source_id))
-            + (source.enabled ? '' : ' (disabled)');
+          const label = matchingSpace ? matchingSpace.label : (source.display_name || source.source_id);
+          title.textContent = (label === 'All mounted documents' ?
+            t('sourceDefaultLabel') : label)
+            + (source.enabled ? '' : ' (' + t('disabledLabel') + ')');
           const stats = document.createElement('div');
           stats.className = 'muted';
           const number = value => Number(value || 0);
@@ -1249,7 +1389,7 @@ HTML = """<!doctype html>
         appendLog(t('searchFinished'));
       } catch (error) {
         renderSearchResult({ error: 'request_failed', details: String(error) });
-        appendLog('Search request failed: ' + error);
+        appendLog(t('searchFailed') + ': ' + String(error));
       }
     }
 
@@ -1271,7 +1411,7 @@ HTML = """<!doctype html>
         appendLog(t('answerFinished'));
       } catch (error) {
         renderAnswerResult({ error: 'request_failed', details: String(error) });
-        appendLog('Answer request failed: ' + error);
+        appendLog(t('answerFailed') + ': ' + String(error));
       }
     }
 
