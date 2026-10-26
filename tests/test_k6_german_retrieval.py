@@ -87,8 +87,15 @@ def test_broad_fallback_is_explicit_and_not_a_verification(monkeypatch):
         "steht OR urlaub OR tarifvertrag",
     ]
     assert "broad_keyword_search" in answer["uncertainties"]
-    assert answer["evidence_signal"]["status"] == "broad_keyword_matches"
+    assert "no_evidence" in answer["uncertainties"]
+    assert answer["evidence_signal"]["status"] == "no_evidence"
+    assert answer["evidence_signal"]["search_strategy"] == "broad"
+    assert answer["evidence_signal"]["unverified_candidates"] == 1
     assert answer["evidence_signal"]["calibrated"] is False
+    assert answer["citations"] == []
+    assert answer["evidence_refs"] == []
+    assert answer["used_documents"] == []
+    assert answer["confidence"] == 0.0
 
 
 def test_search_without_any_evidence_keeps_explicit_no_evidence(monkeypatch):
