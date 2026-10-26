@@ -567,7 +567,7 @@ HTML = """<!doctype html>
     <main id="main-content">
       <div class="section">
         <!-- PAGE_START:overview -->
-        <section class="simple-home" aria-labelledby="simple-title">
+        <section class="simple-home" id="simple-home" aria-labelledby="simple-title">
           <p class="eyebrow" data-i18n="simpleEyebrow">DEIN WISSEN</p>
           <h1 id="simple-title" data-i18n="simpleTitle">Deine Dateien. Deine Antworten.</h1>
           <p class="lead" data-i18n="simpleLead">Dateien hinzufügen und direkt Fragen stellen. Den Rest übernimmt ToF.</p>
@@ -750,6 +750,24 @@ HTML = """<!doctype html>
   <script>
     const I18N = {
       de: {
+        simpleEyebrow: 'DEIN WISSEN',
+        simpleTitle: 'Deine Dateien. Deine Antworten.',
+        simpleLead: 'Dateien hinzufügen und direkt Fragen stellen. Den Rest übernimmt ToF.',
+        simpleStepOne: '1 · DATEIEN',
+        simpleStepTwo: '2 · FRAGEN',
+        simpleFilesTitle: 'Dateien hinzufügen',
+        simpleQuestionTitle: 'Was möchtest du wissen?',
+        simpleDropText: 'Dateien hier hineinziehen',
+        simpleDropOr: 'oder',
+        simpleChooseFolder: 'Ordner auswählen',
+        simpleFilesHint: 'Nur ausgewählte Dateien werden lokal kopiert und eingelesen. Originale bleiben unverändert.',
+        simplePrivacy: 'Die Dateien bleiben lokal. Kein automatischer Zugriff auf deine anderen Ordner.',
+        simpleMore: 'Weitere Funktionen',
+        simpleAsk: 'Antwort finden',
+        simpleEvidence: 'Quellen und Details',
+        simpleNoEvidence: 'Dazu wurden keine ausreichenden Belege gefunden.',
+        simpleFilesProcessing: 'Dateien werden eingelesen …',
+        simpleFilesReady: 'Dateien bereit. Du kannst jetzt eine Frage stellen.',
         navigationLabel: 'Seitennavigation',
         sourceIndexNow: 'Importierte Dateien jetzt einlesen',
         sourceIndexProgress: 'Dokumente verarbeitet',
@@ -763,8 +781,8 @@ HTML = """<!doctype html>
         sourceIdle: 'Noch keine eigenen Dateien ausgewählt.',
         sourcePrivacyHelp: 'Ordner werden nur mit deiner Freigabe eingelesen. Abgleich und Indexierung erfolgen ausschließlich auf Klick. Falls dein Browser die Freigabe nicht speichern kann, wähle den Ordner erneut.',
         sourceImportRunning: 'Dateien werden lokal importiert …',
-        sourceImportDone: 'Dateien lokal kopiert. Bitte anschließend „Konfigurierte Quelle indexieren“ anklicken.',
-        sourceImportFailed: 'Import fehlgeschlagen. Bitte kleinere Dateien auswählen (maximal 4 MB je Datei).',
+        sourceImportDone: 'Dateien lokal kopiert.',
+        sourceImportFailed: 'Import fehlgeschlagen. Bitte unterstützte Dateien bis 12 MB auswählen.',
         sourceImportSkipped: 'Übersprungene Dateien',
         sourcePermissionDenied: 'Ordnerzugriff nicht erlaubt oder abgebrochen.',
         sourceNoConnectedFolder: 'Noch kein Ordner verbunden. Bitte zunächst einen Ordner auswählen.',
@@ -962,6 +980,24 @@ HTML = """<!doctype html>
         selectSource: 'Diese Quelle durchsuchen',
       },
       en: {
+        simpleEyebrow: 'YOUR KNOWLEDGE',
+        simpleTitle: 'Your files. Your answers.',
+        simpleLead: 'Add files and ask questions. ToF handles the rest.',
+        simpleStepOne: '1 · FILES',
+        simpleStepTwo: '2 · ASK',
+        simpleFilesTitle: 'Add files',
+        simpleQuestionTitle: 'What would you like to know?',
+        simpleDropText: 'Drop files here',
+        simpleDropOr: 'or',
+        simpleChooseFolder: 'Choose folder',
+        simpleFilesHint: 'Only selected files are copied and indexed locally. Originals stay unchanged.',
+        simplePrivacy: 'Files remain local. No automatic access to your other folders.',
+        simpleMore: 'More options',
+        simpleAsk: 'Find answer',
+        simpleEvidence: 'Sources and details',
+        simpleNoEvidence: 'No sufficient evidence was found for this question.',
+        simpleFilesProcessing: 'Indexing files …',
+        simpleFilesReady: 'Files ready. You can ask a question now.',
         navigationLabel: 'Page navigation',
         sourceIndexNow: 'Index imported documents now',
         sourceIndexProgress: 'Documents processed',
@@ -975,8 +1011,8 @@ HTML = """<!doctype html>
         sourceIdle: 'No personal files selected yet.',
         sourcePrivacyHelp: 'Folders are read only with your permission. Sync and indexing happen only when clicked. If your browser cannot save the permission, select the folder again.',
         sourceImportRunning: 'Importing files locally …',
-        sourceImportDone: 'Files copied locally. Next click “Index configured source”.',
-        sourceImportFailed: 'Import failed. Try smaller files (up to 4 MB per file).',
+        sourceImportDone: 'Files copied locally.',
+        sourceImportFailed: 'Import failed. Try supported files up to 12 MB each.',
         sourceImportSkipped: 'Files skipped',
         sourcePermissionDenied: 'Folder access denied or cancelled.',
         sourceNoConnectedFolder: 'No folder connected yet. Select a folder first.',
@@ -1721,6 +1757,11 @@ HTML = """<!doctype html>
         output.textContent = imported + ' · ' + t('sourceImportDone') +
           (skipped ? ' ' + t('sourceImportSkipped') + ': ' + skipped : '');
         if (imported && sourceId) {
+          if (document.getElementById('simple-home')) {
+            output.textContent = t('simpleFilesProcessing') + ' (' + imported + ')';
+            await indexImportedSource(sourceId);
+            return;
+          }
           await loadSourceSpaces();
           const menu = document.getElementById('index-source-select');
           if ([...menu.options].some(opt => opt.value === sourceId)) {
@@ -1737,12 +1778,13 @@ HTML = """<!doctype html>
       }
     }
 
-    async function indexImportedSource() {
+    async function indexImportedSource(selectedSource = null) {
       const button = document.getElementById('source-index-now');
       const status = document.getElementById('source-import-status');
-      const source = document.getElementById('index-source-select').value;
-      if (!source || button.disabled) return;
-      button.disabled = true;
+      const menu = document.getElementById('index-source-select');
+      const source = selectedSource || (menu && menu.value);
+      if (!source || (button && button.disabled)) return;
+      if (button) button.disabled = true;
       let cursor = null;
       let processed = 0;
       let complete = false;
@@ -1767,14 +1809,15 @@ HTML = """<!doctype html>
           }
           cursor = data.next_cursor || null;
         }
-        status.textContent = (complete ? t('sourceIndexDone') :
+        status.textContent = (complete ? t('simpleFilesReady') :
           t('sourceIndexIncomplete')) + ' ' + t('sourceIndexProgress') + ': ' + processed;
-        await refreshSources();
+        if (document.getElementById('source-result')) await refreshSources();
+        await refreshOverview();
       } catch (_) {
         status.textContent = t('sourceIndexIncomplete') + ' ' +
           t('sourceIndexProgress') + ': ' + processed;
       } finally {
-        button.disabled = false;
+        if (button) button.disabled = false;
       }
     }
 
@@ -1933,10 +1976,31 @@ HTML = """<!doctype html>
       }
     }
 
+    function initSimpleDropzone() {
+      const zone = document.getElementById('simple-dropzone');
+      if (!zone) return;
+      for (const eventName of ['dragenter', 'dragover']) {
+        zone.addEventListener(eventName, (event) => {
+          event.preventDefault();
+          zone.classList.add('drag-over');
+        });
+      }
+      for (const eventName of ['dragleave', 'drop']) {
+        zone.addEventListener(eventName, (event) => {
+          event.preventDefault();
+          zone.classList.remove('drag-over');
+          if (eventName === 'drop' && event.dataTransfer && event.dataTransfer.files.length) {
+            importSelectedFiles(event.dataTransfer.files, false);
+          }
+        });
+      }
+    }
+
     applyTheme();
     applyLanguage();
     document.getElementById('log').textContent = t('uiStarted');
     refreshSummary();
+    initSimpleDropzone();
     const params = new URLSearchParams(window.location.search);
     const sourceId = params.get('source_id');
     if (sourceId && sourceId.length <= 64) {
