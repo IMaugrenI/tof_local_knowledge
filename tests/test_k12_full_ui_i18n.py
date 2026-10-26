@@ -104,7 +104,8 @@ const answer = {
                     matching_segments: 1, distinct_documents: 1},
   confidence: 0.45,
 };
-vm.runInContext('renderAnswerResult(answer)', vm.createContext({...ctx, answer}));
+ctx.answer = answer;
+vm.runInContext('renderAnswerResult(answer)', ctx);
 const before = elements['qa-result'].innerHTML;
 vm.runInContext('toggleLanguage()', ctx);
 const after = elements['qa-result'].innerHTML;
