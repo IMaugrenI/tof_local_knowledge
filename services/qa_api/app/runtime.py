@@ -141,16 +141,35 @@ def answer(payload: QaRequest):
                 if hits:
                     strategy = 'broad'
 
-    if not hits:
+    # OR queries are discovery-only: one matching word is not evidence that a
+    # segment answers the question. In particular, hits for "private" or
+    # "customer" cannot substantiate an absent customer contract number.
+    # Without an independent answer-support check we must fail closed.
+    if not hits or strategy == 'broad':
+        unverified_broad = strategy == 'broad'
+        signal = evidence_signal([], 'none')
+        uncertainties = ['no_evidence']
+        if unverified_broad:
+            # Diagnostic metadata only: unverified retrievals are NOT citations.
+            signal['search_strategy'] = 'broad'
+            signal['unverified_candidates'] = len(hits)
+            uncertainties.append('broad_keyword_search')
+        message = (
+            'Keine belastbare Antwort gefunden. Eine breite Stichwortsuche '
+            'lieferte nur ungeprüfte Treffer, keine ausreichenden Antwortbelege.'
+            if unverified_broad else
+            'Keine belastbare Antwort gefunden. Es wurden keine passenden '
+            'Fundstellen im erlaubten Scope gefunden.'
+        )
         return {
-            'answer_text': 'Keine belastbare Antwort gefunden. Es wurden keine passenden Fundstellen im erlaubten Scope gefunden.',
+            'answer_text': message,
             'confidence': 0.0,
             'citations': [],
             'used_documents': [],
             'evidence_refs': [],
-            'uncertainties': ['no_evidence'],
+            'uncertainties': uncertainties,
             'search_queries': attempted_queries,
-            'evidence_signal': evidence_signal([], 'none'),
+            'evidence_signal': signal,
         }
 
     primary = hits[0]
@@ -161,10 +180,7 @@ def answer(payload: QaRequest):
         f"- [{hit['citation_label']}] {hit['preview_text']}" for hit in hits
     ]
 
-    if strategy == 'broad':
-        uncertainties = ['broad_keyword_search', 'confidence_uncalibrated']
-    else:
-        uncertainties = ['confidence_uncalibrated']
+    uncertainties = ['confidence_uncalibrated']
     # Confidence remains a compatibility-only heuristic, never a calibrated
     # probability of factual correctness.
     if len({hit['document_id'] for hit in hits}) < 2:
