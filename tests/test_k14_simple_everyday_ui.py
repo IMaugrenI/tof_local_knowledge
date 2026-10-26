@@ -198,7 +198,7 @@ vm.runInContext('importSelectedFiles(selection,false)',ctx,{timeout:2000}).then(
   const batches=requests.filter(x=>x==='/api/index-batch').length;
   process.stdout.write(JSON.stringify({
     imports,batches,indexed,
-    processedNotice: elements['source-import-status'].textContent.includes('Unvollständig') || elements['source-import-status'].textContent.includes('unvollständig'),
+    processedNotice: elements['source-import-status'].textContent.includes('teilweise abgeschlossen'),
   }));
 }).catch(e=>{process.stderr.write(e.stack);process.exitCode=1;});
 """
