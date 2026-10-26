@@ -591,6 +591,7 @@ HTML = """<!doctype html>
               </div>
               <p id="source-import-status" class="hint" role="status" aria-live="polite" data-i18n="simpleFilesHint">Nur ausgewählte Dateien werden lokal kopiert und eingelesen. Originale bleiben unverändert.</p>
               <progress id="source-import-progress" max="100" value="0" style="display:none;width:100%" aria-label="Dateiverarbeitung"></progress>
+              <details id="source-import-errors" style="display:none"><summary data-i18n="simpleFailedFiles">Nicht verarbeitete Dateien</summary><ul id="source-import-error-list"></ul></details>
             </section>
             <section class="simple-card" aria-labelledby="simple-question-title">
               <span class="simple-step" data-i18n="simpleStepTwo">2 · FRAGEN</span>
@@ -769,6 +770,7 @@ HTML = """<!doctype html>
         simpleNoEvidence: 'Dazu wurden keine ausreichenden Belege gefunden.',
         simpleFilesProcessing: 'Dateien werden eingelesen …',
         simpleFilesReady: 'Dateien bereit. Du kannst jetzt eine Frage stellen.',
+        simpleFailedFiles: 'Nicht verarbeitete Dateien',
         navigationLabel: 'Seitennavigation',
         sourceIndexNow: 'Importierte Dateien jetzt einlesen',
         sourceIndexProgress: 'Dokumente verarbeitet',
@@ -999,6 +1001,7 @@ HTML = """<!doctype html>
         simpleNoEvidence: 'No sufficient evidence was found for this question.',
         simpleFilesProcessing: 'Indexing files …',
         simpleFilesReady: 'Files ready. You can ask a question now.',
+        simpleFailedFiles: 'Files not processed',
         navigationLabel: 'Page navigation',
         sourceIndexNow: 'Index imported documents now',
         sourceIndexProgress: 'Documents processed',
@@ -1731,6 +1734,21 @@ HTML = """<!doctype html>
       });
     }
 
+    function showImportFailures(paths) {
+      const details = document.getElementById('source-import-errors');
+      const list = document.getElementById('source-import-error-list');
+      if (!details || !list) return;
+      list.replaceChildren();
+      const unique = [...new Set(paths.filter(x => typeof x === 'string' && x))].slice(0, 100);
+      for (const path of unique) {
+        const entry = document.createElement('li');
+        entry.textContent = path; // Treat file paths as untrusted display text.
+        list.appendChild(entry);
+      }
+      details.style.display = unique.length ? 'block' : 'none';
+      details.open = unique.length > 0;
+    }
+
     function showImportProgress(stage, done = 0, total = 0) {
       const bar = document.getElementById('source-import-progress');
       if (!bar) return;
@@ -1750,6 +1768,7 @@ HTML = """<!doctype html>
         item.file ? item : {file: item, name: isFolder ?
           (item.webkitRelativePath || item.name) : item.name});
       if (!files.length) { output.textContent = t('sourceIdle'); return; }
+      showImportFailures([]);
       const supported = /\.(txt|md|log|py|rst|ini|cfg|yaml|yml|json|htm|html|csv|eml|pdf|docx|xlsx)$/i;
       const candidates = files.filter(x =>
         supported.test(x.name) && x.file.size <= 12 * 1024 * 1024 &&
@@ -1835,6 +1854,7 @@ HTML = """<!doctype html>
       let processed = 0;
       let complete = false;
       let failures = 0;
+      const failedPaths = [];
       let stalled = 0;
       try {
         // Reuse the existing manual, bounded eight-document index endpoint.
@@ -1851,6 +1871,9 @@ HTML = """<!doctype html>
           const indexed = Number(data.indexed_this_pass || 0);
           processed += indexed;
           failures += (data.failed || []).length;
+          for (const item of (data.failed || [])) {
+            if (item && typeof item.path === 'string') failedPaths.push(item.path);
+          }
           status.textContent = t('sourceIndexProgress') + ': ' + processed;
           // A broken document must not block the remaining valid documents.
           // Stop safely if successive passes make no progress (e.g. only
@@ -1867,6 +1890,7 @@ HTML = """<!doctype html>
           t('sourceIndexIncomplete')) + ' ' + t('sourceIndexProgress') + ': ' + processed +
           (failures ? ' · ' + t('failedCountLabel') + ': ' + failures : '');
         showImportProgress('idle');
+        showImportFailures(failedPaths);
         if (document.getElementById('source-result')) await refreshSources();
         await refreshOverview();
       } catch (_) {
