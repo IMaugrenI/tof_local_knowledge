@@ -1906,6 +1906,34 @@ def run_ui(host: str = "127.0.0.1", port: int = 8785, open_browser: bool = True)
                 if name in LINKS:
                     self._send(200, "application/json; charset=utf-8", _json_bytes(_open_link(name)))
                     return
+            if action == 'import-files':
+                # Uploads always originate from an explicit browser file picker.
+                # Non-simple action header blocks cross-origin form/CSRF posts.
+                origin = self.headers.get("Origin", "")
+                expected = f"http://{host}:{port}"
+                if (origin and origin != expected or
+                        self.headers.get("X-ToF-UI-Action") != "source-import" or
+                        "application/json" not in self.headers.get("Content-Type", "").lower()):
+                    self._send(403, "application/json; charset=utf-8",
+                               _json_bytes({"error": "same_origin_action_required"}))
+                    return
+                try:
+                    length = int(self.headers.get("Content-Length", "0"))
+                    if length < 1 or length > 24 * 1024 * 1024:
+                        raise ValueError("invalid_import_size")
+                    raw = self.rfile.read(length)
+                    if len(raw) != length:
+                        raise ValueError("incomplete_import")
+                    payload = json.loads(raw.decode("utf-8"))
+                    if not isinstance(payload, dict):
+                        raise ValueError("invalid_import_request")
+                    result = import_selected_files(payload.get("files"))
+                except (ValueError, TypeError, UnicodeError):
+                    self._send(400, "application/json; charset=utf-8",
+                               _json_bytes({"error": "invalid_import_request"}))
+                    return
+                self._send(200, "application/json; charset=utf-8", _json_bytes(result))
+                return
             if action == 'index-batch':
                 # JSON-only and same-origin: never allow a cross-site form to
                 # trigger processing, even on a loopback-bound local server.
