@@ -29,7 +29,7 @@ def test_each_browser_route_has_one_active_page_and_only_its_feature(path, page,
     assert 'id="log"' in html
     for other_route, (other_page, other_feature) in PAGES.items():
         assert f'href="{other_route}"' in html
-        if other_page != page:
+        if other_page != page and not (page == "overview" and other_page == "question"):
             assert other_feature not in html
     assert '<!-- PAGE_START:' not in html
     assert '<!-- PAGE_END:' not in html
@@ -38,7 +38,8 @@ def test_each_browser_route_has_one_active_page_and_only_its_feature(path, page,
 def test_old_root_url_becomes_guided_overview_without_losing_question_route():
     assert app._render_page("/") == app._render_page("/uebersicht")
     assert 'id="qa-question"' in app._render_page("/frage-stellen")
-    assert 'id="qa-question"' not in app._render_page("/")
+    assert 'id="qa-question"' in app._render_page("/")
+    assert 'id="simple-dropzone"' in app._render_page("/")
 
 
 def test_unknown_route_is_not_served_as_a_valid_page():
