@@ -159,7 +159,7 @@ HTML = """<!doctype html>
       justify-content: space-between;
       align-items: center;
       gap: 22px;
-      margin-bottom: 58px;
+      margin-bottom: 20px;
     }
 
     .brand {
@@ -343,7 +343,7 @@ HTML = """<!doctype html>
     }
     .hero-point span { color: var(--gold); font-size: .76rem; letter-spacing: .1em; }
 
-    .section { padding-top: 48px; }
+    .section { padding-top: 18px; }
 
     .answer-panel, .search-panel, details.tech-panel {
       border: 1px solid var(--border);
