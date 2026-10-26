@@ -15,6 +15,7 @@ from urllib.parse import parse_qs, urlparse
 from tof_cli.commands import check, doctor, down, setup, status, up
 from tof_cli.knowledge.index_ops import index_configured_source
 from tof_cli.knowledge.source_spaces import discover_source_spaces
+from tof_cli.knowledge.source_imports import import_selected_files
 from tof_cli.core.env_ops import read_env
 from tof_cli.ui.service_ops import classify_error, configured_targets, parse_bounded_json
 
@@ -251,6 +252,13 @@ HTML = """<!doctype html>
     }
 
 
+    .source-onboarding {
+      border: 1px solid var(--border-strong); border-radius: 17px;
+      padding: 23px; background: var(--surface);
+      margin: 18px 0 22px;
+    }
+    .source-onboarding h3 { margin-bottom: 7px; }
+    .source-onboarding .actions { margin: 14px 0; }
     .overview-hero { max-width: 850px; margin-bottom: 22px; }
     .overview-hero h1 { font-size: clamp(2.4rem, 5vw, 4.2rem); }
     .overview-hero .lead { max-width: 740px; }
@@ -650,7 +658,21 @@ HTML = """<!doctype html>
           <div class="hint" data-i18n="sourcesHint">Welche Dokumente bereits indexiert sind und welche noch Aufmerksamkeit brauchen.</div>
           <button class="secondary" onclick="refreshSources()" data-i18n="refreshSources">Quellen aktualisieren</button>
           <div class="result" id="source-result" aria-live="polite" data-i18n="sourcesEmpty">Hier erscheinen die erfassten Quellen und Indexstände.</div>
-          <details class="advanced-options">
+          <div class="source-onboarding">
+            <h3 data-i18n="sourceAddTitle">Eigene Dokumente hinzufügen</h3>
+            <p class="hint" data-i18n="sourceAddHelp">Wähle Dateien oder einen Ordner aus. ToF erstellt eine lokale Kopie im freigegebenen Dokumentenbereich. Originale werden nicht verändert.</p>
+            <div class="actions">
+              <button type="button" class="secondary" onclick="document.getElementById('source-files').click()" data-i18n="sourcePickFiles">Dateien auswählen</button>
+              <button type="button" class="secondary" onclick="chooseFolder()" data-i18n="sourcePickFolder">Ordner verbinden</button>
+              <button type="button" class="ghost" onclick="syncFolder()" data-i18n="sourceResyncFolder">Ordner erneut abgleichen</button>
+            </div>
+            <input type="file" multiple id="source-files" style="display:none" onchange="importSelectedFiles(this.files, false)">
+            <input type="file" multiple webkitdirectory directory id="source-folder" style="display:none" onchange="importSelectedFiles(this.files, true)">
+            <p class="hint" id="source-import-status" role="status" aria-live="polite" data-i18n="sourceIdle">Noch keine eigenen Dateien ausgewählt.</p>
+            <button type="button" class="secondary" id="source-index-now" disabled onclick="indexImportedSource()" data-i18n="sourceIndexNow">Importierte Dateien jetzt einlesen</button>
+            <p class="hint" data-i18n="sourcePrivacyHelp">Ordnerzugriff erfolgt nur mit deiner Freigabe. Abgleich und Indexierung starten ausschließlich auf Klick. Bei Browsern ohne dauerhafte Ordnerfreigabe den Ordner erneut auswählen.</p>
+          </div>
+          <details class="advanced-options" id="index-advanced">
           <summary data-i18n="manualIndexOptions">Dokumente manuell einlesen (optional)</summary>
           <label class="hint" for="index-source-select" data-i18n="indexSourceLabel">Zu indexierenden Quellenbereich auswählen</label>
           <select id="index-source-select" onchange="resetIndexCursor()" style="display:block;width:100%;padding:10px;margin:8px 0 12px"></select>
@@ -703,6 +725,25 @@ HTML = """<!doctype html>
     const I18N = {
       de: {
         navigationLabel: 'Seitennavigation',
+        sourceIndexNow: 'Importierte Dateien jetzt einlesen',
+        sourceIndexProgress: 'Dokumente verarbeitet',
+        sourceIndexDone: 'Einlesen abgeschlossen. Die Dokumente können jetzt durchsucht werden.',
+        sourceIndexIncomplete: 'Einlesen teilweise abgeschlossen. Bitte offene Dokumente prüfen.',
+        sourceAddTitle: 'Eigene Dokumente hinzufügen',
+        sourceAddHelp: 'Wähle Dateien oder einen Ordner. ToF kopiert sie in den bereits freigegebenen Dokumentenbereich; deine Originaldateien bleiben unverändert.',
+        sourcePickFiles: 'Dateien auswählen',
+        sourcePickFolder: 'Ordner verbinden',
+        sourceResyncFolder: 'Ordner erneut abgleichen',
+        sourceIdle: 'Noch keine eigenen Dateien ausgewählt.',
+        sourcePrivacyHelp: 'Ordner werden nur mit deiner Freigabe eingelesen. Abgleich und Indexierung erfolgen ausschließlich auf Klick. Falls dein Browser die Freigabe nicht speichern kann, wähle den Ordner erneut.',
+        sourceImportRunning: 'Dateien werden lokal importiert …',
+        sourceImportDone: 'Dateien lokal kopiert. Bitte anschließend „Konfigurierte Quelle indexieren“ anklicken.',
+        sourceImportFailed: 'Import fehlgeschlagen. Bitte kleinere Dateien auswählen (maximal 4 MB je Datei).',
+        sourceImportSkipped: 'Übersprungene Dateien',
+        sourcePermissionDenied: 'Ordnerzugriff nicht erlaubt oder abgebrochen.',
+        sourceNoConnectedFolder: 'Noch kein Ordner verbunden. Bitte zunächst einen Ordner auswählen.',
+        sourceNotInSpaces: 'Importiert, aber der Quellenbereich ist nicht verfügbar. Quellenübersicht prüfen, bevor du indexierst.',
+        sourceConnected: 'Ausgewählter Ordner',
         navOverview: 'Übersicht',
         overviewEyebrow: 'DEIN WISSEN IM ÜBERBLICK',
         overviewTitle: 'Was möchtest du heute tun?',
@@ -896,6 +937,25 @@ HTML = """<!doctype html>
       },
       en: {
         navigationLabel: 'Page navigation',
+        sourceIndexNow: 'Index imported documents now',
+        sourceIndexProgress: 'Documents processed',
+        sourceIndexDone: 'Indexing complete. Your documents are now searchable.',
+        sourceIndexIncomplete: 'Indexing only partially finished. Check pending documents.',
+        sourceAddTitle: 'Add your own documents',
+        sourceAddHelp: 'Select files or a folder. ToF copies them into the already approved document area; original files are unchanged.',
+        sourcePickFiles: 'Select files',
+        sourcePickFolder: 'Connect folder',
+        sourceResyncFolder: 'Sync folder again',
+        sourceIdle: 'No personal files selected yet.',
+        sourcePrivacyHelp: 'Folders are read only with your permission. Sync and indexing happen only when clicked. If your browser cannot save the permission, select the folder again.',
+        sourceImportRunning: 'Importing files locally …',
+        sourceImportDone: 'Files copied locally. Next click “Index configured source”.',
+        sourceImportFailed: 'Import failed. Try smaller files (up to 4 MB per file).',
+        sourceImportSkipped: 'Files skipped',
+        sourcePermissionDenied: 'Folder access denied or cancelled.',
+        sourceNoConnectedFolder: 'No folder connected yet. Select a folder first.',
+        sourceNotInSpaces: 'Imported, but this source is not available in the sources list. Check source settings before indexing.',
+        sourceConnected: 'Selected folder',
         navOverview: 'Overview',
         overviewEyebrow: 'YOUR KNOWLEDGE AT A GLANCE',
         overviewTitle: 'What would you like to do?',
@@ -1098,6 +1158,8 @@ HTML = """<!doctype html>
     let lastIndexData = null;
     let lastEvidenceSegment = null;
     let lastOverviewData = null;
+    let connectedFolderHandle = null;
+    let folderFilesFallback = null;
 
     function t(key) {
       return (I18N[currentLanguage] && I18N[currentLanguage][key]) || I18N.de[key] || key;
@@ -1469,6 +1531,225 @@ HTML = """<!doctype html>
       indexCursor = null;
       lastIndexData = null;
       document.getElementById('index-batch-result').textContent = t('indexHint');
+    }
+
+    // Folder handles are retained only by the browser, after the person has
+    // approved access. The Python service never receives a host folder path.
+    function folderStore() {
+      return new Promise((resolve, reject) => {
+        if (!window.indexedDB) { reject(new Error('storage_unavailable')); return; }
+        const request = indexedDB.open('tof_knowledge_folder_permission', 1);
+        request.onupgradeneeded = () => {
+          request.result.createObjectStore('permissions');
+        };
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve(request.result);
+      });
+    }
+
+    async function saveFolderHandle(handle) {
+      try {
+        const db = await folderStore();
+        await new Promise((resolve, reject) => {
+          const tx = db.transaction('permissions', 'readwrite');
+          tx.objectStore('permissions').put(handle, 'sourceFolder');
+          tx.oncomplete = resolve;
+          tx.onerror = () => reject(tx.error);
+        });
+        db.close();
+      } catch (_) { /* Private browsing: session-only connection. */ }
+    }
+
+    async function restoreFolderHandle() {
+      if (connectedFolderHandle) return connectedFolderHandle;
+      try {
+        const db = await folderStore();
+        const handle = await new Promise((resolve, reject) => {
+          const tx = db.transaction('permissions', 'readonly');
+          const req = tx.objectStore('permissions').get('sourceFolder');
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => reject(req.error);
+        });
+        db.close();
+        if (handle && handle.kind === 'directory') connectedFolderHandle = handle;
+      } catch (_) { /* Browser does not support persisted folder handles. */ }
+      return connectedFolderHandle;
+    }
+
+    async function chooseFolder() {
+      if (!window.showDirectoryPicker) {
+        document.getElementById('source-folder').click();
+        return;
+      }
+      try {
+        connectedFolderHandle = await window.showDirectoryPicker({mode: 'read'});
+        await saveFolderHandle(connectedFolderHandle);
+        await syncFolder();
+      } catch (_) {
+        document.getElementById('source-import-status').textContent =
+          t('sourcePermissionDenied');
+      }
+    }
+
+    async function walkFolder(handle, prefix, output, state, depth = 0) {
+      if (depth > 9 || state.scanned >= 300) { state.skipped += 1; return; }
+      for await (const [name, entry] of handle.entries()) {
+        if (state.scanned++ >= 300) { state.skipped += 1; break; }
+        if (name.startsWith('.')) { state.skipped += 1; continue; }
+        const rel = prefix + '/' + name;
+        if (entry.kind === 'directory') {
+          await walkFolder(entry, rel, output, state, depth + 1);
+        } else if (entry.kind === 'file') {
+          const file = await entry.getFile();
+          output.push({file, name: rel});
+        }
+      }
+    }
+
+    async function syncFolder() {
+      const output = document.getElementById('source-import-status');
+      const handle = await restoreFolderHandle();
+      if (!handle) {
+        // File picker fallback for Firefox and non-Chromium browsers.
+        document.getElementById('source-folder').click();
+        return;
+      }
+      try {
+        const permission = await handle.queryPermission({mode: 'read'});
+        if (permission !== 'granted' &&
+            await handle.requestPermission({mode: 'read'}) !== 'granted') {
+          output.textContent = t('sourcePermissionDenied');
+          return;
+        }
+        output.textContent = t('sourceImportRunning');
+        const files = [];
+        const state = {scanned: 0, skipped: 0};
+        await walkFolder(handle, handle.name, files, state);
+        await importSelectedFiles(files, true, state.skipped);
+      } catch (_) {
+        output.textContent = t('sourcePermissionDenied');
+      }
+    }
+
+    function fileAsBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = reject;
+        reader.onload = () => resolve(String(reader.result).split(',', 2)[1]);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function importSelectedFiles(selection, isFolder, previousSkipped = 0) {
+      const output = document.getElementById('source-import-status');
+      const files = Array.from(selection || [], item =>
+        item.file ? item : {file: item, name: isFolder ?
+          (item.webkitRelativePath || item.name) : item.name});
+      if (!files.length) { output.textContent = t('sourceIdle'); return; }
+      const supported = /\.(txt|md|log|py|rst|ini|cfg|yaml|yml|json|htm|html|csv|eml|pdf|docx|xlsx)$/i;
+      const candidates = files.filter(x =>
+        supported.test(x.name) && x.file.size <= 12 * 1024 * 1024 &&
+        x.name.length <= 600 && x.name.split('/').length <= 12 &&
+        !x.name.includes('\\\\') &&
+        x.name.split('/').every(part => part && !part.startsWith('.') &&
+          !part.includes(':')));
+      let skipped = previousSkipped + files.length - candidates.length;
+      let imported = 0;
+      let sourceId = null;
+      output.textContent = t('sourceImportRunning');
+      try {
+        let batch = [];
+        let bytes = 0;
+        async function send() {
+          if (!batch.length) return;
+          const payload = [];
+          for (const item of batch) {
+            payload.push({name: item.name, data: await fileAsBase64(item.file)});
+          }
+          const response = await fetch('/api/import-files', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json',
+                      'X-ToF-UI-Action': 'source-import'},
+            body: JSON.stringify({files: payload}),
+          });
+          const data = await response.json();
+          if (!response.ok || data.status !== 'ok') {
+            throw new Error(data.error || data.status || 'import_failed');
+          }
+          imported += data.copied || 0;
+          sourceId = data.source_id;
+          output.textContent = t('sourceIndexProgress') + ': ' + imported +
+            (skipped ? ' · ' + t('sourceImportSkipped') + ': ' + skipped : '');
+          batch = [];
+          bytes = 0;
+        }
+        for (const item of candidates.slice(0, 300)) {
+          if (batch.length >= 4 || bytes + item.file.size > 15 * 1024 * 1024) {
+            await send();
+          }
+          batch.push(item);
+          bytes += item.file.size;
+        }
+        if (candidates.length > 300) skipped += candidates.length - 300;
+        await send();
+        output.textContent = imported + ' · ' + t('sourceImportDone') +
+          (skipped ? ' ' + t('sourceImportSkipped') + ': ' + skipped : '');
+        if (imported && sourceId) {
+          await loadSourceSpaces();
+          const menu = document.getElementById('index-source-select');
+          if ([...menu.options].some(opt => opt.value === sourceId)) {
+            menu.value = sourceId;
+            document.getElementById('source-index-now').disabled = false;
+          } else {
+            output.textContent = t('sourceNotInSpaces');
+            document.getElementById('source-index-now').disabled = true;
+          }
+        }
+      } catch (error) {
+        output.textContent = t('sourceImportFailed') +
+          (imported ? ' (' + imported + ' ' + t('sourceTotal') + ')' : '');
+      }
+    }
+
+    async function indexImportedSource() {
+      const button = document.getElementById('source-index-now');
+      const status = document.getElementById('source-import-status');
+      const source = document.getElementById('index-source-select').value;
+      if (!source || button.disabled) return;
+      button.disabled = true;
+      let cursor = null;
+      let processed = 0;
+      let complete = false;
+      try {
+        // Reuse the existing manual, bounded eight-document index endpoint.
+        for (let batch = 0; batch < 45; batch++) {
+          const response = await fetch('/api/index-batch', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({space_id: source, cursor}),
+          });
+          const data = await response.json();
+          if (!response.ok || !['ok', 'partial'].includes(data.status)) {
+            throw new Error('index_failed');
+          }
+          processed += Number(data.indexed_this_pass || 0);
+          status.textContent = t('sourceIndexProgress') + ': ' + processed;
+          if ((data.failed || []).length) break;
+          if (!data.page_has_more && !data.remaining_in_sample) {
+            complete = true;
+            break;
+          }
+          cursor = data.next_cursor || null;
+        }
+        status.textContent = (complete ? t('sourceIndexDone') :
+          t('sourceIndexIncomplete')) + ' ' + t('sourceIndexProgress') + ': ' + processed;
+        await refreshSources();
+      } catch (_) {
+        status.textContent = t('sourceIndexIncomplete') + ' ' +
+          t('sourceIndexProgress') + ': ' + processed;
+      } finally {
+        button.disabled = false;
+      }
     }
 
     function renderIndexBatchResult(outcome) {
@@ -1855,6 +2136,34 @@ def run_ui(host: str = "127.0.0.1", port: int = 8785, open_browser: bool = True)
                 if name in LINKS:
                     self._send(200, "application/json; charset=utf-8", _json_bytes(_open_link(name)))
                     return
+            if action == 'import-files':
+                # Uploads always originate from an explicit browser file picker.
+                # Non-simple action header blocks cross-origin form/CSRF posts.
+                origin = self.headers.get("Origin", "")
+                expected = f"http://{host}:{port}"
+                if (origin and origin != expected or
+                        self.headers.get("X-ToF-UI-Action") != "source-import" or
+                        "application/json" not in self.headers.get("Content-Type", "").lower()):
+                    self._send(403, "application/json; charset=utf-8",
+                               _json_bytes({"error": "same_origin_action_required"}))
+                    return
+                try:
+                    length = int(self.headers.get("Content-Length", "0"))
+                    if length < 1 or length > 24 * 1024 * 1024:
+                        raise ValueError("invalid_import_size")
+                    raw = self.rfile.read(length)
+                    if len(raw) != length:
+                        raise ValueError("incomplete_import")
+                    payload = json.loads(raw.decode("utf-8"))
+                    if not isinstance(payload, dict):
+                        raise ValueError("invalid_import_request")
+                    result = import_selected_files(payload.get("files"))
+                except (ValueError, TypeError, UnicodeError):
+                    self._send(400, "application/json; charset=utf-8",
+                               _json_bytes({"error": "invalid_import_request"}))
+                    return
+                self._send(200, "application/json; charset=utf-8", _json_bytes(result))
+                return
             if action == 'index-batch':
                 # JSON-only and same-origin: never allow a cross-site form to
                 # trigger processing, even on a loopback-bound local server.
