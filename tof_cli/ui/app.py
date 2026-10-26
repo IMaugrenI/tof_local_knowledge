@@ -1203,7 +1203,11 @@ HTML = """<!doctype html>
     }
 
     async function runAction(action) {
-      appendLog(`${t('runningAction')}: ${action} ...`);
+      const actionLabels = {
+        setup: 'setupButton', up: 'upButton', check: 'checkButton',
+        status: 'statusButton', doctor: 'doctorButton', down: 'downButton',
+      };
+      appendLog(`${t('runningAction')}: ${t(actionLabels[action] || action)} ...`);
       const response = await fetch(`/api/${action}`, { method: 'POST' });
       const data = await response.json();
       appendLog(JSON.stringify(data, null, 2));
@@ -1211,7 +1215,11 @@ HTML = """<!doctype html>
     }
 
     async function openLink(name) {
-      appendLog(`${t('opening')}: ${name} ...`);
+      const linkLabels = {
+        openwebui: 'openWebui', search_docs: 'openSearchDocs',
+        qa_docs: 'openQaDocs', catalog_docs: 'openCatalogDocs',
+      };
+      appendLog(`${t('opening')}: ${t(linkLabels[name] || name)} ...`);
       const response = await fetch(`/api/open/${name}`, { method: 'POST' });
       const data = await response.json();
       appendLog(JSON.stringify(data, null, 2));
@@ -1230,7 +1238,8 @@ HTML = """<!doctype html>
           if (!space.available) return;
           const option = document.createElement('option');
           option.value = space.id;
-          option.textContent = space.label + ' (' + space.id + ')';
+          option.textContent = (space.label === 'All mounted documents' ?
+            t('sourceDefaultLabel') : space.label) + ' (' + space.id + ')';
           menu.appendChild(option);
         });
         if ([...menu.options].some(option => option.value === current)) menu.value = current;
@@ -1244,7 +1253,23 @@ HTML = """<!doctype html>
 
     function resetIndexCursor() {
       indexCursor = null;
+      lastIndexData = null;
       document.getElementById('index-batch-result').textContent = t('indexHint');
+    }
+
+    function renderIndexBatchResult(outcome) {
+      const result = document.getElementById('index-batch-result');
+      if (outcome.failed) {
+        const data = outcome.data;
+        result.textContent = t('indexFailed') + ' ' +
+          friendlyIssue(data.error || data.detail);
+        return;
+      }
+      const data = outcome.data;
+      result.textContent = t('indexSuccess') + ': ' + (data.indexed_this_pass || 0) +
+        ' / ' + (data.files_scanned || 0) + ' ' + t('scannedLabel') + '. ' +
+        (data.failed || []).length + ' ' + t('failedCountLabel') + '. ' +
+        (data.page_has_more ? t('indexPage') : t('indexFinished'));
     }
 
     async function runIndexBatch() {
@@ -1262,18 +1287,11 @@ HTML = """<!doctype html>
           }),
         });
         const data = await response.json();
-        if (!response.ok || data.status === 'error') {
-          result.textContent = t('indexFailed') + ' '
-            + friendlyIssue(data.error || data.detail)
-            + ' (' + (data.detail || data.error || 'unknown') + ')';
-        } else {
+        const failed = !response.ok || data.status === 'error';
+        lastIndexData = { data, failed };
+        renderIndexBatchResult(lastIndexData);
+        if (!failed) {
           indexCursor = data.next_cursor || null;
-          // The selected source remains available through the source card's
-          // search link; do not access inputs belonging to another page.
-          result.textContent = t('indexSuccess') + ': ' + (data.indexed_this_pass || 0)
-            + ' / ' + (data.files_scanned || 0) + ' scanned. '
-            + (data.failed || []).length + ' failed. '
-            + (data.page_has_more ? t('indexPage') : t('indexFinished'));
           await refreshSources();
         }
       } catch (error) {
@@ -1304,8 +1322,10 @@ HTML = """<!doctype html>
           panel.className = 'result-card';
           const title = document.createElement('strong');
           const matchingSpace = availableSourceSpaces.find(space => space.id === source.source_id);
-          title.textContent = (matchingSpace ? matchingSpace.label : (source.display_name || source.source_id))
-            + (source.enabled ? '' : ' (disabled)');
+          const label = matchingSpace ? matchingSpace.label : (source.display_name || source.source_id);
+          title.textContent = (label === 'All mounted documents' ?
+            t('sourceDefaultLabel') : label)
+            + (source.enabled ? '' : ' (' + t('disabledLabel') + ')');
           const stats = document.createElement('div');
           stats.className = 'muted';
           const number = value => Number(value || 0);
@@ -1366,7 +1386,7 @@ HTML = """<!doctype html>
         appendLog(t('searchFinished'));
       } catch (error) {
         renderSearchResult({ error: 'request_failed', details: String(error) });
-        appendLog('Search request failed: ' + error);
+        appendLog(t('searchFailed') + ': ' + String(error));
       }
     }
 
@@ -1388,7 +1408,7 @@ HTML = """<!doctype html>
         appendLog(t('answerFinished'));
       } catch (error) {
         renderAnswerResult({ error: 'request_failed', details: String(error) });
-        appendLog('Answer request failed: ' + error);
+        appendLog(t('answerFailed') + ': ' + String(error));
       }
     }
 
