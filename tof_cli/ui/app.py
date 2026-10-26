@@ -590,6 +590,7 @@ HTML = """<!doctype html>
                 <input type="file" multiple webkitdirectory directory id="source-folder" style="display:none" onchange="importSelectedFiles(this.files, true)">
               </div>
               <p id="source-import-status" class="hint" role="status" aria-live="polite" data-i18n="simpleFilesHint">Nur ausgewählte Dateien werden lokal kopiert und eingelesen. Originale bleiben unverändert.</p>
+              <progress id="source-import-progress" max="100" value="0" style="display:none;width:100%" aria-label="Dateiverarbeitung"></progress>
             </section>
             <section class="simple-card" aria-labelledby="simple-question-title">
               <span class="simple-step" data-i18n="simpleStepTwo">2 · FRAGEN</span>
@@ -1730,6 +1731,19 @@ HTML = """<!doctype html>
       });
     }
 
+    function showImportProgress(stage, done = 0, total = 0) {
+      const bar = document.getElementById('source-import-progress');
+      if (!bar) return;
+      bar.style.display = stage === 'idle' ? 'none' : 'block';
+      if (stage === 'index') {
+        bar.removeAttribute('value'); // Unknown number of scan/index passes.
+      } else {
+        bar.value = total > 0 ? Math.min(100, Math.round(100 * done / total)) : 0;
+      }
+      bar.setAttribute('aria-label', stage === 'index' ? t('simpleFilesProcessing') :
+        t('sourceImportRunning'));
+    }
+
     async function importSelectedFiles(selection, isFolder, previousSkipped = 0) {
       const output = document.getElementById('source-import-status');
       const files = Array.from(selection || [], item =>
@@ -1746,7 +1760,8 @@ HTML = """<!doctype html>
       let skipped = previousSkipped + files.length - candidates.length;
       let imported = 0;
       let sourceId = null;
-      output.textContent = t('sourceImportRunning');
+      output.textContent = t('sourceImportRunning') + ' (0/' + candidates.length + ')';
+      showImportProgress('copy', 0, candidates.length);
       try {
         let batch = [];
         let bytes = 0;
@@ -1768,8 +1783,9 @@ HTML = """<!doctype html>
           }
           imported += data.copied || 0;
           sourceId = data.source_id;
-          output.textContent = t('sourceIndexProgress') + ': ' + imported +
+          output.textContent = t('sourceImportRunning') + ' (' + imported + '/' + candidates.length + ')' +
             (skipped ? ' · ' + t('sourceImportSkipped') + ': ' + skipped : '');
+          showImportProgress('copy', imported, candidates.length);
           batch = [];
           bytes = 0;
         }
@@ -1787,6 +1803,7 @@ HTML = """<!doctype html>
         if (imported && sourceId) {
           if (document.getElementById('simple-home')) {
             output.textContent = t('simpleFilesProcessing') + ' (' + imported + ')';
+            showImportProgress('index');
             await indexImportedSource(sourceId);
             return;
           }
@@ -1803,6 +1820,7 @@ HTML = """<!doctype html>
       } catch (error) {
         output.textContent = t('sourceImportFailed') +
           (imported ? ' (' + imported + ' ' + t('sourceTotal') + ')' : '');
+        showImportProgress('idle');
       }
     }
 
@@ -1848,12 +1866,14 @@ HTML = """<!doctype html>
         status.textContent = (complete && !failures ? t('simpleFilesReady') :
           t('sourceIndexIncomplete')) + ' ' + t('sourceIndexProgress') + ': ' + processed +
           (failures ? ' · ' + t('failedCountLabel') + ': ' + failures : '');
+        showImportProgress('idle');
         if (document.getElementById('source-result')) await refreshSources();
         await refreshOverview();
       } catch (_) {
         status.textContent = t('sourceIndexIncomplete') + ' ' +
           t('sourceIndexProgress') + ': ' + processed;
       } finally {
+        showImportProgress('idle');
         if (button) button.disabled = false;
       }
     }
