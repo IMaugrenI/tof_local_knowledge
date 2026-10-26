@@ -94,6 +94,9 @@ def test_source_chooser_visible_with_manual_indexing_and_privacy_text():
     assert 'onclick="syncFolder()"' in html
     assert 'id="source-import-status"' in html
     assert 'id="index-batch-button"' in html
+    assert 'id="source-index-now"' in html
+    assert 'onclick="indexImportedSource()"' in html
+    assert "for (let batch = 0; batch < 45; batch++)" in html
     assert 'id="index-advanced"' in html
     assert "X-ToF-UI-Action" in html
     assert "indexedDB.open('tof_knowledge_folder_permission', 1)" in html
