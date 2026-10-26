@@ -119,7 +119,8 @@ const result = {
   englishEvidenceStatus: after.includes('Evidence status'),
   englishUncertainty: after.includes('Limited independent sources'),
   unchangedSourceQuote: after.includes('Vacation requests are due two weeks early'),
-  oldGermanGone: !after.includes('Stärkster Treffer aus'),
+  // Keep raw API JSON unchanged in expandable technical details; check the visible panel only.
+  oldGermanGone: !after.split('<details><summary>', 1)[0].includes('Stärkster Treffer aus'),
   noEvidenceEnglish: negative.includes('No reliable answer found'),
   englishLang: document.documentElement.lang === 'en',
 };
