@@ -7,6 +7,7 @@ from tof_cli.ui import app
 
 
 PAGES = {
+    "/uebersicht": ("overview", 'id="overview-status-title"'),
     "/frage-stellen": ("question", 'id="qa-question"'),
     "/dokumente-durchsuchen": ("search", 'id="search-query"'),
     "/beleg-pruefen": ("evidence", 'id="evidence-result"'),
@@ -34,8 +35,10 @@ def test_each_browser_route_has_one_active_page_and_only_its_feature(path, page,
     assert '<!-- PAGE_END:' not in html
 
 
-def test_old_root_url_remains_compatible_with_question_page():
-    assert app._render_page("/") == app._render_page("/frage-stellen")
+def test_old_root_url_becomes_guided_overview_without_losing_question_route():
+    assert app._render_page("/") == app._render_page("/uebersicht")
+    assert 'id="qa-question"' in app._render_page("/frage-stellen")
+    assert 'id="qa-question"' not in app._render_page("/")
 
 
 def test_unknown_route_is_not_served_as_a_valid_page():
