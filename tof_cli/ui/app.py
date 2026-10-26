@@ -703,6 +703,40 @@ HTML = """<!doctype html>
     const I18N = {
       de: {
         navigationLabel: 'Seitennavigation',
+        navOverview: 'Übersicht',
+        overviewEyebrow: 'DEIN WISSEN IM ÜBERBLICK',
+        overviewTitle: 'Was möchtest du heute tun?',
+        overviewLead: 'Du kannst Fragen stellen, Dokumente durchsuchen und jede verwendete Textstelle prüfen. Hier findest du den richtigen Einstieg.',
+        overviewLoading: 'Dokumentenstatus wird geladen …',
+        overviewLoadingHelp: 'Die vorhandenen lokalen Quellen werden geprüft.',
+        overviewManageSources: 'Quellen verwalten',
+        overviewReady: 'Dokumente bereit',
+        overviewReadyHelp: 'Dokumente indexiert. Du kannst jetzt fragen oder suchen.',
+        overviewEmpty: 'Noch keine Dokumente indexiert',
+        overviewEmptyHelp: 'Öffne Quellen & Index und lies eine Quelle manuell ein.',
+        overviewUnavailable: 'Quellenstatus nicht erreichbar',
+        overviewUnavailableHelp: 'Öffne Einrichtung & technische Details und prüfe den Dienstestatus.',
+        overviewStepAsk: 'START · FRAGEN',
+        overviewStepSearch: 'ALTERNATIV · SUCHEN',
+        overviewStepSources: 'VORBEREITUNG · QUELLEN',
+        overviewStepEvidence: 'DANACH · PRÜFEN',
+        overviewAskHelp: 'Du hast eine konkrete Frage? Suche eine Antwort mit sichtbaren Quellen.',
+        overviewSearchHelp: 'Du suchst eine Datei oder Textstelle? Durchsuche deine indexierten Dokumente.',
+        overviewSourcesHelp: 'Sieh nach, welche Dokumente bereitstehen, oder starte die Indexierung manuell.',
+        overviewEvidenceHelp: 'Öffne aus einer Antwort oder einem Suchtreffer die Originaltextstelle.',
+        overviewOpenAsk: 'Zur Frage →',
+        overviewOpenSearch: 'Zur Suche →',
+        overviewOpenSources: 'Zu den Quellen →',
+        overviewOpenEvidence: 'Zur Belegprüfung →',
+        questionGuide: 'Gib deine Frage ein. Du siehst, welche Dokumente die Antwort belegen – oder dass Belege fehlen.',
+        searchGuide: 'Suche nach einem Begriff. Öffne anschließend eine Fundstelle, um den Originaltext zu lesen.',
+        evidenceGuide: 'Hier erscheint die Originaltextstelle, nachdem du in Suche oder Antwort auf „Textstelle ansehen“ geklickt hast.',
+        sourcesGuide: 'Prüfe zuerst, welche Dokumente bereitstehen. Nur bei Bedarf kannst du eine Quelle manuell indexieren.',
+        optionalFilters: 'Erweiterte Optionen (optional)',
+        manualIndexOptions: 'Dokumente manuell einlesen (optional)',
+        backOverview: '← Zur Übersicht',
+        backSearch: '← Zur Suche',
+        findEvidence: 'Fundstelle suchen →',
         qaLimitLabel: 'Maximale Anzahl berücksichtigter Treffer',
         searchLimitLabel: 'Maximale Anzahl Suchtreffer',
         refreshSourceFolders: 'Quellenordner aktualisieren',
@@ -862,6 +896,40 @@ HTML = """<!doctype html>
       },
       en: {
         navigationLabel: 'Page navigation',
+        navOverview: 'Overview',
+        overviewEyebrow: 'YOUR KNOWLEDGE AT A GLANCE',
+        overviewTitle: 'What would you like to do?',
+        overviewLead: 'Ask questions, search documents, and inspect the original passages behind each answer. Start here.',
+        overviewLoading: 'Loading document status …',
+        overviewLoadingHelp: 'Checking the existing local sources.',
+        overviewManageSources: 'Manage sources',
+        overviewReady: 'Documents ready',
+        overviewReadyHelp: 'Documents indexed. You can ask a question or search.',
+        overviewEmpty: 'No documents indexed yet',
+        overviewEmptyHelp: 'Open Sources & Index and manually index a configured source.',
+        overviewUnavailable: 'Source status unavailable',
+        overviewUnavailableHelp: 'Open Setup & technical details and check the services.',
+        overviewStepAsk: 'START · ASK',
+        overviewStepSearch: 'ALTERNATIVE · SEARCH',
+        overviewStepSources: 'PREPARE · SOURCES',
+        overviewStepEvidence: 'THEN · VERIFY',
+        overviewAskHelp: 'Have a specific question? Find an answer with visible evidence.',
+        overviewSearchHelp: 'Looking for a file or passage? Search your indexed documents.',
+        overviewSourcesHelp: 'See which documents are ready, or start indexing manually.',
+        overviewEvidenceHelp: 'Open an original passage from a search result or answer.',
+        overviewOpenAsk: 'Ask a question →',
+        overviewOpenSearch: 'Search documents →',
+        overviewOpenSources: 'View sources →',
+        overviewOpenEvidence: 'Inspect evidence →',
+        questionGuide: 'Enter a question. See which documents support an answer—or when evidence is missing.',
+        searchGuide: 'Search for a term. Then open a match to read the original passage.',
+        evidenceGuide: 'The original passage appears here after selecting “View excerpt” from search results or an answer.',
+        sourcesGuide: 'First check which documents are ready. Only index a source manually if needed.',
+        optionalFilters: 'Advanced options (optional)',
+        manualIndexOptions: 'Index documents manually (optional)',
+        backOverview: '← Back to overview',
+        backSearch: '← Back to search',
+        findEvidence: 'Find an excerpt →',
         qaLimitLabel: 'Maximum number of considered matches',
         searchLimitLabel: 'Maximum number of search results',
         refreshSourceFolders: 'Refresh source folders',
@@ -1029,6 +1097,7 @@ HTML = """<!doctype html>
     let lastAnswerData = null;
     let lastIndexData = null;
     let lastEvidenceSegment = null;
+    let lastOverviewData = null;
 
     function t(key) {
       return (I18N[currentLanguage] && I18N[currentLanguage][key]) || I18N.de[key] || key;
@@ -1076,6 +1145,7 @@ HTML = """<!doctype html>
       if (lastSearchData) renderSearchResult(lastSearchData);
       if (lastAnswerData) renderAnswerResult(lastAnswerData);
       if (lastIndexData) renderIndexBatchResult(lastIndexData);
+      if (lastOverviewData) renderOverviewStatus(lastOverviewData);
       document.getElementById('language-toggle').textContent = t('languageButton');
       document.getElementById('theme-toggle').textContent = currentTheme === 'dark' ? t('themeButtonLight') : t('themeButtonDark');
       localStorage.setItem('tof_local_knowledge_language', currentLanguage);
@@ -1307,9 +1377,42 @@ HTML = """<!doctype html>
       bindEvidenceButtons(root);
     }
 
+    function renderOverviewStatus(data) {
+      const title = document.getElementById('overview-status-title');
+      const detail = document.getElementById('overview-status-detail');
+      if (!title || !detail) return;
+      if (!data || data.error) {
+        title.textContent = t('overviewUnavailable');
+        detail.textContent = t('overviewUnavailableHelp');
+        return;
+      }
+      const indexed = (data.sources || [])
+        .reduce((sum, source) => sum + Number(source.indexed || 0), 0);
+      title.textContent = indexed > 0 ?
+        indexed + ' · ' + t('overviewReady') : t('overviewEmpty');
+      detail.textContent = indexed > 0 ?
+        t('overviewReadyHelp') : t('overviewEmptyHelp');
+    }
+
+    async function refreshOverview() {
+      if (!document.getElementById('overview-status-title')) return;
+      try {
+        const response = await fetch('/api/sources');
+        const data = await response.json();
+        lastOverviewData = response.ok ? data : {error: 'source_status_unavailable'};
+      } catch (error) {
+        lastOverviewData = {error: 'source_status_unavailable'};
+      }
+      renderOverviewStatus(lastOverviewData);
+    }
+
     async function refreshSummary() {
-      await fetch('/api/summary');
-      document.getElementById('next-step').textContent = t('nextStep');
+      try {
+        await fetch('/api/summary');
+      } catch (error) {
+        appendLog(t('issueService'));
+      }
+      await refreshOverview();
       appendLog(t('summaryRefreshed'));
     }
 
