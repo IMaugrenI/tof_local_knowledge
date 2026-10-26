@@ -208,6 +208,48 @@ HTML = """<!doctype html>
 
     button.small { min-height: 38px; padding: 0 12px; font-size: .83rem; }
 
+    .page-nav {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 9px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: var(--surface);
+      overflow-x: auto;
+      scrollbar-width: thin;
+    }
+
+    .page-nav a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 1 0 auto;
+      min-height: 48px;
+      padding: 10px 16px;
+      border-radius: 12px;
+      color: var(--muted);
+      text-decoration: none;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+
+    .page-nav a:hover, .page-nav a:focus-visible {
+      color: var(--text);
+      background: var(--surface-soft);
+    }
+
+    .page-nav a[aria-current="page"] {
+      color: #17120d;
+      background: var(--gold);
+    }
+
+    .page-nav a[aria-current="page"]:hover {
+      color: #17120d;
+      background: var(--gold-bright);
+    }
+
     .hero {
       display: grid;
       grid-template-columns: minmax(0,1.05fr) minmax(340px,.95fr);
@@ -383,6 +425,8 @@ HTML = """<!doctype html>
     @media (max-width: 560px) {
       .wrap { width: min(calc(100% - 26px),1180px); padding-top: 16px; }
       .topbar { flex-direction: column; }
+      .page-nav { padding: 7px; gap: 5px; }
+      .page-nav a { min-height: 44px; padding: 9px 12px; }
       h1 { font-size: clamp(2.5rem,13vw,3.65rem); }
       .answer-panel, .search-panel { padding: 21px; }
       .options-row { grid-template-columns: 1fr; }
@@ -426,8 +470,17 @@ HTML = """<!doctype html>
       </div>
     </header>
 
+    <nav class="page-nav" aria-label="Navigation">
+      <a href="/quellen-index" data-page-link="sources" data-i18n="navSources">Quellen & Index</a>
+      <a href="/beleg-pruefen" data-page-link="evidence" data-i18n="navEvidence">Beleg prüfen</a>
+      <a href="/dokumente-durchsuchen" data-page-link="search" data-i18n="navSearch">Dokumente durchsuchen</a>
+      <a href="/frage-stellen" data-page-link="question" data-i18n="navAsk">Frage stellen</a>
+    </nav>
+
     <main id="main-content">
-      <section class="hero">
+      <div class="section">
+        <!-- PAGE_START:question -->
+        <section class="hero">
         <div>
           <p class="eyebrow" data-i18n="heroEyebrow">DEINE DOKUMENTE · DEINE QUELLEN</p>
           <h1 data-i18n="heroTitle">Frag deine Dokumente.</h1>
@@ -439,9 +492,8 @@ HTML = """<!doctype html>
           <div class="hero-point"><span>02</span><div data-i18n="heroPointTwo">Antworten zeigen die verwendeten Quellen.</div></div>
           <div class="hero-point"><span>03</span><div data-i18n="heroPointThree">Wenn keine passende Grundlage gefunden wird, bleibt das sichtbar.</div></div>
         </div>
-      </section>
+        </section>
 
-      <section class="section">
         <div class="answer-panel">
           <p class="eyebrow" data-i18n="answerEyebrow">FRAGE STELLEN</p>
           <h2 data-i18n="answerTitle">Was möchtest du aus deinen Dokumenten wissen?</h2>
@@ -457,6 +509,8 @@ HTML = """<!doctype html>
           <div class="result" id="qa-result" role="status" aria-live="polite" data-i18n="noAnswerYet">Hier erscheint deine Antwort mit den dazugehörigen Quellen.</div>
         </div>
 
+        <!-- PAGE_END:question -->
+        <!-- PAGE_START:search -->
         <div class="search-panel">
           <p class="eyebrow" data-i18n="searchEyebrow">DOKUMENTE DURCHSUCHEN</p>
           <h2 data-i18n="searchTitle">Finde passende Stellen direkt.</h2>
@@ -472,6 +526,8 @@ HTML = """<!doctype html>
           <div class="result" id="search-result" role="status" aria-live="polite" data-i18n="noSearchYet">Hier erscheinen passende Fundstellen aus deinen Dokumenten.</div>
         </div>
 
+        <!-- PAGE_END:search -->
+        <!-- PAGE_START:evidence -->
         <section class="search-panel" aria-labelledby="evidence-title">
           <p class="eyebrow" data-i18n="evidenceEyebrow">BELEG PRÜFEN</p>
           <h2 id="evidence-title" data-i18n="evidenceTitle">Textstelle nachvollziehen</h2>
@@ -479,6 +535,8 @@ HTML = """<!doctype html>
           <div class="result" id="evidence-result" aria-live="polite" data-i18n="evidenceEmpty">Wähle eine Fundstelle.</div>
         </section>
 
+        <!-- PAGE_END:evidence -->
+        <!-- PAGE_START:sources -->
         <section class="search-panel" aria-labelledby="sources-title">
           <p class="eyebrow" data-i18n="sourcesEyebrow">QUELLEN & INDEX</p>
           <h2 id="sources-title" data-i18n="sourcesTitle">Deine Quellen im Überblick</h2>
@@ -496,6 +554,7 @@ HTML = """<!doctype html>
           <div class="hint" data-i18n="sourcesLocalOnly">Nur lokale Quellenübersicht. Es ist keine Mehrbenutzerfreigabe aktiv.</div>
         </section>
 
+        <!-- PAGE_END:sources -->
         <div class="status" id="next-step" role="status" aria-live="polite" data-i18n="nextStep">Wenn du ToF zum ersten Mal nutzt, öffne unten „Einrichtung & technische Details“ und starte dort die lokale Umgebung.</div>
 
         <details class="tech-panel">
@@ -524,7 +583,7 @@ HTML = """<!doctype html>
             </details>
           </div>
         </details>
-      </section>
+      </div>
     </main>
 
     <footer class="footer">
@@ -535,6 +594,10 @@ HTML = """<!doctype html>
   <script>
     const I18N = {
       de: {
+        navSources: 'Quellen & Index',
+        navEvidence: 'Beleg prüfen',
+        navSearch: 'Dokumente durchsuchen',
+        navAsk: 'Frage stellen',
         heroEyebrow: 'DEINE DOKUMENTE · DEINE QUELLEN',
         heroTitle: 'Frag deine Dokumente.',
         heroLead: 'Durchsuche deine lokalen Unterlagen oder stelle eine Frage. Antworten zeigen dir, auf welche Dokumente sie sich stützen.',
@@ -656,6 +719,10 @@ HTML = """<!doctype html>
         selectSource: 'Diese Quelle durchsuchen',
       },
       en: {
+        navSources: 'Sources & Index',
+        navEvidence: 'Inspect evidence',
+        navSearch: 'Search documents',
+        navAsk: 'Ask a question',
         heroEyebrow: 'YOUR DOCUMENTS · YOUR SOURCES',
         heroTitle: 'Ask your documents.',
         heroLead: 'Search your local documents or ask a question. Answers show which documents they are based on.',
@@ -852,6 +919,11 @@ HTML = """<!doctype html>
     }
 
     async function inspectEvidence(segmentId) {
+      if (!/^[A-Za-z0-9_-]{1,128}$/.test(segmentId)) return;
+      if (window.location.pathname !== '/beleg-pruefen') {
+        window.location.assign('/beleg-pruefen?segment_id=' + encodeURIComponent(segmentId));
+        return;
+      }
       const panel = document.getElementById('evidence-result');
       panel.textContent = t('evidenceEmpty');
       try {
@@ -1079,10 +1151,8 @@ HTML = """<!doctype html>
             + ' (' + (data.detail || data.error || 'unknown') + ')';
         } else {
           indexCursor = data.next_cursor || null;
-          if (data.source_id) {
-            document.getElementById('search-scope').value = data.source_id;
-            document.getElementById('qa-scope').value = data.source_id;
-          }
+          // The selected source remains available through the source card's
+          // search link; do not access inputs belonging to another page.
           result.textContent = t('indexSuccess') + ': ' + (data.indexed_this_pass || 0)
             + ' / ' + (data.files_scanned || 0) + ' scanned. '
             + (data.failed || []).length + ' failed. '
@@ -1138,9 +1208,8 @@ HTML = """<!doctype html>
           select.textContent = t('selectSource');
           select.disabled = !source.enabled;
           select.addEventListener('click', () => {
-            document.getElementById('search-scope').value = source.source_id;
-            document.getElementById('qa-scope').value = source.source_id;
-            document.getElementById('search-query').focus();
+            window.location.assign('/dokumente-durchsuchen?source_id=' +
+              encodeURIComponent(source.source_id));
           });
           panel.append(title, stats, scan, select);
           if (number(source.pending) > 0) {
@@ -1210,12 +1279,60 @@ HTML = """<!doctype html>
     applyLanguage();
     document.getElementById('log').textContent = t('uiStarted');
     refreshSummary();
-    refreshSources();
-    loadSourceSpaces();
+    const params = new URLSearchParams(window.location.search);
+    const sourceId = params.get('source_id');
+    if (sourceId && sourceId.length <= 64) {
+      const scope = document.getElementById('search-scope') ||
+        document.getElementById('qa-scope');
+      if (scope) scope.value = sourceId;
+    }
+    if (document.getElementById('source-result')) {
+      loadSourceSpaces().then(refreshSources);
+    }
+    if (document.getElementById('evidence-result')) {
+      const segmentId = params.get('segment_id');
+      if (segmentId) inspectEvidence(segmentId);
+    }
   </script>
 </body>
 </html>
 """
+
+
+PAGE_ROUTES = {
+    "/": "question",  # Keep the documented root URL working.
+    "/frage-stellen": "question",
+    "/dokumente-durchsuchen": "search",
+    "/beleg-pruefen": "evidence",
+    "/quellen-index": "sources",
+}
+
+
+def _render_page(path: str) -> str:
+    """Render one navigable page with the shared header, footer and scripts.
+
+    Page markers only control presentation. Backend search/QA/source security
+    remains enforced by the existing API handlers.
+    """
+    page = PAGE_ROUTES[path]
+    html = HTML
+    for name in ("question", "search", "evidence", "sources"):
+        start = f"<!-- PAGE_START:{name} -->"
+        end = f"<!-- PAGE_END:{name} -->"
+        pattern = re.escape(start) + r"(.*?)" + re.escape(end)
+        html, count = re.subn(
+            pattern,
+            lambda match, selected=(name == page): match.group(1) if selected else "",
+            html,
+            count=1,
+            flags=re.DOTALL,
+        )
+        if count != 1:
+            raise RuntimeError(f"Missing UI page markers: {name}")
+    marker = f'data-page-link="{page}"'
+    if html.count(marker) != 1:
+        raise RuntimeError(f"Missing UI navigation link: {page}")
+    return html.replace(marker, f'aria-current="page" {marker}', 1)
 
 
 def _run_action(name: str) -> dict[str, object]:
@@ -1349,8 +1466,9 @@ def run_ui(host: str = "127.0.0.1", port: int = 8785, open_browser: bool = True)
 
         def do_GET(self) -> None:  # noqa: N802
             parsed = urlparse(self.path)
-            if parsed.path == "/":
-                self._send(200, "text/html; charset=utf-8", HTML.encode("utf-8"))
+            if parsed.path in PAGE_ROUTES:
+                self._send(200, "text/html; charset=utf-8",
+                           _render_page(parsed.path).encode("utf-8"))
                 return
             if parsed.path == "/api/summary":
                 self._send(200, "application/json; charset=utf-8", _json_bytes(_summary_payload()))
