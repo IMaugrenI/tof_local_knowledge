@@ -24,6 +24,9 @@ def test_one_primary_screen_and_progressive_disclosure():
     assert 'id="overview-status-title"' in html
     assert "data-i18n=\"simpleMore\"" in html
     assert "id=\"source-import-status\"" in html
+    assert 'id="source-import-progress"' in html
+    assert "showImportProgress('index')" in app.HTML
+    assert "bar.removeAttribute('value')" in app.HTML
 
 
 def test_original_expert_routes_and_apis_remain():
