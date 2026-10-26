@@ -19,17 +19,22 @@ def test_navigation_uses_clear_entry_and_same_four_existing_features():
     assert "http://127.0.0.1:8785" not in nav
 
 
-def test_overview_shows_readable_steps_and_only_readonly_status():
+def test_home_is_one_screen_import_and_question_with_simple_status():
     html = app._render_page("/")
-    assert 'data-i18n="overviewTitle"' in html
+    assert 'data-i18n="simpleTitle"' in html
     assert 'id="overview-status-title"' in html
     assert 'id="overview-status-detail"' in html
-    assert html.count('class="guide-card"') == 4
-    assert '/api/sources' in html  # existing read-only catalog query
+    assert 'id="simple-dropzone"' in html
+    assert 'id="source-files"' in html
+    assert 'id="source-folder"' in html
+    assert 'id="qa-question"' in html
+    assert 'id="qa-result"' in html
+    assert html.count('class="guide-card"') == 0
+    assert '/api/sources' in html
     assert "await refreshOverview()" in html
     assert 'id="index-batch-button"' not in html
-    assert 'id="qa-question"' not in html
     assert 'id="search-query"' not in html
+    assert '<details class="simple-more">' in html
 
 
 @pytest.mark.parametrize(("route", "advanced", "feature"), [
