@@ -15,9 +15,9 @@ from tof_cli.knowledge.source_ops import source_root_from_env
 SUPPORTED = {".txt", ".md", ".log", ".py", ".rst", ".ini", ".cfg",
              ".yaml", ".yml", ".json", ".htm", ".html", ".csv", ".eml",
              ".pdf", ".docx", ".xlsx"}
-MAX_FILES = 8
-MAX_TOTAL_BYTES = 6 * 1024 * 1024
-MAX_FILE_BYTES = 4 * 1024 * 1024
+MAX_FILES = 4
+MAX_TOTAL_BYTES = 16 * 1024 * 1024
+MAX_FILE_BYTES = 12 * 1024 * 1024
 IMPORT_SUBDIR = "Importierte_Dateien"
 
 
