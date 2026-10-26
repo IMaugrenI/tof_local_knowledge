@@ -55,7 +55,14 @@ def evidence(segment_id: str = Path(min_length=1, max_length=128)):
 
 @app.post('/search')
 def search(payload: SearchRequest):
-    sql = '''
+    # Match the indexed segment together with tokenized relative filename.
+    # A CSV row saying "resolved" can then match an "incident" query through
+    # incident_log_sample.csv, without exposing absolute filesystem paths.
+    searchable = (
+        "to_tsvector('simple', s.text_content || ' ' || "
+        "translate(d.relative_path, '_./-', '    '))"
+    )
+    sql = f'''
     SELECT
       d.document_id,
       d.source_id,
@@ -66,13 +73,13 @@ def search(payload: SearchRequest):
       s.segment_kind,
       s.ordinal,
       s.text_content,
-      ts_rank_cd(to_tsvector('simple', s.text_content), websearch_to_tsquery('simple', %s)) AS score
+      ts_rank_cd({searchable}, websearch_to_tsquery('simple', %s)) AS score
     FROM document_segments s
     JOIN documents d ON d.document_id = s.document_id
     JOIN sources source ON source.source_id = d.source_id
     WHERE d.extraction_status = 'done'
       AND source.enabled IS TRUE
-      AND to_tsvector('simple', s.text_content) @@ websearch_to_tsquery('simple', %s)
+      AND {searchable} @@ websearch_to_tsquery('simple', %s)
     '''
     params = [payload.query, payload.query]
     if payload.source_scope:
