@@ -579,7 +579,7 @@ HTML = """<!doctype html>
 
             <details>
               <summary data-i18n="activityLog">Technisches Protokoll</summary>
-              <div class="log"><pre id="log">ToF Knowledge ist bereit.</pre></div>
+              <div class="log"><pre id="log" data-i18n="uiStarted">ToF Knowledge ist bereit.</pre></div>
             </details>
           </div>
         </details>
@@ -701,6 +701,7 @@ HTML = """<!doctype html>
         citations: 'Verwendete Quellen',
         evidenceRefs: 'Nachvollziehbare Fundstellen',
         evidenceSignal: 'Suchbelege (keine Prüfung der Richtigkeit)',
+        evidenceStatus: 'Belegstatus',
         evidenceStrategy: 'Suchweg',
         evidenceSegments: 'Gefundene Textabschnitte',
         evidenceDocuments: 'Unterschiedliche Dokumente',
@@ -859,6 +860,7 @@ HTML = """<!doctype html>
         citations: 'Sources used',
         evidenceRefs: 'Traceable evidence references',
         evidenceSignal: 'Retrieved evidence (not factual verification)',
+        evidenceStatus: 'Evidence status',
         evidenceStrategy: 'Search method',
         evidenceSegments: 'Matching excerpts',
         evidenceDocuments: 'Distinct documents',
@@ -1148,7 +1150,8 @@ HTML = """<!doctype html>
       if (signal) {
         html += '<div class="muted" style="margin-top:10px"><strong>'
           + t('evidenceSignal') + '</strong><br>'
-          + t('evidenceStrategy') + ': ' + escapeHtml(translatedCode('searchStrategy', signal.search_strategy))
+          + t('evidenceStatus') + ': ' + escapeHtml(translatedCode('status', signal.status))
+          + ' · ' + t('evidenceStrategy') + ': ' + escapeHtml(translatedCode('searchStrategy', signal.search_strategy))
           + ' · ' + t('evidenceSegments') + ': ' + escapeHtml(signal.matching_segments || 0)
           + ' · ' + t('evidenceDocuments') + ': ' + escapeHtml(signal.distinct_documents || 0)
           + '</div>';
