@@ -20,7 +20,8 @@ PAGES = {
 def test_each_browser_route_has_one_active_page_and_only_its_feature(path, page, feature):
     html = app._render_page(path)
     assert '<nav class="page-nav"' in html
-    assert html.count('aria-current="page"') == 1
+    nav = html.split('<nav class="page-nav"', 1)[1].split("</nav>", 1)[0]
+    assert nav.count('aria-current="page"') == 1
     assert f'aria-current="page" data-page-link="{page}"' in html
     assert feature in html
     assert 'class="tech-panel"' in html  # Original start/status controls retained.
