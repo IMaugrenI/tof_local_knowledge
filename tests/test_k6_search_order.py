@@ -71,3 +71,9 @@ def test_search_has_stable_order_and_page_metadata(monkeypatch):
     assert "d.extraction_status = 'done'" in cur.query
     assert "source.enabled is true" in cur.query
     assert "s.ordinal asc, s.segment_id asc" in cur.query
+    # A document name such as incident_log_sample.csv is searchable together
+    # with the extracted "resolved" status stored in the same segment.
+    assert cur.query.count("translate(d.relative_path, '_./-', '    ')") == 2
+    assert cur.query.count("to_tsvector('simple', s.text_content || ' ' ||") == 2
+    assert "d.source_id = any(%s)" in cur.query
+
