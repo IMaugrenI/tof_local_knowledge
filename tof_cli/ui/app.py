@@ -470,7 +470,7 @@ HTML = """<!doctype html>
       </div>
     </header>
 
-    <nav class="page-nav" aria-label="Navigation">
+    <nav class="page-nav" aria-label="Navigation" data-i18n-aria-label="navigationLabel">
       <a href="/quellen-index" data-page-link="sources" data-i18n="navSources">Quellen & Index</a>
       <a href="/beleg-pruefen" data-page-link="evidence" data-i18n="navEvidence">Beleg prüfen</a>
       <a href="/dokumente-durchsuchen" data-page-link="search" data-i18n="navSearch">Dokumente durchsuchen</a>
@@ -501,7 +501,7 @@ HTML = """<!doctype html>
             <textarea id="qa-question" aria-label="Frage an deine Dokumente" data-i18n-aria-label="questionLabel" data-i18n-placeholder="questionPlaceholder" placeholder="Zum Beispiel: Was steht in meinen Unterlagen zur Urlaubsregelung?"></textarea>
             <div class="options-row">
               <input id="qa-scope" type="text" aria-label="Suche optional auf bestimmte Quellen begrenzen" data-i18n-aria-label="scopeLabel" data-i18n-placeholder="scopePlaceholder" placeholder="Optional: Suche auf bestimmte Quellen begrenzen">
-              <input id="qa-limit" type="number" min="1" max="10" value="5" aria-label="Maximale Anzahl berücksichtigter Treffer">
+              <input id="qa-limit" type="number" min="1" max="10" value="5" aria-label="Maximale Anzahl berücksichtigter Treffer" data-i18n-aria-label="qaLimitLabel">
             </div>
             <button onclick="runAnswer()" data-i18n="runAnswer">Antwort aus meinen Dokumenten holen</button>
           </div>
@@ -518,7 +518,7 @@ HTML = """<!doctype html>
             <input id="search-query" type="text" aria-label="Dokumente durchsuchen" data-i18n-aria-label="searchLabel" data-i18n-placeholder="searchPlaceholder" placeholder="Wonach möchtest du suchen?">
             <div class="options-row">
               <input id="search-scope" type="text" aria-label="Suche optional auf bestimmte Quellen begrenzen" data-i18n-aria-label="scopeLabel" data-i18n-placeholder="scopePlaceholder" placeholder="Optional: Suche auf bestimmte Quellen begrenzen">
-              <input id="search-limit" type="number" min="1" max="20" value="5" aria-label="Maximale Anzahl Suchtreffer">
+              <input id="search-limit" type="number" min="1" max="20" value="5" aria-label="Maximale Anzahl Suchtreffer" data-i18n-aria-label="searchLimitLabel">
             </div>
             <button class="secondary" onclick="runSearch()" data-i18n="runSearch">Dokumente durchsuchen</button>
           </div>
@@ -544,7 +544,7 @@ HTML = """<!doctype html>
           <button class="secondary" onclick="refreshSources()" data-i18n="refreshSources">Quellen aktualisieren</button>
           <label class="hint" for="index-source-select" data-i18n="indexSourceLabel">Zu indexierenden Quellenbereich auswählen</label>
           <select id="index-source-select" onchange="resetIndexCursor()" style="display:block;width:100%;padding:10px;margin:8px 0 12px"></select>
-          <button class="secondary" type="button" onclick="loadSourceSpaces()">Quellenordner aktualisieren / Refresh source folders</button>
+          <button class="secondary" type="button" onclick="loadSourceSpaces()" data-i18n="refreshSourceFolders">Quellenordner aktualisieren</button>
           <p class="hint" id="index-source-message" aria-live="polite"></p>
           <button class="secondary" id="index-batch-button" onclick="runIndexBatch()" data-i18n="indexBatch">Konfigurierte Quelle indexieren</button>
           <button class="secondary" onclick="resetIndexCursor()" data-i18n="indexReset">Dateidurchlauf neu beginnen</button>
@@ -594,6 +594,39 @@ HTML = """<!doctype html>
   <script>
     const I18N = {
       de: {
+        navigationLabel: 'Seitennavigation',
+        qaLimitLabel: 'Maximale Anzahl berücksichtigter Treffer',
+        searchLimitLabel: 'Maximale Anzahl Suchtreffer',
+        refreshSourceFolders: 'Quellenordner aktualisieren',
+        readOnlyExcerpt: 'Schreibgeschützter Textauszug · bis zu',
+        characters: 'Zeichen',
+        segmentLabel: 'Segment',
+        disabledLabel: 'deaktiviert',
+        sourceDefaultLabel: 'Alle eingebundenen Dokumente',
+        searchHitLabel: 'Suchtreffer',
+        unknownLabel: 'unbekannt',
+        scannedLabel: 'eingelesen',
+        failedCountLabel: 'fehlgeschlagen',
+        noEvidenceBroadText: 'Keine belastbare Antwort gefunden. Eine breite Stichwortsuche lieferte nur ungeprüfte Treffer, keine ausreichenden Antwortbelege.',
+        noEvidenceText: 'Keine belastbare Antwort gefunden. Es wurden keine passenden Fundstellen im erlaubten Scope gefunden.',
+        answerExcerptIntro: 'Belegbasierte Kurzantwort (Quellenauszüge, keine unabhängige Verifikation):',
+        strongestHitIntro: 'Stärkster Treffer aus',
+        evidenceUsedIntro: 'Verwendete Fundstellen:',
+        searchStrategy_original_question: 'Originalfrage',
+        searchStrategy_keywords: 'Suchbegriffe',
+        searchStrategy_keywords_variant: 'Suchbegriffe (Wortvariante)',
+        searchStrategy_broad: 'Breite Stichwortsuche (nicht als Beleg verwendet)',
+        searchStrategy_none: 'Kein Suchtreffer',
+        status_no_evidence: 'Keine ausreichenden Belege',
+        status_single_document_matches: 'Treffer aus einem Dokument',
+        status_multiple_document_matches: 'Treffer aus mehreren Dokumenten',
+        status_broad_keyword_matches: 'Breite Stichworttreffer (ungeprüft)',
+        uncertainty_no_evidence: 'Keine ausreichenden Belege',
+        uncertainty_broad_keyword_search: 'Nur breite Stichworttreffer',
+        uncertainty_confidence_uncalibrated: 'Trefferwert ist keine geprüfte Wahrscheinlichkeit',
+        uncertainty_limited_independent_sources: 'Nur wenige unabhängige Quellen',
+        uncertainty_lexical_variant_not_semantically_verified: 'Wortvariante ohne eigenständige Bedeutungsprüfung',
+        unverifiedCandidates: 'Nicht überprüfte Treffer',
         navSources: 'Quellen & Index',
         navEvidence: 'Beleg prüfen',
         navSearch: 'Dokumente durchsuchen',
@@ -719,6 +752,39 @@ HTML = """<!doctype html>
         selectSource: 'Diese Quelle durchsuchen',
       },
       en: {
+        navigationLabel: 'Page navigation',
+        qaLimitLabel: 'Maximum number of considered matches',
+        searchLimitLabel: 'Maximum number of search results',
+        refreshSourceFolders: 'Refresh source folders',
+        readOnlyExcerpt: 'Read-only excerpt · up to',
+        characters: 'characters',
+        segmentLabel: 'Segment',
+        disabledLabel: 'disabled',
+        sourceDefaultLabel: 'All mounted documents',
+        searchHitLabel: 'Search hit',
+        unknownLabel: 'unknown',
+        scannedLabel: 'scanned',
+        failedCountLabel: 'failed',
+        noEvidenceBroadText: 'No reliable answer found. A broad keyword search returned unverified matches, not sufficient evidence to answer.',
+        noEvidenceText: 'No reliable answer found. No matching evidence was found within the permitted source scope.',
+        answerExcerptIntro: 'Evidence-based excerpt answer (source passages, not independently verified):',
+        strongestHitIntro: 'Strongest match from',
+        evidenceUsedIntro: 'Evidence passages used:',
+        searchStrategy_original_question: 'Original question',
+        searchStrategy_keywords: 'Keywords',
+        searchStrategy_keywords_variant: 'Keywords (word variant)',
+        searchStrategy_broad: 'Broad keyword search (not used as evidence)',
+        searchStrategy_none: 'No matching evidence',
+        status_no_evidence: 'Insufficient evidence',
+        status_single_document_matches: 'Matches from one document',
+        status_multiple_document_matches: 'Matches from multiple documents',
+        status_broad_keyword_matches: 'Broad keyword matches (unverified)',
+        uncertainty_no_evidence: 'Insufficient evidence',
+        uncertainty_broad_keyword_search: 'Broad keyword matches only',
+        uncertainty_confidence_uncalibrated: 'Match score is not a calibrated probability',
+        uncertainty_limited_independent_sources: 'Limited independent sources',
+        uncertainty_lexical_variant_not_semantically_verified: 'Word variant without independent semantic verification',
+        unverifiedCandidates: 'Unverified candidate matches',
         navSources: 'Sources & Index',
         navEvidence: 'Inspect evidence',
         navSearch: 'Search documents',
@@ -845,7 +911,7 @@ HTML = """<!doctype html>
       },
     };
 
-    let currentLanguage = localStorage.getItem('tof_local_knowledge_language') || 'de';
+    let currentLanguage = localStorage.getItem('tof_local_knowledge_language') === 'en' ? 'en' : 'de';
     let currentTheme = localStorage.getItem('tof_local_knowledge_theme') || 'dark';
     let indexCursor = null;
     let availableSourceSpaces = [];
