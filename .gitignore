@@ -33,3 +33,6 @@ Thumbs.db
 .idea/
 # Generated locally by source-candidate packaging
 /dist/
+
+# Private files imported through the local Knowledge UI
+/demo/source_1/Importierte_Dateien/
