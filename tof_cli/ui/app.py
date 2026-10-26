@@ -1448,6 +1448,34 @@ HTML = """<!doctype html>
       const searchQueries = asList(data.search_queries);
       const signal = data.evidence_signal || null;
 
+      // Everyday surface: only the answer and an optional source disclosure.
+      // The complete technical packet remains available on the expert page.
+      if (document.getElementById('simple-home')) {
+        const hasEvidence = citations.length > 0 && evidenceRefs.length > 0;
+        let concise = hasEvidence ? answer : t('simpleNoEvidence');
+        if (concise.length > 750) concise = concise.slice(0, 750).trimEnd() + ' …';
+        let compact = '<div class="result-card"><div class="answer-main">' +
+          escapeHtml(concise) + '</div>';
+        if (hasEvidence) {
+          compact += '<details><summary>' + t('simpleEvidence') + ' (' +
+            evidenceRefs.length + ')</summary>';
+          for (const ref of evidenceRefs) {
+            compact += '<div class="meta-grid"><span>' +
+              escapeHtml(ref.relative_path || '') + '</span>';
+            if (ref.segment_id) {
+              compact += '<button type="button" class="secondary" data-evidence-segment="' +
+                escapeHtml(ref.segment_id) + '">' + t('viewEvidence') + '</button>';
+            }
+            compact += '</div>';
+          }
+          compact += '</details>';
+        }
+        compact += '</div>';
+        root.innerHTML = compact;
+        bindEvidenceButtons(root);
+        return;
+      }
+
       let html = `<div class=\"result-card\"><div class=\"answer-main\">${escapeHtml(answer)}</div><div class=\"muted\" style=\"margin-top:10px;\">${t('confidence')}: ${escapeHtml(confidence)}</div>`;
       if (signal) {
         html += '<div class="muted" style="margin-top:10px"><strong>'
