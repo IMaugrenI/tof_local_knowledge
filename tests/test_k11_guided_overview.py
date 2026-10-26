@@ -44,7 +44,8 @@ def test_task_pages_show_primary_action_and_hide_advanced_settings_by_default(
     assert feature in html
     assert 'class="page-intro"' in html
     assert f'<summary data-i18n="{advanced}">' in html
-    assert '<details class="advanced-options">' in html
+    assert ('<details class="advanced-options">' in html or
+            '<details class="advanced-options" id="index-advanced">' in html)
     assert '<details class="advanced-options" open' not in html
     assert 'id="log"' in html  # original technical panel kept
     if route == "/quellen-index":
