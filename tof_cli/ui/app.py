@@ -252,6 +252,29 @@ HTML = """<!doctype html>
     }
 
 
+        .simple-more { max-width: 1180px; margin: 0; }
+    .simple-more > summary { padding: 7px 0 10px; color: var(--muted); font-size: .83rem; font-weight: 600; }
+    .simple-more .page-nav { margin-top: 10px; }
+    .simple-home { max-width: 1180px; margin: 0 auto; }
+    .simple-home h1 { font-size: clamp(2rem, 5vw, 3.7rem); margin-bottom: 10px; }
+    .simple-home .lead { margin-bottom: 14px; max-width: 750px; font-size: 1rem; }
+    .simple-status { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px 16px;
+      color: var(--gold-bright); font-weight: 750; margin: 14px 0 24px; }
+    .simple-status .muted { font-weight: 400; }
+    .simple-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; }
+    .simple-card { border: 1px solid var(--border-strong); background: var(--surface);
+      border-radius: 18px; padding: 24px; min-width: 0; }
+    .simple-card h2 { font-size: 1.35rem; margin: 0 0 16px; }
+    .simple-step { display: block; font-size: .75rem; font-weight: 800; color: var(--gold); margin-bottom: 8px; }
+    .simple-dropzone { display: flex; flex-direction: column; gap: 10px; align-items: center;
+      justify-content: center; text-align: center; min-height: 220px; padding: 22px 16px;
+      border: 2px dashed var(--border-strong); border-radius: 15px; background: var(--surface-soft); }
+    .simple-dropzone.drag-over { border-color: var(--gold-bright); background: var(--chip-bg); }
+    .simple-buttons { display: flex; flex-wrap: wrap; gap: 9px; justify-content: center; }
+    .simple-card .result { margin-top: 16px; }
+    .simple-card textarea { min-height: 135px; }
+    .simple-privacy { margin-top: 16px; color: var(--muted); font-size: .82rem; }
+    @media (max-width: 830px) { .simple-grid { grid-template-columns: 1fr; } }
     .source-onboarding {
       border: 1px solid var(--border-strong); border-radius: 17px;
       padding: 23px; background: var(--surface);
@@ -530,6 +553,8 @@ HTML = """<!doctype html>
       </div>
     </header>
 
+    <details class="simple-more">
+      <summary data-i18n="simpleMore">Weitere Funktionen</summary>
     <nav class="page-nav" aria-label="Navigation" data-i18n-aria-label="navigationLabel">
       <a href="/uebersicht" data-page-link="overview" data-i18n="navOverview">Übersicht</a>
       <a href="/frage-stellen" data-page-link="question" data-i18n="navAsk">Frage stellen</a>
@@ -537,48 +562,49 @@ HTML = """<!doctype html>
       <a href="/quellen-index" data-page-link="sources" data-i18n="navSources">Quellen & Index</a>
       <a href="/beleg-pruefen" data-page-link="evidence" data-i18n="navEvidence">Beleg prüfen</a>
     </nav>
+    </details>
 
     <main id="main-content">
       <div class="section">
         <!-- PAGE_START:overview -->
-        <section class="overview-hero">
-          <p class="eyebrow" data-i18n="overviewEyebrow">DEIN WISSEN IM ÜBERBLICK</p>
-          <h1 data-i18n="overviewTitle">Was möchtest du heute tun?</h1>
-          <p class="lead" data-i18n="overviewLead">Du kannst Fragen stellen, Dokumente durchsuchen und jede verwendete Textstelle prüfen. Hier findest du den richtigen Einstieg.</p>
-        </section>
-        <section class="overview-status" aria-live="polite">
-          <div>
-            <strong id="overview-status-title" data-i18n="overviewLoading">Dokumentenstatus wird geladen …</strong>
-            <p id="overview-status-detail" data-i18n="overviewLoadingHelp">Die vorhandenen lokalen Quellen werden geprüft.</p>
+        <section class="simple-home" aria-labelledby="simple-title">
+          <p class="eyebrow" data-i18n="simpleEyebrow">DEIN WISSEN</p>
+          <h1 id="simple-title" data-i18n="simpleTitle">Deine Dateien. Deine Antworten.</h1>
+          <p class="lead" data-i18n="simpleLead">Dateien hinzufügen und direkt Fragen stellen. Den Rest übernimmt ToF.</p>
+          <div class="simple-status" aria-live="polite">
+            <span id="overview-status-title" data-i18n="overviewLoading">Dokumentenstatus wird geladen …</span>
+            <span id="overview-status-detail" class="muted" data-i18n="overviewLoadingHelp">Die lokalen Quellen werden geprüft.</span>
           </div>
-          <a href="/quellen-index" class="inline-link" data-i18n="overviewManageSources">Quellen verwalten</a>
+          <div class="simple-grid">
+            <section class="simple-card" aria-labelledby="simple-files-title">
+              <span class="simple-step" data-i18n="simpleStepOne">1 · DATEIEN</span>
+              <h2 id="simple-files-title" data-i18n="simpleFilesTitle">Dateien hinzufügen</h2>
+              <div id="simple-dropzone" class="simple-dropzone" role="group" aria-labelledby="simple-drop-label">
+                <strong id="simple-drop-label" data-i18n="simpleDropText">Dateien hier hineinziehen</strong>
+                <span class="muted" data-i18n="simpleDropOr">oder</span>
+                <div class="simple-buttons">
+                  <button type="button" class="secondary" onclick="document.getElementById('source-files').click()" data-i18n="sourcePickFiles">Dateien auswählen</button>
+                  <button type="button" class="ghost" onclick="chooseFolder()" data-i18n="simpleChooseFolder">Ordner auswählen</button>
+                </div>
+                <input type="file" multiple id="source-files" style="display:none" onchange="importSelectedFiles(this.files, false)">
+                <input type="file" multiple webkitdirectory directory id="source-folder" style="display:none" onchange="importSelectedFiles(this.files, true)">
+              </div>
+              <p id="source-import-status" class="hint" role="status" aria-live="polite" data-i18n="simpleFilesHint">Nur ausgewählte Dateien werden lokal kopiert und eingelesen. Originale bleiben unverändert.</p>
+            </section>
+            <section class="simple-card" aria-labelledby="simple-question-title">
+              <span class="simple-step" data-i18n="simpleStepTwo">2 · FRAGEN</span>
+              <h2 id="simple-question-title" data-i18n="simpleQuestionTitle">Was möchtest du wissen?</h2>
+              <div class="form-grid">
+                <textarea id="qa-question" data-i18n-aria-label="questionLabel" aria-label="Frage an deine Dokumente" data-i18n-placeholder="questionPlaceholder" placeholder="Was steht in meinen Dokumenten zu …?"></textarea>
+                <input id="qa-scope" type="hidden" value="">
+                <input id="qa-limit" type="hidden" value="5">
+                <button type="button" onclick="runAnswer()" data-i18n="simpleAsk">Antwort finden</button>
+              </div>
+              <div class="result" id="qa-result" role="status" aria-live="polite" data-i18n="noAnswerYet">Hier erscheint deine Antwort mit den Quellen.</div>
+            </section>
+          </div>
+          <p class="simple-privacy" data-i18n="simplePrivacy">Deine ausgewählten Dateien bleiben auf diesem Computer. Es gibt keine automatische Ordnerüberwachung.</p>
         </section>
-        <div class="guide-grid">
-          <a class="guide-card" href="/frage-stellen">
-            <span class="step" data-i18n="overviewStepAsk">SCHRITT 1 · FRAGEN</span>
-            <h2 data-i18n="navAsk">Frage stellen</h2>
-            <p data-i18n="overviewAskHelp">Du hast eine konkrete Frage? Suche eine Antwort mit sichtbaren Quellen.</p>
-            <span class="forward" data-i18n="overviewOpenAsk">Zur Frage →</span>
-          </a>
-          <a class="guide-card" href="/dokumente-durchsuchen">
-            <span class="step" data-i18n="overviewStepSearch">ALTERNATIV · SUCHEN</span>
-            <h2 data-i18n="navSearch">Dokumente durchsuchen</h2>
-            <p data-i18n="overviewSearchHelp">Du suchst eine Datei oder Textstelle? Durchsuche deine indexierten Dokumente.</p>
-            <span class="forward" data-i18n="overviewOpenSearch">Zur Suche →</span>
-          </a>
-          <a class="guide-card" href="/quellen-index">
-            <span class="step" data-i18n="overviewStepSources">VORBEREITUNG · QUELLEN</span>
-            <h2 data-i18n="navSources">Quellen & Index</h2>
-            <p data-i18n="overviewSourcesHelp">Sieh nach, welche Dokumente bereitstehen, oder starte die Indexierung manuell.</p>
-            <span class="forward" data-i18n="overviewOpenSources">Zu den Quellen →</span>
-          </a>
-          <a class="guide-card" href="/beleg-pruefen">
-            <span class="step" data-i18n="overviewStepEvidence">DANACH · PRÜFEN</span>
-            <h2 data-i18n="navEvidence">Beleg prüfen</h2>
-            <p data-i18n="overviewEvidenceHelp">Öffne aus einer Antwort oder einem Suchtreffer die Originaltextstelle.</p>
-            <span class="forward" data-i18n="overviewOpenEvidence">Zur Belegprüfung →</span>
-          </a>
-        </div>
         <!-- PAGE_END:overview -->
         <!-- PAGE_START:question -->
         <div class="page-intro">
