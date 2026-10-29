@@ -104,6 +104,9 @@ services:
     environment:
       DATABASE_URL: ${DATABASE_URL}
       SEARCH_API_URL: http://search_api:8105/search
+      OLLAMA_BASE_URL: http://ollama:11434
+      ENABLE_OLLAMA: ${ENABLE_OLLAMA:-false}
+      QA_OLLAMA_MODEL: ${QA_OLLAMA_MODEL:-}
     command: ["uvicorn", "runtime:app", "--host", "0.0.0.0", "--port", "8106", "--app-dir", "/app/services/qa_api/app"]
     ports:
       - "${BIND_HOST:-127.0.0.1}:${QA_API_PORT:-8106}:8106"
