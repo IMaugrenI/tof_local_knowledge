@@ -812,6 +812,12 @@ HTML = """<!doctype html>
         simpleFilesProcessing: 'Dateien werden eingelesen …',
         simpleFilesReady: 'Dateien bereit. Du kannst jetzt eine Frage stellen.',
         simpleFailedFiles: 'Nicht verarbeitete Dateien',
+        sourceRejectedType: 'Dateityp nicht unterstützt',
+        sourceRejectedSize: 'Datei größer als 12 MiB',
+        sourceRejectedName: 'Ungültiger Dateiname oder Pfad',
+        sourceRejectedLimit: 'Maximal 300 Dateien pro Auswahl',
+        sourceIndexNoText: 'Kein auslesbarer Text',
+        sourceIndexProblem: 'Einlesen fehlgeschlagen',
         navigationLabel: 'Seitennavigation',
         sourceIndexNow: 'Importierte Dateien jetzt einlesen',
         sourceIndexProgress: 'Dokumente verarbeitet',
@@ -1056,6 +1062,12 @@ HTML = """<!doctype html>
         simpleFilesProcessing: 'Indexing files …',
         simpleFilesReady: 'Files ready. You can ask a question now.',
         simpleFailedFiles: 'Files not processed',
+        sourceRejectedType: 'Unsupported file type',
+        sourceRejectedSize: 'File exceeds 12 MiB',
+        sourceRejectedName: 'Invalid filename or path',
+        sourceRejectedLimit: 'At most 300 files per selection',
+        sourceIndexNoText: 'No extractable text',
+        sourceIndexProblem: 'Could not index file',
         navigationLabel: 'Page navigation',
         sourceIndexNow: 'Index imported documents now',
         sourceIndexProgress: 'Documents processed',
@@ -1853,17 +1865,29 @@ HTML = """<!doctype html>
         chatImportBubble = null;
         document.getElementById('qa-send-button').disabled = true;
       }
-      showImportFailures([]);
       const supported = /\.(txt|md|log|py|rst|ini|cfg|yaml|yml|json|htm|html|csv|eml|pdf|docx|xlsx)$/i;
-      const candidates = files.filter(x =>
-        supported.test(x.name) && x.file.size <= 12 * 1024 * 1024 &&
-        x.name.length <= 600 && x.name.split('/').length <= 12 &&
-        !x.name.includes('\\\\') &&
-        x.name.split('/').every(part => part && !part.startsWith('.') &&
-          !part.includes(':')));
+      const candidates = [];
+      const skippedDetails = [];
+      for (const item of files) {
+        const name = item.name;
+        const parts = name.split('/');
+        let reason = null;
+        if (!supported.test(name)) reason = 'sourceRejectedType';
+        else if (item.file.size > 12 * 1024 * 1024) reason = 'sourceRejectedSize';
+        else if (name.length > 600 || parts.length > 12 ||
+          name.includes(String.fromCharCode(92)) ||
+          parts.some(part => !part || part.startsWith('.') ||
+            part.includes(':') || Array.from(part).some(c => c.charCodeAt(0) < 32))) {
+          reason = 'sourceRejectedName';
+        } else if (candidates.length >= 300) reason = 'sourceRejectedLimit';
+        if (reason) skippedDetails.push(name.slice(0, 180) + ' · ' + t(reason));
+        else candidates.push(item);
+      }
+      showImportFailures(skippedDetails);
       let skipped = previousSkipped + files.length - candidates.length;
       let imported = 0;
       let sourceId = null;
+      let failedBatchNames = [];
       output.textContent = t('sourceImportRunning') + ' (0/' + candidates.length + ')';
       showImportProgress('copy', 0, candidates.length);
       if (onChat) updateChatImportNotice(output.textContent);
@@ -1873,6 +1897,7 @@ HTML = """<!doctype html>
         async function send() {
           if (!batch.length) return;
           const payload = [];
+          failedBatchNames = batch.map(item => item.name);
           for (const item of batch) {
             payload.push({name: item.name, data: await fileAsBase64(item.file)});
           }
@@ -1888,6 +1913,7 @@ HTML = """<!doctype html>
           }
           imported += data.copied || 0;
           sourceId = data.source_id;
+          failedBatchNames = [];
           output.textContent = t('sourceImportRunning') + ' (' + imported + '/' + candidates.length + ')' +
             (skipped ? ' · ' + t('sourceImportSkipped') + ': ' + skipped : '');
           showImportProgress('copy', imported, candidates.length);
@@ -1911,7 +1937,7 @@ HTML = """<!doctype html>
             output.textContent = t('simpleFilesProcessing') + ' (' + imported + ')';
             showImportProgress('index');
             updateChatImportNotice(output.textContent);
-            await indexImportedSource(sourceId);
+            await indexImportedSource(sourceId, skippedDetails);
             return;
           }
           await loadSourceSpaces();
@@ -1927,6 +1953,8 @@ HTML = """<!doctype html>
       } catch (error) {
         output.textContent = t('sourceImportFailed') +
           (imported ? ' (' + imported + ' ' + t('sourceTotal') + ')' : '');
+        showImportFailures([...skippedDetails, ...failedBatchNames.map(
+          name => name.slice(0, 180) + ' · ' + t('sourceImportFailed'))]);
         showImportProgress('idle');
       } finally {
         if (onChat) {
@@ -1937,7 +1965,7 @@ HTML = """<!doctype html>
       }
     }
 
-    async function indexImportedSource(selectedSource = null) {
+    async function indexImportedSource(selectedSource = null, skippedDetails = []) {
       const button = document.getElementById('source-index-now');
       const status = document.getElementById('source-import-status');
       const menu = document.getElementById('index-source-select');
@@ -1966,7 +1994,11 @@ HTML = """<!doctype html>
           processed += indexed;
           failures += (data.failed || []).length;
           for (const item of (data.failed || [])) {
-            if (item && typeof item.path === 'string') failedPaths.push(item.path);
+            if (item && typeof item.path === 'string') {
+              const reason = item.detail === 'no_extractable_text' ?
+                t('sourceIndexNoText') : t('sourceIndexProblem');
+              failedPaths.push(item.path.slice(0, 180) + ' · ' + reason);
+            }
           }
           status.textContent = t('sourceIndexProgress') + ': ' + processed;
           if (document.getElementById('simple-home')) updateChatImportNotice(status.textContent);
@@ -1985,7 +2017,7 @@ HTML = """<!doctype html>
           t('sourceIndexIncomplete')) + ' ' + t('sourceIndexProgress') + ': ' + processed +
           (failures ? ' · ' + t('failedCountLabel') + ': ' + failures : '');
         showImportProgress('idle');
-        showImportFailures(failedPaths);
+        showImportFailures([...skippedDetails, ...failedPaths]);
         if (document.getElementById('simple-home')) updateChatImportNotice(status.textContent);
         if (document.getElementById('source-result')) await refreshSources();
         await refreshOverview();
