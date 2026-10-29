@@ -59,3 +59,33 @@ Bei einem Problem: `python run.py doctor` (gegebenenfalls `python3`). Weitere Hi
 ## Grenzen
 
 Das Paket ist **kein Installer**, keine Bestätigung von Windows-/macOS-/Linux-Runtime-Funktion und keine Produktfreigabe. Es startet beim Entpacken nichts, enthält keine persönlichen lokalen Einstellungen oder private Dokumente und veröffentlicht nichts über GitHub Releases. Die vollständige Abnahme und spätere Release-Freigabe bleiben ausdrücklich ausstehend.
+
+
+## Gemeinsamer Test-Meilenstein: Ein-Seiten-Chat
+
+Nach Freigabe des Ausbaustands durch DOM wird **einmal** ein Quellpaket über
+den vorhandenen manuellen GitHub-Actions-Workflow `Source distribution candidate`
+oder das bestehende `scripts/build_source_candidate.py` erstellt. Dieser
+Schritt ändert weder laufende Container noch produktive Dokumente. Das Paket
+ist weiter ein Quellpaket, kein nativer Installer.
+
+Der normale Bedienweg nach dem bestehenden Start ist
+`http://127.0.0.1:8785/`. Dort werden freigegebene Dateien oder Ordner
+ausgewählt, automatisch in den konfigurierten Quellenbereich kopiert,
+indexiert und anschließend mit dem Dokumenten-Chat befragt. Fortschritt,
+abgelehnte Dateien und belegende Textstellen bleiben auf dieser Seite sichtbar.
+Die Fachseiten dienen nur der Diagnose und erweiterten Bedienung.
+
+**Einmalige Betreiber-Abnahme mit neutralen Dateien:** Eine Datei,
+mindestens fünf gemischte Dateien einschließlich einer absichtlich
+unlesbaren/ungültigen, Fortschritt bis zur Abschlussmeldung, danach
+dokumentengestützte Antwort und zwei Anschlussfragen, eine unbelegte Frage,
+anschließend „Neuer Chat“. Originaldateien müssen unverändert bleiben.
+Fehlerhafte Dateien dürfen erfolgreiche nicht blockieren. Diese Prüfung ist
+bis zum Test-Meilenstein **offen** und darf nicht durch GitHub-CI als bestanden
+bezeichnet werden.
+
+Bei einem Fehler zuerst auf der Chat-Startseite den sichtbaren Status prüfen;
+weiterführende Diagnose über „Weitere Funktionen“. Keine zweite App starten,
+kein paralleles Compose-Projekt erzeugen und keine lokalen privaten Dokumente
+in einen öffentlichen GitHub-Report kopieren.
