@@ -42,3 +42,8 @@ Diese Übersicht beschreibt den im Repository vorhandenen Code. Sie ist **kein N
 - [README](../README.md)
 - [K1-Ausbauauftrag](https://github.com/IMaugrenI/tof_local_knowledge/issues/15)
 - [Runtime-Dokumentation](11_runtime_stack.md)
+
+
+## K19–K21 – Gesprächsintention, Quellenauszüge und lexikalische Relevanz
+
+Die GitHub-Entwicklung ergänzt den bestehenden lokalen QA-Pfad um konservative Themenwechsel-Erkennung, kurze mehrdokumentige Textauszüge mit sichtbaren Quellen und eine stabile textbezogene Nachordnung bereits freigegebener Suchtreffer. Erweiterungen sind ohne neue Services oder konkurrierende Runtime integriert. **Nicht enthalten** sind echte semantische Suche, frei formulierte LLM-Synthese, dauerhaftes Gesprächsgedächtnis, serverseitige Mehrbenutzer-ACLs oder eine Betriebsfreigabe auf einem Zielsystem. GitHub-CI und gezielte Tests sind Entwicklungsnachweise; die Runtime-Abnahme wird bis zum vereinbarten Meilenstein gesammelt.
