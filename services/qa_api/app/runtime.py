@@ -205,10 +205,13 @@ def _local_ollama_target() -> tuple[str, str] | None:
     if not re.fullmatch(r"[A-Za-z0-9_.:/-]{1,96}", model):
         return None
     raw = os.environ.get("OLLAMA_BASE_URL", "http://ollama:11434")
-    url = urlsplit(raw)
-    if (url.scheme != "http" or url.hostname not in {"ollama", "localhost", "127.0.0.1"}
-            or url.port != 11434 or url.username or url.password
-            or url.path not in {"", "/"} or url.query or url.fragment):
+    try:
+        url = urlsplit(raw)
+        if (url.scheme != "http" or url.hostname not in {"ollama", "localhost", "127.0.0.1"}
+                or url.port != 11434 or url.username or url.password
+                or url.path not in {"", "/"} or url.query or url.fragment):
+            return None
+    except ValueError:
         return None
     return f"http://{url.hostname}:11434/api/generate", model
 
