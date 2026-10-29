@@ -66,3 +66,8 @@ keine `.env` und keine produktiven Dokumente.
 Das Archiv ist **kein nativer Installer**. Vor GO keine öffentliche
 Release-Behauptung. Download- und Startdetails stehen in
 `docs/RELEASE_PACKAGE_DE.md`.
+
+
+## K25 – zusätzlicher optionaler semantischer Nachweis
+
+Die festgelegte Gesamt-Abnahme M01–M11 wird **nicht** um eine neue Pflicht-Testschleife erweitert. Die lokale Vektorsuche ist ausdrücklich optional und steht im Standardpaket ohne konfiguriertes Modell nicht zur Verfügung. Die Architektur nutzt das vorhandene `VECTOR(768)`-Feld und den vorhandenen Ollama-Dienst. Ein semantischer Modelllauf auf DOMs Zielsystem darf nur nach bewusst aktivierter optionaler Modellkonfiguration als gesonderter Nachweis bewertet werden. Ohne Modell gilt weiterhin das bestehende lexikalische, beleggebundene Produkt. Die rein codebasierten Tests für Ein-/Ausgabegrenzen ersetzen keine Modell-Abnahme.
