@@ -889,6 +889,7 @@ HTML = """<!doctype html>
         answerExcerptIntro: 'Belegbasierte Kurzantwort (Quellenauszüge, keine unabhängige Verifikation):',
         strongestHitIntro: 'Stärkster Treffer aus',
         evidenceUsedIntro: 'Verwendete Fundstellen:',
+        evidenceFoundIntro: 'Gefundene Textstellen:',
         searchStrategy_original_question: 'Originalfrage',
         searchStrategy_keywords: 'Suchbegriffe',
         searchStrategy_keywords_variant: 'Suchbegriffe (Wortvariante)',
@@ -1139,6 +1140,7 @@ HTML = """<!doctype html>
         answerExcerptIntro: 'Evidence-based excerpt answer (source passages, not independently verified):',
         strongestHitIntro: 'Strongest match from',
         evidenceUsedIntro: 'Evidence passages used:',
+        evidenceFoundIntro: 'Document passages found:',
         searchStrategy_original_question: 'Original question',
         searchStrategy_keywords: 'Keywords',
         searchStrategy_keywords_variant: 'Keywords (word variant)',
@@ -1326,7 +1328,8 @@ HTML = """<!doctype html>
         .replace('Belegbasierte Kurzantwort (Quellenauszüge, keine unabhängige Verifikation):',
                  t('answerExcerptIntro'))
         .replace('Stärkster Treffer aus ', t('strongestHitIntro') + ' ')
-        .replace('Verwendete Fundstellen:', t('evidenceUsedIntro'));
+        .replace('Verwendete Fundstellen:', t('evidenceUsedIntro'))
+        .replace('Gefundene Textstellen:', t('evidenceFoundIntro'));
     }
 
     function applyLanguage() {
