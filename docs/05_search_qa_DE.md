@@ -65,3 +65,29 @@ Dieser Bauabschnitt ist ein sicherer Schritt in Richtung mehrturnfähige Bedienu
 **K21 (Trefferpriorisierung):** Innerhalb der vom bestehenden, aktuellen, eingeschränkten Suchdienst gelieferten Treffer wird vor der Antwortbildung eine stabile lexikalische Nachordnung vorgenommen: Treffer mit mehreren tatsächlichen Wortübereinstimmungen im sichtbaren Auszug vor reinen Dateinamentreffern; bei Gleichstand bleibt die ursprüngliche Suchreihenfolge erhalten. Keine Änderung an Datenbank, Index oder dem erlaubten Quellen-Scope. Breite OR-Stichworttreffer werden nach wie vor **niemals** zu Antworten oder Zitationen hochgestuft. Dies ist **keine semantische Vektor-/Embedding-Suche**, obwohl pgvector/Ollama optional bereits im bestehenden Compose enthalten sind.
 
 Grenzen: Die Relevanzprüfung bleibt lexikalisch und unkalibriert. Der nächste semantische Ausbau muss eine explizite Validierungsgrenze für Modelltexte sowie den unveränderten datenschutzkonformen lokalen Betrieb definieren, bevor ein Modell aus Evidenz neue Formulierungen ableitet.
+
+## K23 – Optionales lokales Modell als Relevanzsortierer
+
+Die bereits im offiziellen `compose.full.yml` enthaltene Ollama-Option kann über
+`ENABLE_OLLAMA=true` und den ausdrücklich gesetzten
+`QA_OLLAMA_MODEL=<lokal vorhandenes Modell>` für einen **optionalen**
+Nachsortierungsschritt genutzt werden. Ohne diese beiden Werte bleibt das
+bestehende deterministische FTS-Ranking erhalten. Ein Modell wird **nicht**
+heruntergeladen, gestartet oder ungefragt über ein externes Netz kontaktiert.
+
+Das QA-Backend übermittelt ausschließlich an die fest erlaubten lokalen
+Ollama-Adressen maximal acht bereits freigegebene Suchauszüge (je höchstens
+320 Zeichen) und die aktuelle Frage (höchstens 500 Zeichen). Das Modell
+schlägt nur eine Reihenfolge für bestehende Treffer-IDs vor. Die Antwort
+wird **niemals aus Modell-Freitext erzeugt**. Jede Modell-ID muss Teil einer
+vollständigen, duplikatfreien Permutation der tatsächlich gefundenen Treffer
+sein. Fehler, Zeitüberschreitung, ungültige Ausgabe oder fehlendes Modell
+führen unmittelbar zum vorherigen Ranking zurück.
+
+Die Evidenz wird weiter ausschließlich aus dem aktuellen Suchdienst innerhalb
+des gewählten Scope bezogen. Ungeprüfte breite OR-Treffer bleiben nicht
+zitierfähig. Eine akzeptierte Modell-Nachsortierung erhält die Kennzeichnung
+`model_ranking_not_semantically_verified` und das Signal
+`local_model_rerank=true`. Dies ist **lokales semantisches Reranking von
+bestehenden Treffern**, weder eine Vektorsuche über alle Quellen noch
+eine freie generative Synthese und kein unabhängig verifiziertes Understanding.
