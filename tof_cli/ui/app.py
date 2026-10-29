@@ -816,6 +816,7 @@ HTML = """<!doctype html>
         sourceRejectedSize: 'Datei größer als 12 MiB',
         sourceRejectedName: 'Ungültiger Dateiname oder Pfad',
         sourceRejectedLimit: 'Maximal 300 Dateien pro Auswahl',
+        sourceAllRejected: 'Keine unterstützten Dateien ausgewählt. Details unten anzeigen.',
         sourceIndexNoText: 'Kein auslesbarer Text',
         sourceIndexProblem: 'Einlesen fehlgeschlagen',
         navigationLabel: 'Seitennavigation',
@@ -1067,6 +1068,7 @@ HTML = """<!doctype html>
         sourceRejectedSize: 'File exceeds 12 MiB',
         sourceRejectedName: 'Invalid filename or path',
         sourceRejectedLimit: 'At most 300 files per selection',
+        sourceAllRejected: 'No supported files selected. Open details below.',
         sourceIndexNoText: 'No extractable text',
         sourceIndexProblem: 'Could not index file',
         navigationLabel: 'Page navigation',
@@ -1908,6 +1910,10 @@ HTML = """<!doctype html>
       showImportProgress('copy', 0, candidates.length);
       if (onChat) updateChatImportNotice(output.textContent);
       try {
+        if (!candidates.length) {
+          output.textContent = t('sourceAllRejected');
+          return;
+        }
         let batch = [];
         let bytes = 0;
         async function send() {
@@ -1944,7 +1950,6 @@ HTML = """<!doctype html>
           batch.push(item);
           bytes += item.file.size;
         }
-        if (candidates.length > 300) skipped += candidates.length - 300;
         await send();
         output.textContent = imported + ' · ' + t('sourceImportDone') +
           (skipped ? ' ' + t('sourceImportSkipped') + ': ' + skipped : '');
@@ -1991,7 +1996,6 @@ HTML = """<!doctype html>
       let cursor = null;
       let processed = 0;
       let complete = false;
-      let failures = 0;
       const failedPaths = [];
       let stalled = 0;
       try {
@@ -2008,7 +2012,6 @@ HTML = """<!doctype html>
           }
           const indexed = Number(data.indexed_this_pass || 0);
           processed += indexed;
-          failures += (data.failed || []).length;
           for (const item of (data.failed || [])) {
             if (item && typeof item.path === 'string') {
               const reason = item.detail === 'no_extractable_text' ?
@@ -2018,20 +2021,26 @@ HTML = """<!doctype html>
           }
           status.textContent = t('sourceIndexProgress') + ': ' + processed;
           if (document.getElementById('simple-home')) updateChatImportNotice(status.textContent);
-          // A broken document must not block the remaining valid documents.
-          // Stop safely if successive passes make no progress (e.g. only
-          // permanently failing retry candidates remain).
-          stalled = indexed > 0 ? 0 : stalled + 1;
+          // Failed files must not halt later scan pages. A new cursor is
+          // forward progress even when that page extracted zero documents.
+          // Repeated failures at an unchanged cursor still stop safely.
+          const nextCursor = data.next_cursor || null;
+          stalled = (indexed > 0 || (nextCursor && nextCursor !== cursor)) ?
+            0 : stalled + 1;
           if (!data.page_has_more && !data.remaining_in_sample) {
             complete = true;
             break;
           }
           if (stalled >= 2) break;
-          cursor = data.next_cursor || null;
+          cursor = nextCursor;
         }
-        status.textContent = (complete && !failures ? t('simpleFilesReady') :
-          t('sourceIndexIncomplete')) + ' ' + t('sourceIndexProgress') + ': ' + processed +
-          (failures ? ' · ' + t('failedCountLabel') + ': ' + failures : '');
+        const failures = new Set(failedPaths).size;
+        status.textContent = (complete && !failures && !skippedDetails.length ?
+          t('simpleFilesReady') : t('sourceIndexIncomplete')) + ' ' +
+          t('sourceIndexProgress') + ': ' + processed +
+          (failures ? ' · ' + t('failedCountLabel') + ': ' + failures : '') +
+          (skippedDetails.length ? ' · ' + t('sourceImportSkipped') +
+            ': ' + skippedDetails.length : '');
         showImportProgress('idle');
         showImportFailures([...skippedDetails, ...failedPaths]);
         if (document.getElementById('simple-home')) updateChatImportNotice(status.textContent);
