@@ -134,7 +134,7 @@ vm.runInContext('importSelectedFiles(selection,false)',ctx,{timeout:2000}).then(
   process.stdout.write(JSON.stringify({
     imports,batches,indexed,
     skipped:elements['source-import-error-list'].children.map(x=>x.textContent),
-    processedNotice: elements['source-import-status'].textContent.includes('bereit'),
+    processedNotice: elements['source-import-status'].textContent.includes('teilweise abgeschlossen'),
   }));
 }).catch(e=>{process.stderr.write(e.stack);process.exitCode=1;});
 """
