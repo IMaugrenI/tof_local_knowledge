@@ -70,6 +70,8 @@ services:
       - catalog_api
     environment:
       DATABASE_URL: ${DATABASE_URL}
+      ENABLE_OLLAMA: ${ENABLE_OLLAMA:-false}
+      KNOWLEDGE_EMBED_MODEL: ${KNOWLEDGE_EMBED_MODEL:-}
     command: ["uvicorn", "runtime:app", "--host", "0.0.0.0", "--port", "8104", "--app-dir", "/app/services/extractor_api/app"]
     ports:
       - "${BIND_HOST:-127.0.0.1}:${EXTRACTOR_API_PORT:-8104}:8104"
@@ -88,6 +90,8 @@ services:
       - catalog_api
     environment:
       DATABASE_URL: ${DATABASE_URL}
+      ENABLE_OLLAMA: ${ENABLE_OLLAMA:-false}
+      KNOWLEDGE_EMBED_MODEL: ${KNOWLEDGE_EMBED_MODEL:-}
     command: ["uvicorn", "runtime:app", "--host", "0.0.0.0", "--port", "8105", "--app-dir", "/app/services/search_api/app"]
     ports:
       - "${BIND_HOST:-127.0.0.1}:${SEARCH_API_PORT:-8105}:8105"
@@ -107,6 +111,7 @@ services:
       OLLAMA_BASE_URL: http://ollama:11434
       ENABLE_OLLAMA: ${ENABLE_OLLAMA:-false}
       QA_OLLAMA_MODEL: ${QA_OLLAMA_MODEL:-}
+      KNOWLEDGE_EMBED_MODEL: ${KNOWLEDGE_EMBED_MODEL:-}
     command: ["uvicorn", "runtime:app", "--host", "0.0.0.0", "--port", "8106", "--app-dir", "/app/services/qa_api/app"]
     ports:
       - "${BIND_HOST:-127.0.0.1}:${QA_API_PORT:-8106}:8106"

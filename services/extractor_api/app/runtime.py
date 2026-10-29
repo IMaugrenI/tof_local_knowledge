@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel, Field
 
 from _shared_db import db_conn, make_id
+from _shared_embeddings import MAX_EMBED_BATCH, embed_texts
 from _shared_extract import extract_blocks, safe_resolve_under
 from translator import ExtractionTranslator
 
@@ -120,8 +121,35 @@ def extract_file(payload: ExtractRequest):
                             ),
                         )
 
+    # Optional best-effort embedding enrichment after the normal extraction
+    # has completed. A slow or absent model never changes extraction status.
+    # Existing segment_id/document_id checks constrain the updates to the
+    # document just extracted; the normal FTS index remains authoritative.
+    embedded_segments = 0
+    if payload.persist and 0 < translated['segment_count'] <= MAX_EMBED_BATCH:
+        segments = translated['segments']
+        if all(isinstance(seg.get('text'), str) and seg['text'].strip()
+               for seg in segments):
+            vectors = embed_texts([seg['text'] for seg in segments])
+            if vectors is not None:
+                try:
+                    with db_conn() as embedding_conn:
+                        with embedding_conn.cursor() as embedding_cur:
+                            for segment, vector in zip(segments, vectors):
+                                embedding_cur.execute(
+                                    """UPDATE document_segments SET embedding = %s::vector
+                                       WHERE segment_id = %s AND document_id = %s""",
+                                    (json.dumps(vector), segment['segment_id'], document_id),
+                                )
+                                embedded_segments += 1
+                except Exception:
+                    # Advisory embeddings are never permitted to turn a
+                    # successful source extraction into a failed one.
+                    embedded_segments = 0
+
     return {
         'status': 'ok',
+        'embedded_segments': embedded_segments,
         'document_id': document_id,
         'relative_path': relative_path,
         'raw_block_count': len(raw_blocks),

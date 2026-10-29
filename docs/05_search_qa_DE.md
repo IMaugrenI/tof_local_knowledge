@@ -91,3 +91,17 @@ zitierfähig. Eine akzeptierte Modell-Nachsortierung erhält die Kennzeichnung
 `local_model_rerank=true`. Dies ist **lokales semantisches Reranking von
 bestehenden Treffern**, weder eine Vektorsuche über alle Quellen noch
 eine freie generative Synthese und kein unabhängig verifiziertes Understanding.
+
+
+## K25 – Optionale lokale Vektorsuche über vorhandenes pgvector
+
+Die vorhandene Datenbanktabelle `document_segments` besitzt bereits das Feld `embedding VECTOR(768)`. Ohne neue Tabelle, Datenbank, Docker-Instanz oder geänderten Starter nutzt K25 dieses Feld erstmals optional. Voraussetzung ist **bewusste lokale Konfiguration**:
+
+- `ENABLE_OLLAMA=true`, ein tatsächlich laufendes vorhandenes Ollama-Profil und `KNOWLEDGE_EMBED_MODEL` mit einem bereits installierten, **768-dimensionalen** Embedding-Modell (z. B. `nomic-embed-text`).
+- Standardmäßig bleibt `KNOWLEDGE_EMBED_MODEL` leer. Dann erfolgt **kein** automatischer Modellstart, keine Netzabfrage und kein Embedding-Aufbau.
+- Beim Extrahieren erhält ein Dokument mit höchstens zwölf nichtleeren Segmenten optional 768-dimensionale Vektoren. Texte sind je Modellinput auf 1.200 Zeichen begrenzt. Fehlendes Modell, falsche Dimensionen, ungültige Werte, Zeitüberschreitung oder DB-Fehler lassen die normale Textextraktion und Volltextsuche weiterhin funktionieren. Sehr große Dokumente bleiben zurzeit ausschließlich lexikalisch durchsuchbar.
+- Schon zuvor extrahierte Dokumente bekommen **nicht** rückwirkend automatisch Embeddings; sie müssen später über den bestehenden sicheren Reindexierungsweg neu verarbeitet werden. Keine ungefragte Massennachverarbeitung.
+- QA führt zunächst die bekannten strengen Volltext-/Keyword-Suchen aus. Erst wenn diese keine Treffer ergeben, darf der vorhandene Suchdienst optional Vektorähnlichkeit verwenden. Er beachtet weiterhin `extraction_status = done`, aktivierte Quellen und `source_scope`. Das konservative Suchfenster nutzt eine heuristische Cosinus-Distanzschwelle von höchstens 0,25 und maximal 20 Treffer.
+- Semantische Treffer sind **Ähnlichkeitskandidaten, kein Nachweis einer Sachbehauptung**. Die Antwort zeigt unverändert nur echte, bezeichnete Quellenauszüge und trägt `semantic_similarity_not_factual_verification` sowie die Suchstrategie `semantic_similarity`. Der breite OR-Fallback bleibt für Zitate ausgeschlossen.
+
+Der gesamte Modellverkehr geht ausschließlich an die fest hinterlegte lokale Compose-Adresse `http://ollama:11434/api/embed`; eine Hostadresse ist nicht vom Client frei auswählbar. Keine externe LLM-Anbindung, keine frei erfundene KI-Synthese, keine serverseitige Mehrbenutzerfreigabe. Die Modellfunktion bleibt bis zum Zielsystemtest optional und ohne bestätigte reale Laufzeit.

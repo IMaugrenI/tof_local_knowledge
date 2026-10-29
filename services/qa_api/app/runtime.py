@@ -6,6 +6,7 @@ from urllib.parse import urlsplit
 import httpx
 from fastapi import FastAPI
 from pydantic import BaseModel, Field, field_validator
+from _shared_embeddings import configured_model
 
 app = FastAPI(title='tof_local_knowledge_qa_api', version='0.4.0')
 SEARCH_API_URL = os.environ.get('SEARCH_API_URL', 'http://search_api:8105/search')
@@ -161,15 +162,15 @@ def contextual_thread_query(question: str, recent_questions: list[str]) -> str |
     return contextual_followup_query(question, recent_questions[0])
 
 
-def run_search(client: httpx.Client, query: str, payload: QaRequest) -> dict:
-    response = client.post(
-        SEARCH_API_URL,
-        json={
-            'query': query,
-            'source_scope': payload.source_scope or [],
-            'limit': payload.limit,
-        },
-    )
+def run_search(client: httpx.Client, query: str, payload: QaRequest, *, semantic: bool = False) -> dict:
+    request = {
+        'query': query,
+        'source_scope': payload.source_scope or [],
+        'limit': payload.limit,
+    }
+    if semantic:
+        request['semantic'] = True
+    response = client.post(SEARCH_API_URL, json=request)
     response.raise_for_status()
     return response.json()
 
@@ -345,6 +346,19 @@ def answer(payload: QaRequest):
                 hits = data.get('hits', [])
                 if hits:
                     strategy = 'contextual_followup' if context_query else 'keywords_variant'
+        # After strict lexical searches fail, optionally retrieve passages
+        # from existing 768D pgvector embeddings. These are *potentially*
+        # relevant original excerpts, never independently verified answers.
+        # A missing/misconfigured local model does not change lexical QA.
+        if not hits and configured_model():
+            try:
+                semantic_data = run_search(client, search_question, payload, semantic=True)
+                hits = semantic_data.get('hits', [])
+                if hits:
+                    strategy = 'semantic_similarity'
+            except (httpx.HTTPError, ValueError, TypeError):
+                hits = []
+
         if not hits and fallback_query:
             terms = fallback_query.split()
             if len(terms) >= 2:
@@ -397,6 +411,8 @@ def answer(payload: QaRequest):
     evidence_lines = answer_excerpts(hits)
 
     uncertainties = ['confidence_uncalibrated']
+    if strategy == 'semantic_similarity':
+        uncertainties.append('semantic_similarity_not_factual_verification')
     if model_ranked:
         uncertainties.append('model_ranking_not_semantically_verified')
     if context_query:

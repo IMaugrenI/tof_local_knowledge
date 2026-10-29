@@ -296,3 +296,48 @@ def test_completed_small_scan_still_reconciles_missing(fake_services, tmp_path, 
         source_id='demo', root_path=str(source), limit_files=100,
     ))
     assert second['counts']['missing'] == 1
+
+
+def test_successful_extraction_keeps_status_when_optional_embeddings_fail(fake_services, tmp_path, monkeypatch):
+    db, load = fake_services
+    ext = load('services/extractor_api/app/runtime.py', 'k25_extractor')
+    root = tmp_path / 'sources'
+    source = root / 'source_1'
+    source.mkdir(parents=True)
+    (source / 'demo.txt').write_text('Example', encoding='utf-8')
+    monkeypatch.setattr(ext, 'SOURCE_ROOT', root.resolve())
+    db.documents[('demo', 'demo.txt')] = {
+        'document_id': 'doc-1', 'relative_path': 'demo.txt',
+        'read_status': 'fully_read', 'extraction_status': 'pending',
+    }
+
+    class Translator:
+        def translate(self, **kwargs):
+            return {
+                'segment_count': 1, 'read_status': 'fully_read',
+                'warnings': [], 'segments': [{
+                    'segment_id': 'seg-1', 'segment_kind': 'paragraph',
+                    'page_no': 1, 'ordinal': 1,
+                    'citation_label': 'demo#1', 'text': 'Example',
+                }],
+            }
+
+    ext.translator = Translator()
+    monkeypatch.setattr(ext, 'embed_texts', lambda texts: [[0.1] * 768])
+    success = ext.extract_file(ext.ExtractRequest(
+        source_id='demo', root_path=str(source), relative_path='demo.txt',
+    ))
+    assert success['segment_count'] == 1
+    assert success['embedded_segments'] == 1
+    sql, values = next((sql, params) for sql, params in db.queries
+                       if sql.startswith('update document_segments set embedding'))
+    assert values[1:] == ('seg-1', 'doc-1')
+    assert db.documents[('demo', 'demo.txt')]['extraction_status'] == 'done'
+
+    monkeypatch.setattr(ext, 'embed_texts', lambda texts: None)
+    fallback = ext.extract_file(ext.ExtractRequest(
+        source_id='demo', root_path=str(source), relative_path='demo.txt',
+    ))
+    assert fallback['segment_count'] == 1
+    assert fallback['embedded_segments'] == 0
+    assert db.documents[('demo', 'demo.txt')]['extraction_status'] == 'done'
