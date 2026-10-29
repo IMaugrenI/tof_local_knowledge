@@ -42,6 +42,8 @@ def test_one_primary_screen_and_progressive_disclosure():
     assert "showImportFailures(failedPaths)" in app.HTML
     assert "showImportProgress('index')" in app.HTML
     assert "bar.removeAttribute('value')" in app.HTML
+    assert "sourceRejectedSize: 'Datei größer als 12 MiB'" in app.HTML
+    assert "showImportFailures([...skippedDetails, ...failedPaths])" in app.HTML
 
 
 def test_original_expert_routes_and_apis_remain():
@@ -50,7 +52,7 @@ def test_original_expert_routes_and_apis_remain():
     assert 'id="evidence-result"' in app._render_page("/beleg-pruefen")
     assert app._render_page("/") == app._render_page("/uebersicht")
     script = app.HTML
-    assert "await indexImportedSource(sourceId)" in script
+    assert "await indexImportedSource(sourceId, skippedDetails)" in script
     assert "await refreshOverview()" in script
     assert "zone.addEventListener('drop'" not in script  # delegated via loop
     assert "importSelectedFiles(event.dataTransfer.files, false)" in script
@@ -65,8 +67,9 @@ const fs = require('fs');
 const js = fs.readFileSync(0, 'utf8');
 const requests = [];
 const el = (id) => ({
-  id, textContent: '', innerHTML: '', disabled: false, children: [],
+  id, textContent: '', innerHTML: '', disabled: false, children: [], style: {},
   appendChild(child){this.children.push(child);},
+  replaceChildren(...children){this.children=children;},
   classList: {add(){},remove(){}},
   addEventListener(){},
   querySelectorAll(){ return []; },
@@ -74,6 +77,7 @@ const el = (id) => ({
 const elements = {};
 for (const key of [
   'simple-home','simple-dropzone','source-import-status','qa-send-button',
+  'source-import-errors','source-import-error-list',
   'overview-status-title','overview-status-detail',
   'qa-result','qa-question','qa-scope','qa-limit',
   'language-toggle','theme-toggle','log'
@@ -122,12 +126,14 @@ const ctx = vm.createContext({
   window:{location:{pathname:'/',search:''}},
 });
 vm.runInContext(js, ctx, {timeout:2000});
-ctx.selection=[{name:'demo.md',size:4}];
+ctx.selection=[{name:'demo.md',size:4},
+  {name:'bad.exe',size:4},{name:'huge.pdf',size:13*1024*1024}];
 vm.runInContext('importSelectedFiles(selection,false)',ctx,{timeout:2000}).then(()=>{
   const imports=requests.filter(x=>x==='/api/import-files').length;
   const batches=requests.filter(x=>x==='/api/index-batch').length;
   process.stdout.write(JSON.stringify({
     imports,batches,indexed,
+    skipped:elements['source-import-error-list'].children.map(x=>x.textContent),
     processedNotice: elements['source-import-status'].textContent.includes('bereit'),
   }));
 }).catch(e=>{process.stderr.write(e.stack);process.exitCode=1;});
@@ -139,6 +145,8 @@ vm.runInContext('importSelectedFiles(selection,false)',ctx,{timeout:2000}).then(
     assert out.returncode == 0, out.stderr
     data = json.loads(out.stdout)
     assert data == {"imports": 1, "batches": 1, "indexed": 1,
+                    "skipped": ["bad.exe · Dateityp nicht unterstützt",
+                                "huge.pdf · Datei größer als 12 MiB"],
                     "processedNotice": True}
 
 
