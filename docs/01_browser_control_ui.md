@@ -83,3 +83,10 @@ Die alltägliche Startseite (`/` und `/uebersicht`) zeigt nun einen Chat-Verlauf
 **Vertragsgrenze:** Der dargestellte Verlauf besteht nur im aktuellen Browser-Seitenzustand. Er wird nicht dauerhaft gespeichert und nicht als Kontext an die bestehende `/api/answer`-Schnittstelle übergeben. Jede Frage ist eine eigenständige dokumentenbasierte Anfrage; es gibt keine behauptete Konversations-Memory. Ein echtes kontexttragendes Mehrturn-QA wäre ein gesonderter, explizit zu prüfender Backend-Vertrag.
 
 Die vorherigen Fach- und Diagnoseseiten bleiben über `Weitere Funktionen` erhalten. Bestehende APIs, Belegprüfung, Dateigrenzen, bewusste Ordnerfreigabe, Docker/Compose und lokale Sicherheitsgrenzen bleiben unverändert. Es werden keine zusätzlichen Server, Worker, Datenbanken, Cloud-Dienste oder dauerhaften Dateiwächter eingeführt.
+
+
+## K-16 – Anschlussfragen und einheitlicher Verarbeitungsstatus
+
+Die Startseite nutzt optional ein einziges vorheriges belegtes Fragethema, um ausdrücklich anknüpfende Nachfragen im bestehenden lokalen QA-Backend besser zu finden. Es werden **keine vorherigen Antworten, Dokumentenauszüge oder Dateipfade** als Fragetext übertragen; keine Konversationsdatenbank wird eingerichtet. Nach fehlender Evidenz, neuem Dateiimport oder dem Klick auf „Neuer Chat“ wird dieser Kontext zurückgesetzt. Die bestehende Quellen- und Evidenzprüfung bleibt maßgeblich.
+
+Import und anschließendes Einlesen werden zusätzlich als **eine fortlaufend aktualisierte Systemnachricht** im Chat angezeigt. Während der Verarbeitung sperrt die Oberfläche parallele Frage-Aktionen und einen weiteren Import, um uneindeutige Zustände zu verhindern. Der vorhandene Importfortschritt und die ausklappbaren Fehlerdetails bleiben erhalten. Kein Watcher, kein automatischer Hostdateizugriff, kein geänderter Docker-Startweg.

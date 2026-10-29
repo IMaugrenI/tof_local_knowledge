@@ -275,6 +275,7 @@ HTML = """<!doctype html>
     .simple-card textarea { min-height: 135px; }
     .chat-workspace { border: 1px solid var(--border-strong); border-radius: 18px;
       background: var(--surface); overflow: hidden; }
+    .chat-toolbar { display: flex; justify-content: flex-end; padding: 9px 16px 0; }
     .chat-feed { display: flex; flex-direction: column; gap: 14px; padding: 22px;
       min-height: 280px; max-height: 52vh; overflow-y: auto; }
     .chat-message { border-radius: 16px; padding: 13px 16px; max-width: 82%;
@@ -605,6 +606,7 @@ HTML = """<!doctype html>
             <span id="overview-status-detail" class="muted" data-i18n="overviewLoadingHelp">Die lokalen Quellen werden geprüft.</span>
           </div>
           <section class="chat-workspace" aria-label="Dokumenten-Chat" data-i18n-aria-label="chatWorkspaceLabel">
+            <div class="chat-toolbar"><button type="button" class="ghost" onclick="clearSimpleChat()" data-i18n="chatClear">Neuer Chat</button></div>
             <div id="qa-result" class="chat-feed" role="log" aria-live="polite" data-i18n-aria-label="chatHistoryLabel" aria-label="Unterhaltung">
               <div class="chat-message chat-message--assistant"><div class="chat-text" data-i18n="chatWelcome">Hallo! Füge Dokumente hinzu oder stelle direkt eine Frage zu deinen vorhandenen Dateien.</div></div>
             </div>
@@ -788,6 +790,8 @@ HTML = """<!doctype html>
         chatPlaceholder: 'Frag etwas zu deinen Dokumenten …',
         chatSend: 'Senden',
         chatSearching: 'Ich suche in deinen Dokumenten …',
+        chatClear: 'Neuer Chat',
+        chatImportBusy: 'Dateien werden verarbeitet. Bitte erst danach eine Frage stellen.',
         chatError: 'Die Antwort konnte nicht geladen werden. Bitte versuche es erneut.',
         chatHint: 'Enter sendet · Umschalt+Enter für eine neue Zeile. Jede Frage wird einzeln anhand deiner Dokumente geprüft; der Verlauf bleibt nur bis zum Neuladen sichtbar.',
         simpleTitle: 'Deine Dateien. Deine Antworten.',
@@ -1030,6 +1034,8 @@ HTML = """<!doctype html>
         chatPlaceholder: 'Ask something about your documents …',
         chatSend: 'Send',
         chatSearching: 'Searching your documents …',
+        chatClear: 'New chat',
+        chatImportBusy: 'Files are being processed. Ask your question when they are ready.',
         chatError: 'The answer could not be loaded. Please try again.',
         chatHint: 'Enter to send · Shift+Enter for a new line. Each question is checked independently against your documents; the conversation display lasts until you reload.',
         simpleTitle: 'Your files. Your answers.',
@@ -1271,6 +1277,10 @@ HTML = """<!doctype html>
     let lastAnswerData = null;
     let chatPendingReply = null;
     let chatBusy = false;
+    let chatImportBusy = false;
+    let chatImportBubble = null;
+    let chatActiveQuestion = null;
+    let chatLastGroundedQuestion = null;
     let lastIndexData = null;
     let lastEvidenceSegment = null;
     let lastOverviewData = null;
@@ -1512,7 +1522,9 @@ HTML = """<!doctype html>
         bubble.replaceChildren();
         const text = document.createElement('div');
         text.className = 'chat-text';
-        const hasEvidence = citations.length > 0 && evidenceRefs.length > 0;
+        const hasEvidence = !data.error && citations.length > 0 && evidenceRefs.length > 0;
+        chatLastGroundedQuestion = hasEvidence ? chatActiveQuestion : null;
+        chatActiveQuestion = null;
         text.textContent = data.error ? t('chatError') :
           (hasEvidence ? answer : t('simpleNoEvidence'));
         bubble.appendChild(text);
@@ -1833,6 +1845,14 @@ HTML = """<!doctype html>
         item.file ? item : {file: item, name: isFolder ?
           (item.webkitRelativePath || item.name) : item.name});
       if (!files.length) { output.textContent = t('sourceIdle'); return; }
+      const onChat = Boolean(document.getElementById('simple-home'));
+      if (onChat && (chatImportBusy || chatBusy)) return;
+      if (onChat) {
+        chatImportBusy = true;
+        chatLastGroundedQuestion = null; // New document set invalidates topic continuity.
+        chatImportBubble = null;
+        document.getElementById('qa-send-button').disabled = true;
+      }
       showImportFailures([]);
       const supported = /\.(txt|md|log|py|rst|ini|cfg|yaml|yml|json|htm|html|csv|eml|pdf|docx|xlsx)$/i;
       const candidates = files.filter(x =>
@@ -1846,6 +1866,7 @@ HTML = """<!doctype html>
       let sourceId = null;
       output.textContent = t('sourceImportRunning') + ' (0/' + candidates.length + ')';
       showImportProgress('copy', 0, candidates.length);
+      if (onChat) updateChatImportNotice(output.textContent);
       try {
         let batch = [];
         let bytes = 0;
@@ -1870,6 +1891,7 @@ HTML = """<!doctype html>
           output.textContent = t('sourceImportRunning') + ' (' + imported + '/' + candidates.length + ')' +
             (skipped ? ' · ' + t('sourceImportSkipped') + ': ' + skipped : '');
           showImportProgress('copy', imported, candidates.length);
+          if (onChat) updateChatImportNotice(output.textContent);
           batch = [];
           bytes = 0;
         }
@@ -1888,6 +1910,7 @@ HTML = """<!doctype html>
           if (document.getElementById('simple-home')) {
             output.textContent = t('simpleFilesProcessing') + ' (' + imported + ')';
             showImportProgress('index');
+            updateChatImportNotice(output.textContent);
             await indexImportedSource(sourceId);
             return;
           }
@@ -1905,6 +1928,12 @@ HTML = """<!doctype html>
         output.textContent = t('sourceImportFailed') +
           (imported ? ' (' + imported + ' ' + t('sourceTotal') + ')' : '');
         showImportProgress('idle');
+      } finally {
+        if (onChat) {
+          updateChatImportNotice(output.textContent);
+          chatImportBusy = false;
+          document.getElementById('qa-send-button').disabled = false;
+        }
       }
     }
 
@@ -1940,6 +1969,7 @@ HTML = """<!doctype html>
             if (item && typeof item.path === 'string') failedPaths.push(item.path);
           }
           status.textContent = t('sourceIndexProgress') + ': ' + processed;
+          if (document.getElementById('simple-home')) updateChatImportNotice(status.textContent);
           // A broken document must not block the remaining valid documents.
           // Stop safely if successive passes make no progress (e.g. only
           // permanently failing retry candidates remain).
@@ -1956,6 +1986,7 @@ HTML = """<!doctype html>
           (failures ? ' · ' + t('failedCountLabel') + ': ' + failures : '');
         showImportProgress('idle');
         showImportFailures(failedPaths);
+        if (document.getElementById('simple-home')) updateChatImportNotice(status.textContent);
         if (document.getElementById('source-result')) await refreshSources();
         await refreshOverview();
       } catch (_) {
@@ -1963,6 +1994,7 @@ HTML = """<!doctype html>
           t('sourceIndexProgress') + ': ' + processed;
       } finally {
         showImportProgress('idle');
+        if (document.getElementById('simple-home')) updateChatImportNotice(status.textContent);
         if (button) button.disabled = false;
       }
     }
@@ -2113,6 +2145,28 @@ HTML = """<!doctype html>
       return bubble;
     }
 
+    function clearSimpleChat() {
+      if (chatBusy || chatImportBusy || !document.getElementById('simple-home')) return;
+      const feed = document.getElementById('qa-result');
+      feed.replaceChildren();
+      appendChatMessage('assistant', t('chatWelcome'));
+      chatLastGroundedQuestion = null;
+      chatActiveQuestion = null;
+      chatImportBubble = null;
+      chatPendingReply = null;
+      lastAnswerData = null;
+      const panel = document.getElementById('chat-evidence-panel');
+      if (panel) { panel.replaceChildren(); panel.hidden = true; }
+      document.getElementById('qa-question').focus();
+    }
+
+    function updateChatImportNotice(message) {
+      if (!document.getElementById('simple-home')) return;
+      // One live progress message rather than one message per indexing pass.
+      if (!chatImportBubble) chatImportBubble = appendChatMessage('assistant', message);
+      else chatImportBubble.children[0].textContent = message;
+    }
+
     function initSimpleChat() {
       const question = document.getElementById('simple-home') &&
         document.getElementById('qa-question');
@@ -2130,13 +2184,22 @@ HTML = """<!doctype html>
       const question = input.value.trim();
       if (!question) { input.focus(); return; }
       const onChat = Boolean(document.getElementById('simple-home'));
-      if (onChat && chatBusy) return;
+      if (onChat && (chatBusy || chatImportBusy)) {
+        if (chatImportBusy) {
+          document.getElementById('source-import-status').textContent = t('chatImportBusy');
+        }
+        return;
+      }
       const payload = {
         question,
         source_scope: parseScope(document.getElementById('qa-scope').value),
         limit: Number(document.getElementById('qa-limit').value || 5),
       };
+      if (onChat && chatLastGroundedQuestion) {
+        payload.previous_question = chatLastGroundedQuestion.slice(0, 500);
+      }
       if (onChat) {
+        chatActiveQuestion = question;
         chatBusy = true;
         input.value = '';
         appendChatMessage('user', question);

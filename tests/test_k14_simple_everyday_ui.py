@@ -17,6 +17,9 @@ def test_one_primary_screen_and_progressive_disclosure():
     assert 'id="source-folder"' in html
     assert 'id="qa-question"' in html
     assert 'id="qa-result"' in html
+    assert 'data-i18n="chatClear"' in html
+    assert "payload.previous_question = chatLastGroundedQuestion.slice(0, 500)" in app.HTML
+    assert "chatLastGroundedQuestion = null" in app.HTML
     assert 'class="chat-feed"' in html
     assert 'id="qa-send-button"' in html
     assert 'id="chat-evidence-panel"' in html
@@ -62,14 +65,15 @@ const fs = require('fs');
 const js = fs.readFileSync(0, 'utf8');
 const requests = [];
 const el = (id) => ({
-  id, textContent: '', innerHTML: '', disabled: false,
+  id, textContent: '', innerHTML: '', disabled: false, children: [],
+  appendChild(child){this.children.push(child);},
   classList: {add(){},remove(){}},
   addEventListener(){},
   querySelectorAll(){ return []; },
 });
 const elements = {};
 for (const key of [
-  'simple-home','simple-dropzone','source-import-status',
+  'simple-home','simple-dropzone','source-import-status','qa-send-button',
   'overview-status-title','overview-status-detail',
   'qa-result','qa-question','qa-scope','qa-limit',
   'language-toggle','theme-toggle','log'
@@ -82,6 +86,7 @@ const document = {
   querySelectorAll:()=>[],
   querySelector:()=>({textContent:'Wissen'}),
   getElementById:(id)=>elements[id]||null,
+  createElement: (tag)=>el(tag),
   title:'',
 };
 let indexed = 0;
@@ -147,14 +152,15 @@ const fs = require('fs');
 const js = fs.readFileSync(0, 'utf8');
 const requests = [];
 const el = (id) => ({
-  id, textContent: '', innerHTML: '', disabled: false,
+  id, textContent: '', innerHTML: '', disabled: false, children: [],
+  appendChild(child){this.children.push(child);},
   classList: {add(){},remove(){}},
   addEventListener(){},
   querySelectorAll(){ return []; },
 });
 const elements = {};
 for (const key of [
-  'simple-home','simple-dropzone','source-import-status',
+  'simple-home','simple-dropzone','source-import-status','qa-send-button',
   'overview-status-title','overview-status-detail',
   'qa-result','qa-question','qa-scope','qa-limit',
   'language-toggle','theme-toggle','log'
@@ -167,6 +173,7 @@ const document = {
   querySelectorAll:()=>[],
   querySelector:()=>({textContent:'Wissen'}),
   getElementById:(id)=>elements[id]||null,
+  createElement: (tag)=>el(tag),
   title:'',
 };
 let indexed = 0;
@@ -296,7 +303,7 @@ async function test(){
   process.stdout.write(JSON.stringify({
     count:calls.length,
     questions:calls.map(x=>x.question),
-    noContext:calls.every(x=>Object.keys(x).sort().join(',')==='limit,question,source_scope'),
+    contextual:calls[0].previous_question===undefined && calls[1].previous_question==='Question one',
     chatMessages:ids['qa-result'].children.length,
     last:ids['qa-result'].children.at(-1).children[0].textContent,
     inlineEvidence:ids['chat-evidence-panel'].children.length===4,
@@ -312,5 +319,5 @@ test().catch(e=>{process.stderr.write(e.stack);process.exitCode=1;});
     assert out.returncode == 0, out.stderr
     data = json.loads(out.stdout)
     assert data == {"count": 2, "questions": ["Question one", "Question two"],
-                    "noContext": True, "chatMessages": 4, "last": "Answer 2",
+                    "contextual": True, "chatMessages": 4, "last": "Answer 2",
                     "inlineEvidence": True, "sendEnabled": True}
