@@ -112,7 +112,7 @@ FOLLOWUP_REFERENCES = re.compile(
 )
 CONTEXT_FILLER = {
     "steht", "gilt", "gibt", "sagt", "genannt", "finde", "zeigt",
-    "bitte", "frage", "lange", "much", "many", "tell", "show",
+    "bitte", "frage", "lange", "gelten", "much", "many", "tell", "show",
 }
 
 
