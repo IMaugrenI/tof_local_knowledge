@@ -61,6 +61,8 @@ Bei einem Problem: `python run.py doctor` (gegebenenfalls `python3`). Weitere Hi
 Das Paket ist **kein Installer**, keine Bestätigung von Windows-/macOS-/Linux-Runtime-Funktion und keine Produktfreigabe. Es startet beim Entpacken nichts, enthält keine persönlichen lokalen Einstellungen oder private Dokumente und veröffentlicht nichts über GitHub Releases. Die vollständige Abnahme und spätere Release-Freigabe bleiben ausdrücklich ausstehend.
 
 
+**Zentrale Meilenstein-Abnahme:** [ONE_SCREEN_MILESTONE_DE.md](ONE_SCREEN_MILESTONE_DE.md). Ein Download-Artefakt wird über GitHub **Actions → Source distribution candidate** bereitgestellt, nachdem die explizite Kandidaten-Branch angelegt wurde. Unter der erfolgreichen Ausführung **Artifacts → knowledge-source-candidate** das ZIP mit Prüfsumme laden. GitHub-Actions-Artefakte haben eine begrenzte Aufbewahrungszeit und sind kein öffentliches GitHub Release.
+
 ## Gemeinsamer Test-Meilenstein: Ein-Seiten-Chat
 
 Nach Freigabe des Ausbaustands durch DOM wird **einmal** ein Quellpaket über
