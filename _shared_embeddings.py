@@ -22,7 +22,7 @@ def configured_model() -> str | None:
     if os.environ.get("ENABLE_OLLAMA", "").strip().lower() != "true":
         return None
     model = os.environ.get("KNOWLEDGE_EMBED_MODEL", "").strip()
-    if not re.fullmatch(r"[A-Za-z0-9_.:/-]{1,96}", model):
+    if not re.fullmatch(r"[A-Za-z0-9_.:/-]{1,96}", model) or "://" in model:
         return None
     return model
 
