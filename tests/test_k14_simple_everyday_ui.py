@@ -39,7 +39,7 @@ def test_one_primary_screen_and_progressive_disclosure():
     assert 'id="source-import-errors"' in html
     assert 'id="source-import-error-list"' in html
     assert "entry.textContent = path" in app.HTML
-    assert "showImportFailures(failedPaths)" in app.HTML
+    assert "showImportFailures([...skippedDetails, ...failedPaths])" in app.HTML
     assert "showImportProgress('index')" in app.HTML
     assert "bar.removeAttribute('value')" in app.HTML
     assert "sourceRejectedSize: 'Datei größer als 12 MiB'" in app.HTML
