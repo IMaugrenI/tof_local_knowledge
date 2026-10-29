@@ -47,3 +47,8 @@ Diese Übersicht beschreibt den im Repository vorhandenen Code. Sie ist **kein N
 ## K19–K21 – Gesprächsintention, Quellenauszüge und lexikalische Relevanz
 
 Die GitHub-Entwicklung ergänzt den bestehenden lokalen QA-Pfad um konservative Themenwechsel-Erkennung, kurze mehrdokumentige Textauszüge mit sichtbaren Quellen und eine stabile textbezogene Nachordnung bereits freigegebener Suchtreffer. Erweiterungen sind ohne neue Services oder konkurrierende Runtime integriert. **Nicht enthalten** sind echte semantische Suche, frei formulierte LLM-Synthese, dauerhaftes Gesprächsgedächtnis, serverseitige Mehrbenutzer-ACLs oder eine Betriebsfreigabe auf einem Zielsystem. GitHub-CI und gezielte Tests sind Entwicklungsnachweise; die Runtime-Abnahme wird bis zum vereinbarten Meilenstein gesammelt.
+
+
+## K25 – Optionale pgvector-Suche (Entwicklungsstand)
+
+Das im Repository bereits angelegte `document_segments.embedding VECTOR(768)` kann bei ausdrücklich aktiviertem lokalem 768D-Embedding-Modell für bis zu zwölf Segmente pro neu extrahiertem Dokument befüllt werden. Nach erfolglosen strengen FTS-/Keyword-Suchen darf die QA einen separat als nicht faktisch verifiziert markierten Ähnlichkeitstrefferpool abrufen. Es gelten weiterhin aktuelle Dokumentzustände, aktivierte Quellen und Quellenfilter. Keine neue Datenbank und kein zusätzlicher Startweg. **Nicht nachgewiesen** sind die Performance und tatsächliche Modellqualität auf dem Betreiberrechner. Keine automatische Massenrückfüllung alter Quellen. GitHub-CI bleibt ein Entwicklungsnachweis.
