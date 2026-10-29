@@ -60,6 +60,8 @@ class QaRequest(BaseModel):
     question: str = Field(min_length=1)
     source_scope: list[str] | None = None
     limit: int = Field(default=5, ge=1, le=20)
+    # Browser-session context only; never prior answers, snippets or source paths.
+    previous_question: str | None = Field(default=None, max_length=500)
 
 
 @app.get('/health')
@@ -82,6 +84,46 @@ def fallback_search_query(question: str) -> str:
         if token not in QUESTION_STOPWORDS and len(token) > 1
     )
     return ' '.join(list(unique)[:8])
+
+
+# Only an explicit, short contextual follow-up borrows topic words. A new
+# independent question must never be contaminated by earlier chat turns.
+FOLLOWUP_START = re.compile(
+    r"^\s*(?:und\b|and\b|what about\b|how about\b|"
+    r"was ist mit\b|wie sieht es\b|"
+    r"and what\b|dazu\b|dafür\b|damit\b|"
+    r"und was\b|und wie\b)",
+    flags=re.IGNORECASE,
+)
+FOLLOWUP_REFERENCES = re.compile(
+    r"\b(?:dafür|dazu|dabei|darüber|dieser|diese|dieses|"
+    r"damit|dessen|deren|hierzu|it|them|that|those|there)\b",
+    flags=re.IGNORECASE,
+)
+CONTEXT_FILLER = {
+    "steht", "gilt", "gibt", "sagt", "genannt", "finde", "zeigt",
+    "bitte", "frage", "lange", "much", "many", "tell", "show",
+}
+
+
+def contextual_followup_query(question: str, previous_question: str | None) -> str | None:
+    """Conservative keyword-only query; the live search still supplies all evidence.
+
+    No history text is treated as a citation. Follow-up search terms are ANDed
+    with the prior topic, never silently relaxed to OR.
+    """
+    if not previous_question or not (
+        FOLLOWUP_START.search(question) or FOLLOWUP_REFERENCES.search(question)
+    ):
+        return None
+    previous = [x for x in fallback_search_query(previous_question).split()
+                if x not in CONTEXT_FILLER]
+    current = [x for x in fallback_search_query(question).split()
+               if x not in CONTEXT_FILLER and x not in {"dafür", "dazu", "damit"}]
+    if not previous:
+        return None
+    terms = list(dict.fromkeys(previous[-3:] + current[:3]))
+    return ' '.join(terms) if terms else None
 
 
 def run_search(client: httpx.Client, query: str, payload: QaRequest) -> dict:
@@ -119,20 +161,22 @@ def evidence_signal(hits: list[dict], strategy: str) -> dict[str, object]:
 
 @app.post('/answer')
 def answer(payload: QaRequest):
-    attempted_queries = [payload.question]
-    strategy = 'original_question'
+    context_query = contextual_followup_query(payload.question, payload.previous_question)
+    search_question = context_query or payload.question
+    attempted_queries = [search_question]
+    strategy = 'contextual_followup' if context_query else 'original_question'
 
     with httpx.Client(timeout=20.0) as client:
-        data = run_search(client, payload.question, payload)
+        data = run_search(client, search_question, payload)
         hits = data.get('hits', [])
 
-        fallback_query = fallback_search_query(payload.question)
-        if not hits and fallback_query and fallback_query != payload.question.lower().strip():
+        fallback_query = fallback_search_query(search_question)
+        if not hits and fallback_query and fallback_query != search_question.lower().strip():
             attempted_queries.append(fallback_query)
             data = run_search(client, fallback_query, payload)
             hits = data.get('hits', [])
             if hits:
-                strategy = 'keywords'
+                strategy = 'contextual_followup' if context_query else 'keywords'
         if not hits and fallback_query:
             # Preserve the complete content-term AND requirement: replace only
             # a known equivalent public/publish form, never omit an identifier
@@ -144,7 +188,7 @@ def answer(payload: QaRequest):
                 data = run_search(client, normalized_query, payload)
                 hits = data.get('hits', [])
                 if hits:
-                    strategy = 'keywords_variant'
+                    strategy = 'contextual_followup' if context_query else 'keywords_variant'
         if not hits and fallback_query:
             terms = fallback_query.split()
             if len(terms) >= 2:
@@ -197,6 +241,8 @@ def answer(payload: QaRequest):
     ]
 
     uncertainties = ['confidence_uncalibrated']
+    if context_query:
+        uncertainties.append('contextual_keyword_match_not_semantically_verified')
     if strategy == 'keywords_variant':
         uncertainties.append('lexical_variant_not_semantically_verified')
     # Confidence remains a compatibility-only heuristic, never a calibrated
