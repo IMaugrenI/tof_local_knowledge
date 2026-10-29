@@ -130,7 +130,9 @@ def contextual_followup_query(question: str, previous_question: str | None) -> s
                 if x not in CONTEXT_FILLER]
     current = [x for x in fallback_search_query(question).split()
                if x not in CONTEXT_FILLER and x not in {"dafür", "dazu", "damit"}]
-    if not previous:
+    # A follow-up with no new content terms is too ambiguous to ground.
+    # Returning only old keywords would risk repeating unrelated evidence.
+    if not previous or not current:
         return None
     terms = list(dict.fromkeys(previous[-3:] + current[:3]))
     return ' '.join(terms) if terms else None
