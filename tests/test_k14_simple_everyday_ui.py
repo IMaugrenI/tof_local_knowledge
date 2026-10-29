@@ -17,6 +17,14 @@ def test_one_primary_screen_and_progressive_disclosure():
     assert 'id="source-folder"' in html
     assert 'id="qa-question"' in html
     assert 'id="qa-result"' in html
+    assert 'class="chat-feed"' in html
+    assert 'id="qa-send-button"' in html
+    assert 'id="chat-evidence-panel"' in html
+    assert "role=\"log\"" in html
+    assert 'id="simple-dropzone"' in html
+    assert "initSimpleChat()" in app.HTML
+    assert "if (onChat) panel.hidden = false" in app.HTML
+    assert "data-i18n=\"chatHint\"" in html
     assert '<details class="simple-more">' in html
     assert '<nav class="page-nav"' in html
     assert 'id="index-batch-button"' not in html
@@ -217,3 +225,92 @@ vm.runInContext('importSelectedFiles(selection,false)',ctx,{timeout:2000}).then(
     data = json.loads(out.stdout)
     assert data == {"imports": 2, "batches": 2, "indexed": 4,
                     "processedNotice": True}
+
+
+@pytest.mark.skipif(not shutil.which("node"), reason="Node.js unavailable")
+def test_chat_two_questions_keep_visible_history_and_source_in_same_page():
+    """QA remains independent per question, but chat messages accumulate safely."""
+    script = app.HTML.split("<script>", 1)[1].split("</script>", 1)[0]
+    harness = r"""
+const vm = require('vm');
+const fs = require('fs');
+const js = fs.readFileSync(0, 'utf8');
+const calls = [];
+function el(tag = 'div') {
+  return {
+    tag, textContent:'', innerHTML:'', value:'', disabled:false,
+    style:{}, dataset:{}, hidden:false, children:[],
+    classList:{add(){}, remove(){}, toggle(){}},
+    addEventListener(name,fn){this[name]=fn;},
+    appendChild(child){this.children.push(child);},
+    append(...items){this.children.push(...items);},
+    replaceChildren(...items){this.children=items;},
+    querySelectorAll(){return [];}, setAttribute(){},
+    focus(){}, scrollIntoView(){}, scrollTop:0, scrollHeight:100,
+  };
+}
+const ids={};
+for (const id of ['simple-home','simple-dropzone','qa-result',
+  'qa-question','qa-scope','qa-limit','qa-send-button',
+  'source-import-status','chat-evidence-panel',
+  'overview-status-title','overview-status-detail',
+  'language-toggle','theme-toggle','log']) ids[id]=el();
+ids['qa-limit'].value='5';
+const document={
+  documentElement:{lang:'de'}, body:{classList:{toggle(){}}},
+  querySelectorAll:()=>[], querySelector:()=>({textContent:'Wissen'}),
+  getElementById:id=>ids[id]||null, createElement:tag=>el(tag), title:'',
+};
+const storage={getItem:()=>null,setItem(){}};
+const fetch=async(url, opts={})=>{
+  if(url==='/api/summary') return {ok:true,json:async()=>({})};
+  if(url==='/api/sources') return {ok:true,json:async()=>({sources:[]})};
+  if(url==='/api/answer'){
+    const request=JSON.parse(opts.body); calls.push(request);
+    return {ok:true,json:async()=>({
+      answer_text:'Answer '+calls.length,
+      citations:[{relative_path:'notes.md'}],
+      evidence_refs:[{relative_path:'notes.md',segment_id:'seg_a'}],
+    })};
+  }
+  if(url.startsWith('/api/evidence?')){
+    return {ok:true,json:async()=>({evidence:{
+      citation_label:'Source',relative_path:'notes.md',
+      source_id:'source',document_id:'doc',segment_id:'seg_a',
+      excerpt:'Synthetic evidence'},
+      truncated_to_chars:100})};
+  }
+  throw Error('unexpected URL '+url);
+};
+const window={location:{pathname:'/',search:'',assign(){throw Error('navigated');}}};
+const ctx=vm.createContext({document,window,localStorage:storage,
+  fetch,URLSearchParams});
+vm.runInContext(js,ctx,{timeout:2000});
+async function test(){
+  ids['qa-question'].value='Question one';
+  await vm.runInContext('runAnswer()',ctx);
+  ids['qa-question'].value='Question two';
+  await vm.runInContext('runAnswer()',ctx);
+  await vm.runInContext("inspectEvidence('seg_a')",ctx);
+  vm.runInContext("toggleLanguage()",ctx);
+  process.stdout.write(JSON.stringify({
+    count:calls.length,
+    questions:calls.map(x=>x.question),
+    noContext:calls.every(x=>Object.keys(x).sort().join(',')==='limit,question,source_scope'),
+    chatMessages:ids['qa-result'].children.length,
+    last:ids['qa-result'].children.at(-1).children[0].textContent,
+    inlineEvidence:ids['chat-evidence-panel'].children.length===4,
+    sendEnabled:ids['qa-send-button'].disabled===false,
+  }));
+}
+test().catch(e=>{process.stderr.write(e.stack);process.exitCode=1;});
+"""
+    out = subprocess.run(
+        ["node", "-e", harness], input=script, text=True,
+        capture_output=True, timeout=10, check=False,
+    )
+    assert out.returncode == 0, out.stderr
+    data = json.loads(out.stdout)
+    assert data == {"count": 2, "questions": ["Question one", "Question two"],
+                    "noContext": True, "chatMessages": 4, "last": "Answer 2",
+                    "inlineEvidence": True, "sendEnabled": True}

@@ -273,6 +273,35 @@ HTML = """<!doctype html>
     .simple-buttons { display: flex; flex-wrap: wrap; gap: 9px; justify-content: center; }
     .simple-card .result { margin-top: 16px; }
     .simple-card textarea { min-height: 135px; }
+    .chat-workspace { border: 1px solid var(--border-strong); border-radius: 18px;
+      background: var(--surface); overflow: hidden; }
+    .chat-feed { display: flex; flex-direction: column; gap: 14px; padding: 22px;
+      min-height: 280px; max-height: 52vh; overflow-y: auto; }
+    .chat-message { border-radius: 16px; padding: 13px 16px; max-width: 82%;
+      overflow-wrap: anywhere; line-height: 1.55; white-space: pre-wrap; }
+    .chat-message--assistant { align-self: flex-start; background: var(--surface-soft);
+      border: 1px solid var(--border); }
+    .chat-message--user { align-self: flex-end; background: var(--chip-bg);
+      border: 1px solid var(--border-strong); }
+    .chat-message details { margin-top: 12px; white-space: normal; }
+    .chat-source { display: flex; gap: 9px; align-items: center; flex-wrap: wrap;
+      margin-top: 9px; overflow-wrap: anywhere; }
+    .chat-attach { border-top: 1px solid var(--border); padding: 12px 18px 6px; }
+    .chat-attach .simple-dropzone { flex-direction: row; min-height: 0; padding: 10px 12px;
+      justify-content: space-between; gap: 10px; text-align: left; }
+    .chat-attach .hint { margin: 8px 0; }
+    .chat-composer { display: flex; align-items: end; gap: 12px;
+      border-top: 1px solid var(--border); padding: 12px 18px; }
+    .chat-composer textarea { min-height: 60px; flex: 1; resize: vertical; }
+    .chat-composer button { flex-shrink: 0; }
+    .chat-hint { font-size: .8rem; color: var(--muted); padding: 0 18px 14px; }
+    .chat-evidence { margin: 0 18px 12px; padding: 14px; border: 1px solid var(--border);
+      border-radius: 12px; overflow-wrap: anywhere; }
+    @media (max-width: 650px) {
+      .chat-message { max-width: 96%; }
+      .chat-attach .simple-dropzone { flex-direction: column; align-items: stretch; }
+      .chat-composer { flex-wrap: wrap; }
+    }
     .simple-privacy { margin-top: 16px; color: var(--muted); font-size: .82rem; }
     @media (max-width: 830px) { .simple-grid { grid-template-columns: 1fr; } }
     .source-onboarding {
@@ -569,19 +598,19 @@ HTML = """<!doctype html>
         <!-- PAGE_START:overview -->
         <section class="simple-home" id="simple-home" aria-labelledby="simple-title">
           <p class="eyebrow" data-i18n="simpleEyebrow">DEIN WISSEN</p>
-          <h1 id="simple-title" data-i18n="simpleTitle">Deine Dateien. Deine Antworten.</h1>
-          <p class="lead" data-i18n="simpleLead">Dateien hinzufügen und direkt Fragen stellen. Den Rest übernimmt ToF.</p>
+          <h1 id="simple-title" data-i18n="chatTitle">Frag deine Dokumente.</h1>
+          <p class="lead" data-i18n="chatLead">Dateien hinzufügen, Fragen stellen und Antworten mit Quellen lesen – alles hier.</p>
           <div class="simple-status" aria-live="polite">
             <span id="overview-status-title" data-i18n="overviewLoading">Dokumentenstatus wird geladen …</span>
             <span id="overview-status-detail" class="muted" data-i18n="overviewLoadingHelp">Die lokalen Quellen werden geprüft.</span>
           </div>
-          <div class="simple-grid">
-            <section class="simple-card" aria-labelledby="simple-files-title">
-              <span class="simple-step" data-i18n="simpleStepOne">1 · DATEIEN</span>
-              <h2 id="simple-files-title" data-i18n="simpleFilesTitle">Dateien hinzufügen</h2>
+          <section class="chat-workspace" aria-label="Dokumenten-Chat" data-i18n-aria-label="chatWorkspaceLabel">
+            <div id="qa-result" class="chat-feed" role="log" aria-live="polite" data-i18n-aria-label="chatHistoryLabel" aria-label="Unterhaltung">
+              <div class="chat-message chat-message--assistant"><div class="chat-text" data-i18n="chatWelcome">Hallo! Füge Dokumente hinzu oder stelle direkt eine Frage zu deinen vorhandenen Dateien.</div></div>
+            </div>
+            <div class="chat-attach">
               <div id="simple-dropzone" class="simple-dropzone" role="group" aria-labelledby="simple-drop-label">
-                <strong id="simple-drop-label" data-i18n="simpleDropText">Dateien hier hineinziehen</strong>
-                <span class="muted" data-i18n="simpleDropOr">oder</span>
+                <span id="simple-drop-label" data-i18n="chatDropText">Dateien hier ablegen</span>
                 <div class="simple-buttons">
                   <button type="button" class="secondary" onclick="document.getElementById('source-files').click()" data-i18n="sourcePickFiles">Dateien auswählen</button>
                   <button type="button" class="ghost" onclick="chooseFolder()" data-i18n="simpleChooseFolder">Ordner auswählen</button>
@@ -592,22 +621,19 @@ HTML = """<!doctype html>
               <p id="source-import-status" class="hint" role="status" aria-live="polite" data-i18n="simpleFilesHint">Nur ausgewählte Dateien werden lokal kopiert und eingelesen. Originale bleiben unverändert.</p>
               <progress id="source-import-progress" max="100" value="0" style="display:none;width:100%" aria-label="Dateiverarbeitung"></progress>
               <details id="source-import-errors" style="display:none"><summary data-i18n="simpleFailedFiles">Nicht verarbeitete Dateien</summary><ul id="source-import-error-list"></ul></details>
-            </section>
-            <section class="simple-card" aria-labelledby="simple-question-title">
-              <span class="simple-step" data-i18n="simpleStepTwo">2 · FRAGEN</span>
-              <h2 id="simple-question-title" data-i18n="simpleQuestionTitle">Was möchtest du wissen?</h2>
-              <div class="form-grid">
-                <textarea id="qa-question" data-i18n-aria-label="questionLabel" aria-label="Frage an deine Dokumente" data-i18n-placeholder="questionPlaceholder" placeholder="Was steht in meinen Dokumenten zu …?"></textarea>
-                <input id="qa-scope" type="hidden" value="">
-                <input id="qa-limit" type="hidden" value="5">
-                <button type="button" onclick="runAnswer()" data-i18n="simpleAsk">Antwort finden</button>
-              </div>
-              <div class="result" id="qa-result" role="status" aria-live="polite" data-i18n="noAnswerYet">Hier erscheint deine Antwort mit den Quellen.</div>
-            </section>
-          </div>
+            </div>
+            <div id="chat-evidence-panel" class="chat-evidence" role="status" hidden></div>
+            <div class="chat-composer">
+              <textarea id="qa-question" rows="2" data-i18n-aria-label="questionLabel" aria-label="Frage an deine Dokumente" data-i18n-placeholder="chatPlaceholder" placeholder="Frag etwas zu deinen Dokumenten …"></textarea>
+              <input id="qa-scope" type="hidden" value="">
+              <input id="qa-limit" type="hidden" value="5">
+              <button id="qa-send-button" type="button" onclick="runAnswer()" data-i18n="chatSend">Senden</button>
+            </div>
+            <p class="chat-hint" data-i18n="chatHint">Enter sendet · Umschalt+Enter für eine neue Zeile. Jede Frage wird einzeln anhand deiner Dokumente geprüft; der Verlauf bleibt nur bis zum Neuladen sichtbar.</p>
+          </section>
           <p class="simple-privacy" data-i18n="simplePrivacy">Deine ausgewählten Dateien bleiben auf diesem Computer. Es gibt keine automatische Ordnerüberwachung.</p>
         </section>
-        <!-- PAGE_END:overview -->
+                <!-- PAGE_END:overview -->
         <!-- PAGE_START:question -->
         <div class="page-intro">
           <div><h1 data-i18n="navAsk">Frage stellen</h1>
@@ -753,6 +779,17 @@ HTML = """<!doctype html>
     const I18N = {
       de: {
         simpleEyebrow: 'DEIN WISSEN',
+        chatTitle: 'Frag deine Dokumente.',
+        chatLead: 'Dateien hinzufügen, Fragen stellen und Antworten mit Quellen lesen – alles hier.',
+        chatWorkspaceLabel: 'Dokumenten-Chat',
+        chatHistoryLabel: 'Unterhaltung',
+        chatWelcome: 'Hallo! Füge Dokumente hinzu oder stelle direkt eine Frage zu deinen vorhandenen Dateien.',
+        chatDropText: 'Dateien hier ablegen',
+        chatPlaceholder: 'Frag etwas zu deinen Dokumenten …',
+        chatSend: 'Senden',
+        chatSearching: 'Ich suche in deinen Dokumenten …',
+        chatError: 'Die Antwort konnte nicht geladen werden. Bitte versuche es erneut.',
+        chatHint: 'Enter sendet · Umschalt+Enter für eine neue Zeile. Jede Frage wird einzeln anhand deiner Dokumente geprüft; der Verlauf bleibt nur bis zum Neuladen sichtbar.',
         simpleTitle: 'Deine Dateien. Deine Antworten.',
         simpleLead: 'Dateien hinzufügen und direkt Fragen stellen. Den Rest übernimmt ToF.',
         simpleStepOne: '1 · DATEIEN',
@@ -984,6 +1021,17 @@ HTML = """<!doctype html>
       },
       en: {
         simpleEyebrow: 'YOUR KNOWLEDGE',
+        chatTitle: 'Ask your documents.',
+        chatLead: 'Add files, ask questions and read sourced answers – all here.',
+        chatWorkspaceLabel: 'Document chat',
+        chatHistoryLabel: 'Conversation',
+        chatWelcome: 'Hello! Add documents or ask a question about your existing files.',
+        chatDropText: 'Drop files here',
+        chatPlaceholder: 'Ask something about your documents …',
+        chatSend: 'Send',
+        chatSearching: 'Searching your documents …',
+        chatError: 'The answer could not be loaded. Please try again.',
+        chatHint: 'Enter to send · Shift+Enter for a new line. Each question is checked independently against your documents; the conversation display lasts until you reload.',
         simpleTitle: 'Your files. Your answers.',
         simpleLead: 'Add files and ask questions. ToF handles the rest.',
         simpleStepOne: '1 · FILES',
@@ -1221,6 +1269,8 @@ HTML = """<!doctype html>
     let availableSourceSpaces = [];
     let lastSearchData = null;
     let lastAnswerData = null;
+    let chatPendingReply = null;
+    let chatBusy = false;
     let lastIndexData = null;
     let lastEvidenceSegment = null;
     let lastOverviewData = null;
@@ -1271,7 +1321,7 @@ HTML = """<!doctype html>
       const active = document.querySelector('.page-nav a[aria-current="page"]');
       document.title = 'ToF Knowledge · ' + (active ? active.textContent : t('navAsk'));
       if (lastSearchData) renderSearchResult(lastSearchData);
-      if (lastAnswerData) renderAnswerResult(lastAnswerData);
+      if (lastAnswerData && !document.getElementById('simple-home')) renderAnswerResult(lastAnswerData);
       if (lastIndexData) renderIndexBatchResult(lastIndexData);
       if (lastOverviewData) renderOverviewStatus(lastOverviewData);
       document.getElementById('language-toggle').textContent = t('languageButton');
@@ -1338,11 +1388,13 @@ HTML = """<!doctype html>
 
     async function inspectEvidence(segmentId) {
       if (!/^[A-Za-z0-9_-]{1,128}$/.test(segmentId)) return;
-      if (window.location.pathname !== '/beleg-pruefen') {
+      const onChat = Boolean(document.getElementById('simple-home'));
+      if (!onChat && window.location.pathname !== '/beleg-pruefen') {
         window.location.assign('/beleg-pruefen?segment_id=' + encodeURIComponent(segmentId));
         return;
       }
-      const panel = document.getElementById('evidence-result');
+      const panel = document.getElementById(onChat ? 'chat-evidence-panel' : 'evidence-result');
+      if (onChat) panel.hidden = false;
       lastEvidenceSegment = segmentId;
       panel.textContent = t('evidenceEmpty');
       try {
@@ -1439,7 +1491,7 @@ HTML = """<!doctype html>
     function renderAnswerResult(data) {
       lastAnswerData = data;
       const root = document.getElementById('qa-result');
-      if (data.error) {
+      if (data.error && !document.getElementById('simple-home')) {
         root.innerHTML = errorMarkup(data, t('answerFailed'));
         return;
       }
@@ -1452,31 +1504,44 @@ HTML = """<!doctype html>
       const searchQueries = asList(data.search_queries);
       const signal = data.evidence_signal || null;
 
-      // Everyday surface: only the answer and an optional source disclosure.
-      // The complete technical packet remains available on the expert page.
+      // Chat view is session-only. The existing QA API still evaluates each
+      // question independently; no conversation memory is sent or invented.
       if (document.getElementById('simple-home')) {
+        const bubble = chatPendingReply;
+        if (!bubble) return;
+        bubble.replaceChildren();
+        const text = document.createElement('div');
+        text.className = 'chat-text';
         const hasEvidence = citations.length > 0 && evidenceRefs.length > 0;
-        let concise = hasEvidence ? answer : t('simpleNoEvidence');
-        if (concise.length > 750) concise = concise.slice(0, 750).trimEnd() + ' …';
-        let compact = '<div class="result-card"><div class="answer-main">' +
-          escapeHtml(concise) + '</div>';
-        if (hasEvidence) {
-          compact += '<details><summary>' + t('simpleEvidence') + ' (' +
-            evidenceRefs.length + ')</summary>';
+        text.textContent = data.error ? t('chatError') :
+          (hasEvidence ? answer : t('simpleNoEvidence'));
+        bubble.appendChild(text);
+        if (!data.error && hasEvidence) {
+          const sources = document.createElement('details');
+          const label = document.createElement('summary');
+          label.textContent = t('simpleEvidence') + ' (' + evidenceRefs.length + ')';
+          sources.appendChild(label);
           for (const ref of evidenceRefs) {
-            compact += '<div class="meta-grid"><span>' +
-              escapeHtml(ref.relative_path || '') + '</span>';
-            if (ref.segment_id) {
-              compact += '<button type="button" class="secondary" data-evidence-segment="' +
-                escapeHtml(ref.segment_id) + '">' + t('viewEvidence') + '</button>';
+            const row = document.createElement('div');
+            row.className = 'chat-source';
+            const filename = document.createElement('span');
+            filename.textContent = ref.relative_path || '';
+            row.appendChild(filename);
+            if (ref.segment_id && /^[A-Za-z0-9_-]{1,128}$/.test(ref.segment_id)) {
+              const button = document.createElement('button');
+              button.type = 'button';
+              button.className = 'secondary';
+              button.dataset.evidenceSegment = ref.segment_id;
+              button.textContent = t('viewEvidence');
+              row.appendChild(button);
             }
-            compact += '</div>';
+            sources.appendChild(row);
           }
-          compact += '</details>';
+          bubble.appendChild(sources);
+          bindEvidenceButtons(bubble);
         }
-        compact += '</div>';
-        root.innerHTML = compact;
-        bindEvidenceButtons(root);
+        chatPendingReply = null;
+        root.scrollTop = root.scrollHeight;
         return;
       }
 
@@ -2035,12 +2100,49 @@ HTML = """<!doctype html>
       }
     }
 
+    function appendChatMessage(kind, message) {
+      const thread = document.getElementById('qa-result');
+      const bubble = document.createElement('div');
+      bubble.className = 'chat-message chat-message--' + kind;
+      const content = document.createElement('div');
+      content.className = 'chat-text';
+      content.textContent = message;
+      bubble.appendChild(content);
+      thread.appendChild(bubble);
+      thread.scrollTop = thread.scrollHeight;
+      return bubble;
+    }
+
+    function initSimpleChat() {
+      const question = document.getElementById('simple-home') &&
+        document.getElementById('qa-question');
+      if (!question) return;
+      question.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
+          event.preventDefault();
+          runAnswer();
+        }
+      });
+    }
+
     async function runAnswer() {
+      const input = document.getElementById('qa-question');
+      const question = input.value.trim();
+      if (!question) { input.focus(); return; }
+      const onChat = Boolean(document.getElementById('simple-home'));
+      if (onChat && chatBusy) return;
       const payload = {
-        question: document.getElementById('qa-question').value,
+        question,
         source_scope: parseScope(document.getElementById('qa-scope').value),
         limit: Number(document.getElementById('qa-limit').value || 5),
       };
+      if (onChat) {
+        chatBusy = true;
+        input.value = '';
+        appendChatMessage('user', question);
+        chatPendingReply = appendChatMessage('assistant', t('chatSearching'));
+        document.getElementById('qa-send-button').disabled = true;
+      }
       appendLog(t('runningAnswer'));
       try {
         const response = await fetch('/api/answer', {
@@ -2049,11 +2151,18 @@ HTML = """<!doctype html>
           body: JSON.stringify(payload),
         });
         const data = await response.json();
+        if (!response.ok && !data.error) data.error = 'request_failed';
         renderAnswerResult(data);
         appendLog(t('answerFinished'));
       } catch (error) {
-        renderAnswerResult({ error: 'request_failed', details: String(error) });
-        appendLog(t('answerFailed') + ': ' + String(error));
+        renderAnswerResult({ error: 'request_failed' });
+        appendLog(t('answerFailed'));
+      } finally {
+        if (onChat) {
+          chatBusy = false;
+          document.getElementById('qa-send-button').disabled = false;
+          input.focus();
+        }
       }
     }
 
@@ -2082,6 +2191,7 @@ HTML = """<!doctype html>
     document.getElementById('log').textContent = t('uiStarted');
     refreshSummary();
     initSimpleDropzone();
+    initSimpleChat();
     const params = new URLSearchParams(window.location.search);
     const sourceId = params.get('source_id');
     if (sourceId && sourceId.length <= 64) {
