@@ -45,3 +45,12 @@ Die Chat-Startseite darf nach einer erfolgreich belegten Antwort die **unmittelb
 Fehlt eine belastbar belegte vorherige Antwort, ist der Verlauf gelöscht oder wurden neue Dateien importiert, wird kein Gesprächskontext weitergegeben. Eine unabhängige neue Frage wird nicht mit alten Themen vermischt. Breite OR-Treffer bleiben weiterhin ausschließlich diagnostisch ohne Zitate. Bei einem positiven Kontexttreffer meldet `uncertainties` die zusätzliche Grenze `contextual_keyword_match_not_semantically_verified`; `evidence_signal.search_strategy` heißt `contextual_followup`.
 
 **Keine semantische Gesprächs-Memory:** Das Verfahren ist kein LLM-basiertes Schlussfolgern aus einer ganzen Unterhaltung und keine persistente Gedächtnisspeicherung. Jede Antwort bleibt dokumentengestützt und fordert bei nicht belegbaren Anfragen Zurückhaltung. Die gesamte sichtbare Unterhaltung existiert nur im Browser bis zum Neuladen und kann mit „Neuer Chat“ gelöscht werden.
+
+
+## K-18 – Begrenzter Mehrturn-Kontext mit Themenanker
+
+Der Einseiten-Chat übergibt optional `recent_questions` mit höchstens **vier** zuvor belegten Benutzerfragen (je maximal 500 Zeichen). Nur Nutzerfragen sind zulässig; Antworten, Auszüge, Dateipfade und historische Zitationen werden nicht als Input-Kontext übertragen. Der erste belegte Themenanker bleibt bei weiteren Anschlussfragen erhalten; anschließend bleiben die neuesten drei Fragen als begrenzte Gesprächsreferenz vorhanden. Die QA verwendet davon ausschließlich den **frühesten Themenanker**, und auch nur bei ausdrücklich gekennzeichneten Anschlussformulierungen. Neue unabhängige Fragen übernehmen **keinen** früheren Kontext.
+
+Die Auflösung ist weiterhin eine deterministische Keyword-/AND-Suche, keine echte semantische Konversation, keine Speicherung in Memory und kein LLM. Die bestehende Legacy-Option `previous_question` bleibt für ältere Clients erhalten. Treffer werden bei **jedem** Turn neu über den vorhandenen Suchdienst innerhalb des aktuellen Source Scope beschafft. Historische Aussagen oder Belege gelten niemals als Wahrheit für aktuelle Antworten. Breite OR-Treffer bleiben unsicher und nicht zitierfähig. Bei fehlenden Belegen, neuem Dateiimport oder „Neuer Chat“ wird der Kontext clientseitig verworfen.
+
+Dieser Bauabschnitt ist ein sicherer Schritt in Richtung mehrturnfähige Bedienung, **kein** behauptetes vollständiges semantisches Gedächtnis. Weitergehende semantische Auflösung muss vor Umsetzung gesondert anhand der Understanding-/Memory-Verantwortungsgrenzen geprüft werden.

@@ -90,3 +90,83 @@ def test_contextual_qa_never_promotes_broad_or_hits_to_citations(monkeypatch):
     assert response["used_documents"] == []
     assert response["evidence_refs"] == []
     assert response["confidence"] == 0
+
+
+def test_four_turn_context_keeps_original_grounded_topic():
+    assert qa_runtime.contextual_thread_query(
+        "Und welche Ausnahmen gelten?",
+        ["Was steht im Mietvertrag zur Kündigung?",
+         "Und welche Frist gilt dafür?"],
+    ) == "mietvertrag kündigung ausnahmen"
+    # An unrelated fresh question must never be polluted by prior topics.
+    assert qa_runtime.contextual_thread_query(
+        "Welche Kosten entstehen?", ["Was steht im Mietvertrag zur Kündigung?"],
+    ) is None
+    assert qa_runtime.contextual_thread_query("Und was?", [
+        "Was steht im Mietvertrag zur Kündigung?"
+    ]) is None
+
+
+def test_bounded_chat_history_rejects_oversize_blank_and_excess_turns():
+    import pytest
+    from pydantic import ValidationError
+
+    qa_runtime.QaRequest(question="Und wie?", recent_questions=[
+        "Vertrag", "Frist", "Ausnahmen", "Weitere Angaben",
+    ])
+    for history in [
+        ["a"] * 5,
+        ["a" * 501],
+        ["  "],
+    ]:
+        with pytest.raises(ValidationError):
+            qa_runtime.QaRequest(question="Und wie?", recent_questions=history)
+
+
+def test_multiturn_context_must_use_live_scope_and_never_answer_from_history(monkeypatch):
+    queries = []
+    class FakeClient:
+        def __init__(self, timeout): self.timeout = timeout
+        def __enter__(self): return self
+        def __exit__(self, *args): return False
+
+    def fake_search(client, query, payload):
+        queries.append((query, payload.source_scope))
+        if query == "mietvertrag kündigung ausnahmen":
+            return {"hits": [{
+                "document_id": "doc_2", "source_id": "space_a",
+                "relative_path": "Mietvertrag.md", "segment_id": "segment_2",
+                "citation_label": "Quelle 2", "preview_text": "Ausnahme: Urlaub.",
+            }]}
+        return {"hits": []}
+
+    monkeypatch.setattr(qa_runtime.httpx, "Client", FakeClient)
+    monkeypatch.setattr(qa_runtime, "run_search", fake_search)
+    request = qa_runtime.QaRequest(
+        question="Und welche Ausnahmen gelten?",
+        recent_questions=["Was steht im Mietvertrag zur Kündigung?",
+                          "Und welche Frist gilt dafür?"],
+        source_scope=["space_a"],
+    )
+    response = qa_runtime.answer(request)
+    assert queries == [("mietvertrag kündigung ausnahmen", ["space_a"])]
+    assert response["citations"] == ["Quelle 2"]
+    assert response["evidence_signal"]["search_strategy"] == "contextual_followup"
+    assert "contextual_keyword_match_not_semantically_verified" in response["uncertainties"]
+
+    queries.clear()
+    unrelated = qa_runtime.answer(qa_runtime.QaRequest(
+        question="Welche Kosten entstehen?",
+        recent_questions=request.recent_questions, source_scope=["space_a"],
+    ))
+    assert queries[0] == ("Welche Kosten entstehen?", ["space_a"])
+    assert unrelated["citations"] == []
+
+
+def test_legacy_single_previous_question_still_supported():
+    assert qa_runtime.contextual_thread_query(
+        "Und welche Frist gilt dafür?", []
+    ) is None
+    assert qa_runtime.contextual_followup_query(
+        "Und welche Frist gilt dafür?", "Was steht im Mietvertrag zur Kündigung?"
+    ) == "mietvertrag kündigung frist"

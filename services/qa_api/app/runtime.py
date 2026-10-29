@@ -3,7 +3,7 @@ import re
 
 import httpx
 from fastapi import FastAPI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 app = FastAPI(title='tof_local_knowledge_qa_api', version='0.4.0')
 SEARCH_API_URL = os.environ.get('SEARCH_API_URL', 'http://search_api:8105/search')
@@ -62,6 +62,16 @@ class QaRequest(BaseModel):
     limit: int = Field(default=5, ge=1, le=20)
     # Browser-session context only; never prior answers, snippets or source paths.
     previous_question: str | None = Field(default=None, max_length=500)
+    # Optional bounded list of grounded user questions from this browser session.
+    # Answers, cited excerpts and arbitrary document text are never accepted here.
+    recent_questions: list[str] = Field(default_factory=list, max_length=4)
+
+    @field_validator('recent_questions')
+    @classmethod
+    def validate_recent_questions(cls, questions: list[str]) -> list[str]:
+        if any(not question.strip() or len(question) > 500 for question in questions):
+            raise ValueError('invalid_recent_question')
+        return questions
 
 
 @app.get('/health')
@@ -102,7 +112,7 @@ FOLLOWUP_REFERENCES = re.compile(
 )
 CONTEXT_FILLER = {
     "steht", "gilt", "gibt", "sagt", "genannt", "finde", "zeigt",
-    "bitte", "frage", "lange", "much", "many", "tell", "show",
+    "bitte", "frage", "lange", "gelten", "much", "many", "tell", "show",
 }
 
 
@@ -120,10 +130,25 @@ def contextual_followup_query(question: str, previous_question: str | None) -> s
                 if x not in CONTEXT_FILLER]
     current = [x for x in fallback_search_query(question).split()
                if x not in CONTEXT_FILLER and x not in {"dafür", "dazu", "damit"}]
-    if not previous:
+    # A follow-up with no new content terms is too ambiguous to ground.
+    # Returning only old keywords would risk repeating unrelated evidence.
+    if not previous or not current:
         return None
     terms = list(dict.fromkeys(previous[-3:] + current[:3]))
     return ' '.join(terms) if terms else None
+
+
+def contextual_thread_query(question: str, recent_questions: list[str]) -> str | None:
+    """Anchor an explicit follow-up to the oldest still-grounded topic.
+
+    We do not propagate prior answers or their evidence into the next answer.
+    The history is limited to four user questions; only the first grounding
+    topic contributes terms, so later elliptical questions do not lose it.
+    An independent new question is never rewritten using chat history.
+    """
+    if not recent_questions:
+        return None
+    return contextual_followup_query(question, recent_questions[0])
 
 
 def run_search(client: httpx.Client, query: str, payload: QaRequest) -> dict:
@@ -161,7 +186,11 @@ def evidence_signal(hits: list[dict], strategy: str) -> dict[str, object]:
 
 @app.post('/answer')
 def answer(payload: QaRequest):
-    context_query = contextual_followup_query(payload.question, payload.previous_question)
+    context_query = (
+        contextual_thread_query(payload.question, payload.recent_questions)
+        if payload.recent_questions else
+        contextual_followup_query(payload.question, payload.previous_question)
+    )
     search_question = context_query or payload.question
     attempted_queries = [search_question]
     strategy = 'contextual_followup' if context_query else 'original_question'

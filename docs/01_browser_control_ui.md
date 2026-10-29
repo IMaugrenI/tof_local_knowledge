@@ -95,3 +95,8 @@ Import und anschließendes Einlesen werden zusätzlich als **eine fortlaufend ak
 ## K-17 – Verständliche Rückmeldung bei gemischten Dateiauswahlen
 
 Die Startseite unterscheidet vor dem Import ungültige/unsichere Dateinamen, nicht unterstützte Endungen, Dateien über 12 MiB und Auswahlen über 300 Dateien. Für diese abgelehnten Dateien werden **Name und verständlicher Grund** in „Nicht verarbeitete Dateien“ angezeigt. Vom Extraktor gemeldete Fehler werden in derselben Liste mit einem konservativen Hinweis auf fehlenden lesbaren Text oder einen anderen Verarbeitungsfehler sichtbar; ein scheiterndes Upload-Paket wird ebenfalls kenntlich gemacht. Die Liste verwendet ausschließlich sichere Textdarstellung und ist auf 100 Einträge begrenzt. Bereits erfolgreich kopierte und indexierte Dateien bleiben erhalten. Die vorhandenen Upload-, Verzeichnis- und Indexlimits werden nicht gelockert.
+
+
+## K-18 – Mehrere Anschlussfragen, ohne Antworttexte als Gedächtnis
+
+Der Chat hält bis zu vier zuletzt belegte **Nutzerfragen** im flüchtigen Browserzustand, wobei der erste Themenanker bei fortlaufenden Anschlussfragen erhalten bleibt. Bei einer unabhängigen neuen Frage beginnt ein neuer Anker. Der Browser sendet diesen kurzen Kontext optional an `/api/answer`, der ausschließlich nach **aktueller** Quellenlage antwortet. Der Verlauf ist weder ein dauerhaftes Memory-Record noch eine semantische Gesprächsverarbeitung. Die bisherige Anzeige mit Quellen und lokaler Textstellenprüfung bleibt unverändert. `Neuer Chat`, unbelegte Antworten und Dateiimport setzen den Kontext zurück. Bestehender Docker-/Compose-Startweg bleibt alleiniger Betriebsweg.

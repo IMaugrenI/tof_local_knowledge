@@ -1292,7 +1292,7 @@ HTML = """<!doctype html>
     let chatImportBusy = false;
     let chatImportBubble = null;
     let chatActiveQuestion = null;
-    let chatLastGroundedQuestion = null;
+    let chatGroundedQuestions = [];
     let lastIndexData = null;
     let lastEvidenceSegment = null;
     let lastOverviewData = null;
@@ -1535,7 +1535,20 @@ HTML = """<!doctype html>
         const text = document.createElement('div');
         text.className = 'chat-text';
         const hasEvidence = !data.error && citations.length > 0 && evidenceRefs.length > 0;
-        chatLastGroundedQuestion = hasEvidence ? chatActiveQuestion : null;
+        if (hasEvidence) {
+          // An independent grounded question becomes the new topic anchor;
+          // only explicit server-recognized follow-ups keep earlier context.
+          const continues = data.evidence_signal &&
+            data.evidence_signal.search_strategy === 'contextual_followup';
+          if (!continues) chatGroundedQuestions = [];
+          chatGroundedQuestions.push(chatActiveQuestion.slice(0, 500));
+          if (chatGroundedQuestions.length > 4) {
+            // Preserve the original grounded topic and the latest three turns.
+            chatGroundedQuestions.splice(1, chatGroundedQuestions.length - 4);
+          }
+        } else {
+          chatGroundedQuestions = [];
+        }
         chatActiveQuestion = null;
         text.textContent = data.error ? t('chatError') :
           (hasEvidence ? answer : t('simpleNoEvidence'));
@@ -1861,7 +1874,7 @@ HTML = """<!doctype html>
       if (onChat && (chatImportBusy || chatBusy)) return;
       if (onChat) {
         chatImportBusy = true;
-        chatLastGroundedQuestion = null; // New document set invalidates topic continuity.
+        chatGroundedQuestions = []; // New document set invalidates topic continuity.
         chatImportBubble = null;
         document.getElementById('qa-send-button').disabled = true;
       }
@@ -2182,7 +2195,7 @@ HTML = """<!doctype html>
       const feed = document.getElementById('qa-result');
       feed.replaceChildren();
       appendChatMessage('assistant', t('chatWelcome'));
-      chatLastGroundedQuestion = null;
+      chatGroundedQuestions = [];
       chatActiveQuestion = null;
       chatImportBubble = null;
       chatPendingReply = null;
@@ -2227,8 +2240,8 @@ HTML = """<!doctype html>
         source_scope: parseScope(document.getElementById('qa-scope').value),
         limit: Number(document.getElementById('qa-limit').value || 5),
       };
-      if (onChat && chatLastGroundedQuestion) {
-        payload.previous_question = chatLastGroundedQuestion.slice(0, 500);
+      if (onChat && chatGroundedQuestions.length) {
+        payload.recent_questions = chatGroundedQuestions.slice(0, 4);
       }
       if (onChat) {
         chatActiveQuestion = question;
