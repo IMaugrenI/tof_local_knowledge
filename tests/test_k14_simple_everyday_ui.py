@@ -18,8 +18,8 @@ def test_one_primary_screen_and_progressive_disclosure():
     assert 'id="qa-question"' in html
     assert 'id="qa-result"' in html
     assert 'data-i18n="chatClear"' in html
-    assert "payload.previous_question = chatLastGroundedQuestion.slice(0, 500)" in app.HTML
-    assert "chatLastGroundedQuestion = null" in app.HTML
+    assert "payload.recent_questions = chatGroundedQuestions.slice(0, 4)" in app.HTML
+    assert "chatGroundedQuestions = []" in app.HTML
     assert 'class="chat-feed"' in html
     assert 'id="qa-send-button"' in html
     assert 'id="chat-evidence-panel"' in html
@@ -243,8 +243,8 @@ vm.runInContext('importSelectedFiles(selection,false)',ctx,{timeout:2000}).then(
 
 
 @pytest.mark.skipif(not shutil.which("node"), reason="Node.js unavailable")
-def test_chat_two_questions_keep_visible_history_and_source_in_same_page():
-    """QA remains independent per question, but chat messages accumulate safely."""
+def test_chat_followups_preserve_topic_and_clear_references_on_new_chat():
+    """Bounded question context, sourced answers, reset and local excerpt."""
     script = app.HTML.split("<script>", 1)[1].split("</script>", 1)[0]
     harness = r"""
 const vm = require('vm');
@@ -284,6 +284,8 @@ const fetch=async(url, opts={})=>{
     const request=JSON.parse(opts.body); calls.push(request);
     return {ok:true,json:async()=>({
       answer_text:'Answer '+calls.length,
+      evidence_signal:{search_strategy:calls.length===1 || calls.length===4 ?
+        'original_question' : 'contextual_followup'},
       citations:[{relative_path:'notes.md'}],
       evidence_refs:[{relative_path:'notes.md',segment_id:'seg_a'}],
     })};
@@ -302,19 +304,30 @@ const ctx=vm.createContext({document,window,localStorage:storage,
   fetch,URLSearchParams});
 vm.runInContext(js,ctx,{timeout:2000});
 async function test(){
-  ids['qa-question'].value='Question one';
+  ids['qa-question'].value='Mietvertrag Kündigung';
   await vm.runInContext('runAnswer()',ctx);
-  ids['qa-question'].value='Question two';
+  ids['qa-question'].value='Und welche Frist?';
+  await vm.runInContext('runAnswer()',ctx);
+  ids['qa-question'].value='Und welche Ausnahmen?';
   await vm.runInContext('runAnswer()',ctx);
   await vm.runInContext("inspectEvidence('seg_a')",ctx);
   vm.runInContext("toggleLanguage()",ctx);
+  const inlineEvidence=ids['chat-evidence-panel'].children.length===4;
+  const historyBeforeClear=ids['qa-result'].children.length;
+  vm.runInContext("clearSimpleChat()",ctx);
+  const cleared=ids['qa-result'].children.length===1 &&
+    ids['chat-evidence-panel'].hidden===true;
+  ids['qa-question'].value='Neues Thema';
+  await vm.runInContext('runAnswer()',ctx);
   process.stdout.write(JSON.stringify({
     count:calls.length,
     questions:calls.map(x=>x.question),
-    contextual:calls[0].previous_question===undefined && calls[1].previous_question==='Question one',
+    contextByTurn:calls.map(x=>x.recent_questions || []),
+    noAnswersInContext:calls.every(x=>!Object.keys(x).includes('answer_text')),
+    historyBeforeClear, cleared,
     chatMessages:ids['qa-result'].children.length,
     last:ids['qa-result'].children.at(-1).children[0].textContent,
-    inlineEvidence:ids['chat-evidence-panel'].children.length===4,
+    inlineEvidence,
     sendEnabled:ids['qa-send-button'].disabled===false,
   }));
 }
@@ -326,6 +339,14 @@ test().catch(e=>{process.stderr.write(e.stack);process.exitCode=1;});
     )
     assert out.returncode == 0, out.stderr
     data = json.loads(out.stdout)
-    assert data == {"count": 2, "questions": ["Question one", "Question two"],
-                    "contextual": True, "chatMessages": 4, "last": "Answer 2",
-                    "inlineEvidence": True, "sendEnabled": True}
+    assert data == {
+        "count": 4,
+        "questions": ["Mietvertrag Kündigung", "Und welche Frist?",
+                      "Und welche Ausnahmen?", "Neues Thema"],
+        "contextByTurn": [[], ["Mietvertrag Kündigung"],
+                          ["Mietvertrag Kündigung", "Und welche Frist?"], []],
+        "noAnswersInContext": True,
+        "historyBeforeClear": 6, "cleared": True,
+        "chatMessages": 3, "last": "Answer 4",
+        "inlineEvidence": True, "sendEnabled": True,
+    }
