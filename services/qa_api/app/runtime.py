@@ -134,6 +134,14 @@ def contextual_followup_query(question: str, previous_question: str | None) -> s
     # Returning only old keywords would risk repeating unrelated evidence.
     if not previous or not current:
         return None
+    # Generic "und/and ..." questions may introduce a new subject. Only
+    # clearly elliptical questions with at most three content terms may
+    # borrow the original topic. Explicit deictic references ("dafür/it")
+    # continue to work with the same bounded AND search.
+    if not FOLLOWUP_REFERENCES.search(question) and len(current) > 3:
+        return None
+    if re.search(r"\b(?:neue[nmrs]?|ander(?:e|er|es|en)|different|another|new)\b", question, re.I):
+        return None
     terms = list(dict.fromkeys(previous[-3:] + current[:3]))
     return ' '.join(terms) if terms else None
 
@@ -162,6 +170,52 @@ def run_search(client: httpx.Client, query: str, payload: QaRequest) -> dict:
     )
     response.raise_for_status()
     return response.json()
+
+
+def rank_evidence_hits(hits: list[dict], query: str) -> list[dict]:
+    """Stable lexical relevance ordering on already-authorized search results.
+
+    This is *not* semantic entailment or permission checking. The database
+    still decides which records are retrievable. The extra ranking favors
+    text matches over file-name-only matches and otherwise preserves the
+    upstream ranking (including its deterministic tie-breaking).
+    """
+    terms = fallback_search_query(query).split()
+    if not terms or len(hits) < 2:
+        return hits
+    def relevance(hit: dict) -> tuple[int, int]:
+        text_tokens = set(re.findall(r"[^\W_]+", str(hit.get('preview_text', '')).casefold()))
+        path_tokens = set(re.findall(r"[^\W_]+", str(hit.get('relative_path', '')).casefold()))
+        return (sum(token in text_tokens for token in terms),
+                sum(token in path_tokens for token in terms))
+    return sorted(hits, key=relevance, reverse=True)
+
+
+def answer_excerpts(hits: list[dict], maximum: int = 3) -> str:
+    """Present bounded original source excerpts; do not invent a synthesis.
+
+    Prefer distinct documents to prevent a long single document from
+    crowding the cited answer. All excerpts remain visibly attributed.
+    """
+    selected = []
+    seen_docs = set()
+    for hit in hits:
+        doc_id = str(hit.get('document_id') or '')
+        if doc_id in seen_docs:
+            continue
+        selected.append(hit)
+        seen_docs.add(doc_id)
+        if len(selected) >= maximum:
+            break
+    lines = []
+    for hit in selected:
+        excerpt = ' '.join(str(hit.get('preview_text', '')).split())
+        if len(excerpt) > 300:
+            excerpt = excerpt[:300].rsplit(' ', 1)[0] + ' …'
+        lines.append(
+            f"- [{hit['citation_label']}] {hit['relative_path']}: {excerpt}"
+        )
+    return '\n'.join(lines)
 
 
 def evidence_signal(hits: list[dict], strategy: str) -> dict[str, object]:
@@ -261,13 +315,12 @@ def answer(payload: QaRequest):
             'evidence_signal': signal,
         }
 
-    primary = hits[0]
+    # Reorder only the already accepted AND/lexical-variant hit set.
+    hits = rank_evidence_hits(hits, search_question)
     citations = [hit['citation_label'] for hit in hits]
     used_documents = sorted({hit['document_id'] for hit in hits})
     evidence_refs = [{'segment_id': hit['segment_id'], 'document_id': hit['document_id'], 'source_id': hit['source_id'], 'relative_path': hit['relative_path'], 'citation_label': hit['citation_label']} for hit in hits]
-    evidence_lines = [
-        f"- [{hit['citation_label']}] {hit['preview_text']}" for hit in hits
-    ]
+    evidence_lines = answer_excerpts(hits)
 
     uncertainties = ['confidence_uncalibrated']
     if context_query:
@@ -280,8 +333,7 @@ def answer(payload: QaRequest):
         uncertainties.append('limited_independent_sources')
     answer_text = (
         'Belegbasierte Kurzantwort (Quellenauszüge, keine unabhängige Verifikation):\n'
-        f"Stärkster Treffer aus {primary['relative_path']}: {primary['preview_text']}\n\n"
-        'Verwendete Fundstellen:\n' + '\n'.join(evidence_lines)
+        'Gefundene Textstellen:\n' + evidence_lines
     )
 
     return {
