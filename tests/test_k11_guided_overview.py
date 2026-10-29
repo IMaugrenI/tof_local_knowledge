@@ -21,7 +21,7 @@ def test_navigation_uses_clear_entry_and_same_four_existing_features():
 
 def test_home_is_one_screen_import_and_question_with_simple_status():
     html = app._render_page("/")
-    assert 'data-i18n="simpleTitle"' in html
+    assert 'data-i18n="chatTitle"' in html
     assert 'id="overview-status-title"' in html
     assert 'id="overview-status-detail"' in html
     assert 'id="simple-dropzone"' in html
