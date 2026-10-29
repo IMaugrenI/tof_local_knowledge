@@ -36,3 +36,12 @@ Bereits belegte direkte Treffer und strengere Keyword-Fallbacks bleiben nutzbar.
 Die vorhandene PostgreSQL-Textsuche berücksichtigt zusätzlich zum extrahierten Segmenttext den in Wörter zerlegten **relativen Dateinamen**. Dadurch findet die Suche mit `resolved incident` den Status `resolved` in `incident_log_sample.csv`; der Quellen-Scope, der Extraktionsstatus und die stabile Trefferreihenfolge bleiben unverändert.
 
 Bei strikten QA-Keyword-Suchen wird bei Bedarf eine **eng begrenzte Wortformvariante** (`publish` → `public`) ausprobiert; alle anderen relevanten Suchwörter bleiben verpflichtend (AND). Der Treffer erhält `search_strategy = keywords_variant` sowie `uncertainties += lexical_variant_not_semantically_verified`. **Breite OR-Treffer bleiben ausschließlich diagnostisch und dürfen weiterhin keine Quellenzitate erzeugen.** Diese konservative Reparatur deckt die reproduzierten Demo-Abweichungen ab, ersetzt jedoch keine unabhängige semantische Antwortprüfung.
+
+
+## K-16 – Quellengebundene Nachfragen im Dokumenten-Chat
+
+Die Chat-Startseite darf nach einer erfolgreich belegten Antwort die **unmittelbar vorherige Benutzerfrage** (maximal 500 Zeichen) als optionales Feld `previous_question` an `/api/answer` weiterreichen. Der Server verwendet sie ausschließlich bei expliziten Anschlussformulierungen (z. B. „Und welche Frist gilt dafür?“) für eine **deterministische, begrenzte AND-Stichwortsuche** mit dem vorherigen Thema. Er übernimmt weder vorherige Antworttexte noch frühere Fundstellen als Beweise. Die Suche verwendet unverändert den aktuellen Quellen-Scope und die aktive Index-/Berechtigungsgrenze.
+
+Fehlt eine belastbar belegte vorherige Antwort, ist der Verlauf gelöscht oder wurden neue Dateien importiert, wird kein Gesprächskontext weitergegeben. Eine unabhängige neue Frage wird nicht mit alten Themen vermischt. Breite OR-Treffer bleiben weiterhin ausschließlich diagnostisch ohne Zitate. Bei einem positiven Kontexttreffer meldet `uncertainties` die zusätzliche Grenze `contextual_keyword_match_not_semantically_verified`; `evidence_signal.search_strategy` heißt `contextual_followup`.
+
+**Keine semantische Gesprächs-Memory:** Das Verfahren ist kein LLM-basiertes Schlussfolgern aus einer ganzen Unterhaltung und keine persistente Gedächtnisspeicherung. Jede Antwort bleibt dokumentengestützt und fordert bei nicht belegbaren Anfragen Zurückhaltung. Die gesamte sichtbare Unterhaltung existiert nur im Browser bis zum Neuladen und kann mit „Neuer Chat“ gelöscht werden.
