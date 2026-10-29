@@ -102,6 +102,10 @@ Ein Einsteiger-Guide liegt in `docs/00_beginner_quickstart.md`.
 Eine Doku-Übersicht liegt in `docs/README.md`.
 Ein deutscher Doku-Spiegel liegt in `docs/README_DE.md`.
 
+## Einfache Chatoberfläche – Ausbaukandidat
+
+Nach dem bestehenden lokalen Start die Startseite unter `http://127.0.0.1:8785/` öffnen. Dort lassen sich ausdrücklich ausgewählte Dateien/Ordner importieren und indexieren, Fragen und begrenzte Anschlussfragen stellen und Quellen ansehen. Die gesamte Runtime-/Produkt-Abnahme erfolgt **gemeinsam** am Meilenstein. Für den Download-Kandidaten und den offenen Betreiber-Prüfstatus siehe [Zentrale Meilensteinliste](docs/ONE_SCREEN_MILESTONE_DE.md) und [Quellpaket-Anleitung](docs/RELEASE_PACKAGE_DE.md). Das ist noch kein nativer Installer und keine Mehrbenutzer- oder Modell-Wahrheitsfreigabe.
+
 ## Sichere Demo zuerst
 
 Bevor du private oder wichtige Dokumente verwendest, teste den Stack mit den neutralen Demo-Quelldateien in `demo/source_1/`.
