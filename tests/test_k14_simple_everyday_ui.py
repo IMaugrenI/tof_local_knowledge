@@ -243,6 +243,7 @@ function el(tag = 'div') {
     classList:{add(){}, remove(){}, toggle(){}},
     addEventListener(name,fn){this[name]=fn;},
     appendChild(child){this.children.push(child);},
+    append(...items){this.children.push(...items);},
     replaceChildren(...items){this.children=items;},
     querySelectorAll(){return [];}, setAttribute(){},
     focus(){}, scrollIntoView(){}, scrollTop:0, scrollHeight:100,
