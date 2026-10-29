@@ -1,8 +1,12 @@
 name: Source distribution candidate
 
-# Manual, on-demand packaging only. No public Release, tag, deployment or startup.
+# Packaging runs on manual request OR one explicit candidate/* branch.
+# No public Release, tag, deployment, auto-start or production data.
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - "candidate/**"
 
 permissions:
   contents: read

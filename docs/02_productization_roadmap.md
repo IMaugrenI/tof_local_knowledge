@@ -83,6 +83,8 @@ Target:
 
 ## One-screen chat milestone — current build track
 
+Single acceptance source of truth: [ONE_SCREEN_MILESTONE_DE.md](ONE_SCREEN_MILESTONE_DE.md).
+
 The everyday browser entry (`/`) now combines user-approved document
 selection, bounded import/index batches, progress and per-file feedback,
 document-grounded question/answer history, read-only evidence inspection, and
