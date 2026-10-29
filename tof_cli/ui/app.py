@@ -790,6 +790,7 @@ HTML = """<!doctype html>
         chatPlaceholder: 'Frag etwas zu deinen Dokumenten …',
         chatSend: 'Senden',
         chatSearching: 'Ich suche in deinen Dokumenten …',
+        chatModelRanked: 'Treffer durch lokales Modell sortiert. Quellen bleiben maßgeblich.',
         chatClear: 'Neuer Chat',
         chatImportBusy: 'Dateien werden verarbeitet. Bitte erst danach eine Frage stellen.',
         chatError: 'Die Antwort konnte nicht geladen werden. Bitte versuche es erneut.',
@@ -1042,6 +1043,7 @@ HTML = """<!doctype html>
         chatPlaceholder: 'Ask something about your documents …',
         chatSend: 'Send',
         chatSearching: 'Searching your documents …',
+        chatModelRanked: 'Results ranked by a local model. Sources remain authoritative.',
         chatClear: 'New chat',
         chatImportBusy: 'Files are being processed. Ask your question when they are ready.',
         chatError: 'The answer could not be loaded. Please try again.',
@@ -1558,6 +1560,12 @@ HTML = """<!doctype html>
         text.textContent = data.error ? t('chatError') :
           (hasEvidence ? answer : t('simpleNoEvidence'));
         bubble.appendChild(text);
+        if (!data.error && hasEvidence && signal && signal.local_model_rerank) {
+          const note = document.createElement('div');
+          note.className = 'muted';
+          note.textContent = t('chatModelRanked');
+          bubble.appendChild(note);
+        }
         if (!data.error && hasEvidence) {
           const sources = document.createElement('details');
           const label = document.createElement('summary');
