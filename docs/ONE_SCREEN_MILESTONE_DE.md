@@ -27,7 +27,7 @@ bleiben verbindlich.
 | M05 | Beliebige Antworten ohne Belege verhindern | CODE_OK | QA-Negativtests; gezielte Runtime-Abnahme offen |
 | M06 | Natürliche begrenzte Nachfragen, Themenwechsel, Neuer Chat | CODE_OK | QA-/UI-Tests; kein persistentes Gedächtnis |
 | M07 | Optionale ausschließlich lokale LLM-Treffersortierung | CODE_OK | QA-Test: validierte Treffer-IDs / Fallback; realer Modellbetrieb offen |
-| M08 | Quellpaket auf eingefrorenem Commit erzeugen | OFFEN | `Source distribution candidate` auf `candidate/**`; Artefakt + SHA256 prüfen |
+| M08 | Quellpaket auf eingefrorenem Commit erzeugen | CODE_OK | GitHub-Paketlauf [40964535162](https://github.com/IMaugrenI/tof_local_knowledge/actions/runs/40964535162) bestanden; nächster Kandidat nutzt den aktuellen eingefrorenen Ausbau-Commit. ZIP-/Checksum-Nachweis getrennt von Runtime-Abnahme. |
 | M09 | Zielsystem: Start, Index, Suche, Chat, Quellen, Negativfrage | OFFEN | DOM führt **eine** zusammenhängende Runtime-Prüfung durch |
 | M10 | Betriebssysteme und Einbenutzer-/Netzgrenzen | OFFEN | Nur tatsächlich getestete Plattformen freigeben |
 | M11 | DOM: GO/NO-GO über genau diesen Kandidaten | OFFEN | Entscheidung nach M08–M10 und gegebenenfalls gezieltem Nachtest |
